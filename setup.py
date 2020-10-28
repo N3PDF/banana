@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="banana",
+    name="banana-hep",
     author="F. Hekhorn, A.Candido",
     version="0.1.0",
     description="mm yummy banana",
