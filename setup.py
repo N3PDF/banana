@@ -7,10 +7,11 @@ setup(
     author="F. Hekhorn, A.Candido",
     version="0.1.0",
     description="mm yummy banana",
-    # package_dir={"": "."},
     package_data={"banana": ["data/templatePDF.dat", "data/templatePDF.info", "data/theory_template.yaml"]},
-    packages=find_packages("."),
+    package_dir={"": "src"},
+    packages=find_packages("src"),
     install_requires=[
+        "numpy",
         "rich",
         "pyyaml",
         "tinydb~=4.1"
