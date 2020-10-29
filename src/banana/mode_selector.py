@@ -3,42 +3,32 @@ import pathlib
 
 import tinydb
 
-here = pathlib.Path(__file__).parent.absolute()
-
 
 class ModeSelector:
     """
-        Handle the mode-related stuff
+    Handle the mode-related stuff
 
-        Parameters
-        ----------
-            mode : str
-                active mode
-            external : str
-                external program name to compare to if in sandbox mode
+    Parameters
+    ----------
+        cfg : dict
+            banana configuration
+        mode : str
+            active mode
+        external : str
+            external program name to compare to if in sandbox mode
     """
 
-    def __init__(self, mode, external=None):
+    def __init__(self, cfg, mode, external=None):
+        self.mode_cfg = cfg["modes"][mode]
         self.mode = mode
-        if mode == "sandbox":
+        if self.mode_cfg["external"] is None:
             self.external = external
         else:
-            if external is not None and mode != external:
+            if external is not None:
                 raise ValueError(f"in {mode} mode you have {mode} as external")
             self.external = mode
-        self.data_dir = here.parent / "data"
         # load DBs
-        self.input_name = self.get_input_name()
-        self.idb = tinydb.TinyDB(self.data_dir / self.input_name)
-        self.odb = tinydb.TinyDB(self.data_dir / "output.json")
-
-    def get_input_name(self):
-        """Determine DB name"""
-        if self.mode == "regression":
-            return "regression.json"
-        if self.mode == "APFEL":
-            return "apfel-input.json"
-        if self.mode == "QCDNUM":
-            return "qcdnum-input.json"
-        # sandbox
-        return "input.json"
+        self.idb = tinydb.TinyDB(
+            cfg["dir"] / cfg["data_dir"] / self.mode_cfg["input_db"]
+        )
+        self.odb = tinydb.TinyDB(cfg["dir"] / cfg["data_dir"] / "output.json")
