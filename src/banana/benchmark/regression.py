@@ -15,6 +15,9 @@ import rich.panel
 import rich.progress
 import rich.markdown
 
+from yadism.runner import Runner
+from yadism import observable_name
+
 from .. import toyLH
 from .. import utils
 from .. import mode_selector
@@ -40,24 +43,6 @@ class QueryFieldsEqual(tinydb.queries.QueryInstance):
         super().__init__(test, ("==", (field_a,), (field_b,)))
 
 
-def get_pdf(pdf_name):
-    """
-    Load PDF object from either LHAPDF or :mod:`toyLH`
-    """
-    # setup PDFset
-    if pdf_name == "ToyLH":
-        pdf = toyLH.mkPDF("ToyLH", 0)
-    else:
-        import lhapdf  # pylint:disable=import-outside-toplevel
-
-        # is the set installed? if not do it now
-        if pdf_name not in lhapdf.availablePDFSets():
-            print(f"PDFSet {pdf_name} is not installed! Installing now ...")
-            subprocess.run(["lhapdf", "get", pdf_name], check=True)
-            print(f"{pdf_name} installed.")
-        pdf = lhapdf.mkPDF(pdf_name, 0)
-    return pdf
-
 class DBInterface(mode_selector.ModeSelector):
     """
     Interface to access DB
@@ -66,16 +51,18 @@ class DBInterface(mode_selector.ModeSelector):
     ----------
         external : str
             program to compare to
+        db_name : str
+            database name (relative to data/ directory)
     """
 
-    def __init__(self, cfg, mode, external=None, assert_external=None):
-        super().__init__(cfg, mode, external)
+    def __init__(self, mode, external=None, assert_external=None):
+        super().__init__(mode, external)
         self.assert_external = assert_external
 
         self.theory_query = tinydb.Query()
-        self.o_query = tinydb.Query()
+        self.obs_query = tinydb.Query()
 
-        self.defaults = { # TODO move in banana.yaml
+        self.defaults = {
             "XIR": self.theory_query.XIR == 1.0,
             "XIF": self.theory_query.XIF == 1.0,
             "NfFF": self.theory_query.NfFF == 3,
@@ -84,11 +71,10 @@ class DBInterface(mode_selector.ModeSelector):
             "TMC": self.theory_query.TMC == 0,
         }
 
-    def from_queries(self, theory_query, obs_query):
+    def _load_input_from_queries(self, theory_query, obs_query):
         """
         Retrieve (JSON) data form the DB using the queries
         """
-        # TODO read table_names
         theories = self.idb.table("theories").search(theory_query)
         observables = self.idb.table("observables").search(obs_query)
         rich.print(
@@ -99,9 +85,90 @@ class DBInterface(mode_selector.ModeSelector):
         )
         return theories, observables
 
-    def update_default_queries(self, PTO, theory_update=None, o_query=None):
+    def run_queries_regression(self, theory_query, obs_query):
         """
-        Build true queries out of the default settings using update dicts
+        Do the regression test.
+        """
+        theories, observables = self._load_input_from_queries(theory_query, obs_query)
+        for theory, obs in itertools.product(theories, observables):
+            # run against regression data
+            self.run_regression(theory, obs)
+
+    def run_generate_regression(self, theory_query, obs_query):
+        """
+        Regenerates the regression data.
+        """
+        # ask = input("Regenerate regression data? [y/n]")
+        # if ask != "y":
+        #    print("Nothing done.")
+        #    return
+        self.idb.table("regressions").truncate()
+        theories, observables = self._load_input_from_queries(theory_query, obs_query)
+        full = itertools.product(theories, observables)
+        for theory, obs in rich.progress.track(
+            full, total=len(theories) * len(observables)
+        ):
+            self.generate_regression(theory, obs)
+
+    def generate_regression(self, theory, obs):
+        """
+        Generates a single regression point.
+        """
+        runner = Runner(theory, obs)
+        out = runner.get_output()
+        # add metadata to log record
+        out["_creation_time"] = utils.str_datetime(datetime.datetime.now())
+        out["_theory_doc_id"] = theory.doc_id
+        out["_observables_doc_id"] = obs.doc_id
+        # check existence
+        q = tinydb.Query()
+        query = (q._theory_doc_id == theory.doc_id) & (
+            q._observables_doc_id == obs.doc_id
+        )
+        regression_log = self.idb.table("regressions").search(query)
+        if len(regression_log) != 0:
+            raise RuntimeError(
+                f"there is already a document for t={theory.doc_id} and o={obs.doc_id}"
+            )
+        # insert
+        self.idb.table("regressions").insert(out)
+
+    def run_regression(self, theory, obs):
+        """
+        Run a single regression point.
+        """
+        runner = Runner(theory, obs)
+        try:
+            out = runner.get_output()
+        except Exception as e:
+            out = e
+        # load regression data
+        q = tinydb.Query()
+        query = (q._theory_doc_id == theory.doc_id) & (
+            q._observables_doc_id == obs.doc_id
+        )
+        regression_log = self.idb.table("regressions").search(query)
+        if len(regression_log) == 0:
+            raise RuntimeError(
+                "no regression data to compare to! you need to generate first ..."
+            )
+        if len(regression_log) > 1:
+            raise RuntimeError(
+                f"there is more then one document for t={theory.doc_id} and o={obs.doc_id}"
+            )
+        regression_log = regression_log[0]
+        # compare
+        log_tab = self._get_output_comparison(
+            theory, obs, out, regression_log, self._process_regression_log
+        )
+        # print immediately
+        # self._print_res(log_tab)
+        # store the log
+        self._log(log_tab)
+
+    def run_external(self, PTO, pdfs, theory_update=None, obs_query=None):
+        """
+        Run an external program, i.e., either APFEL or QCDNUM
         """
         # add PTO and build theory query
         if theory_update is None:
@@ -109,23 +176,22 @@ class DBInterface(mode_selector.ModeSelector):
         theory_update["PTO"] = self.theory_query.PTO == PTO
         theory = copy.deepcopy(self.defaults)
         theory.update(theory_update)
-        theory_qres = self.theory_query.noop()
+        theory_query = self.theory_query.noop()
         for cond in theory.values():
             # skip empty ones
             if cond is None:
                 continue
-            theory_qres &= cond
+            theory_query &= cond
         # build obs query
-        if o_query is None:
-            o_qres = self.o_query.prDIS.exists()
-        self.t_qres = theory_qres
-        self.o_qres = o_qres
+        if obs_query is None:
+            obs_query = self.obs_query.prDIS.exists()
+        return self.run_queries_external(theory_query, obs_query, pdfs)
 
-    def run(self, pdfs):
+    def run_queries_external(self, theory_query, obs_query, pdfs):
         """
         Run a test matrix for the external program
         """
-        theories, observables = self.from_queries(self.t_qres, self.o_qres)
+        theories, observables = self._load_input_from_queries(theory_query, obs_query)
         full = itertools.product(theories, observables)
         # for theory, obs in rich.progress.track(
         #     full, total=len(theories) * len(observables)
@@ -134,7 +200,18 @@ class DBInterface(mode_selector.ModeSelector):
             # create our own object
             runner = Runner(theory, obs)
             for pdf_name in pdfs:
-                pdf = get_pdf(pdf_name)
+                # setup PDFset
+                if pdf_name == "ToyLH":
+                    pdf = toyLH.mkPDF("ToyLH", 0)
+                else:
+                    import lhapdf  # pylint:disable=import-outside-toplevel
+
+                    # is the set installed? if not do it now
+                    if pdf_name not in lhapdf.availablePDFSets():
+                        print(f"PDFSet {pdf_name} is not installed! Installing now ...")
+                        subprocess.run(["lhapdf", "get", pdf_name], check=True)
+                        print(f"{pdf_name} installed.")
+                    pdf = lhapdf.mkPDF(pdf_name, 0)
                 # get our data
                 yad_tab = runner.apply(pdf)
                 # get external data
@@ -212,6 +289,30 @@ class DBInterface(mode_selector.ModeSelector):
         kin["rel_err[%]"] = comparison
         return kin
 
+    @staticmethod
+    def _process_regression_log(yad, reg, *_args):
+        kin = dict()
+        # iterate flavours
+        for k in reg["values"]:
+            kin[f"reg {k}"] = reg_val = reg["values"][k]
+            kin[f"reg {k}_error"] = reg_err = reg["errors"][k]
+            kin[f"reg {k}_weights"] = reg_weights = reg["weights"][k]
+            kin[f"yad {k}"] = yad_val = yad["values"][k]
+            kin[f"yad {k}_error"] = yad_err = yad["errors"][k]
+            kin[f"yad {k}_weights"] = yad_weights = yad["weights"][k]
+
+            # test equality
+            for f, r, e1, e2 in zip(yad_val, reg_val, yad_err, reg_err):
+                assert pytest.approx(r, rel=0.01, abs=max(e1 + e2, 1e-6)) == f
+            # check weights
+            reg_weights = {int(k): v for k, v in reg_weights.items()}
+            assert pytest.approx(reg_weights) == yad_weights
+            # compare for log
+            with np.errstate(divide="ignore"):
+                comparison = (np.array(yad_val) / np.array(reg_val) - 1.0) * 100
+            kin[f"rel {k}_err[%]"] = comparison.tolist()
+        return kin
+
     def _get_output_comparison(
         self,
         theory,
@@ -272,7 +373,24 @@ class DBInterface(mode_selector.ModeSelector):
 
         return log_tab
 
-    def log(self, log_tab):
+    def _print_res(self, log_tab):
+        # for each observable:
+        for FX, tab in log_tab.items():
+            # skip metadata
+            if FX[0] == "_":
+                continue
+
+            print_tab = pd.DataFrame(tab)
+            length = len(str(print_tab).split("\n")[1])
+            rl = (length - len(FX)) // 2  # reduced length
+
+            # print results
+            rich.print("\n" + "-" * rl + f"[green i]{FX}[/]" + "-" * rl + "\n")
+            # __import__("pdb").set_trace()
+            rich.print(print_tab)
+            rich.print("-" * length + "\n\n")
+
+    def _log(self, log_tab):
         """
         Dump comparison table.
 
