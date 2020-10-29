@@ -18,11 +18,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            # "generate_theories=yadmark.data.theories:run_parser",
-            # "generate_observables=yadmark.data.observables:run_parser",
             "generate_pdf=banana.data.generate_pdf:generate_pdf",
             "install_pdf=banana.data.generate_pdf:install_pdf",
-            # "navigator=yadmark.navigator:launch_navigator",
         ],
     },
     python_requires=">=3.7",
