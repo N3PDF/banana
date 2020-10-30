@@ -12,7 +12,7 @@ from . import power_set
 
 class CardGenerator(mode_selector.ModeSelector, abc.ABC):
     """
-    Compile all cards to compare against
+    Compile all cards to compare against.
 
     Parameters
     ----------
@@ -28,14 +28,31 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
 
     @abc.abstractproperty
     def table_name(self):
+        """target table name in the `input` database"""
         pass
 
     def get_all(self):
-        """Should return a list of cards"""
+        """
+        Return a list of cards to be inserted.
+
+        Should be overwritten by child classes.
+
+        Returns
+        -------
+            list
+                list of cards
+        """
         return []
 
     def write(self, cards):
-        """Insert all elements"""
+        """
+        Truncates the table and inserts the new cards.
+
+        Parameters
+        ----------
+            cards : list
+                list of cards
+        """
         table = self.idb.table(self.table_name)
         table.truncate()
         # adjust creation time
@@ -45,7 +62,9 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
         table.insert_multiple(cards)
 
     def fill(self):
-        """Fill table in DB"""
+        """
+        Fill table in DB after asking for confirmation.
+        """
         # check intention
         ask = input(f"Do you want to refill the {self.mode} {self.table_name}? [y/n]")
         if ask != "y":
@@ -58,7 +77,19 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
 
     @classmethod
     def get_run_parser(cls, cfg):
-        """get the entry point"""
+        """
+        Return the entry point to :meth:`fill`
+
+        Parameters
+        ----------
+            cfg : dict
+                banana configuration
+
+        Returns
+        -------
+            callable
+                entry point
+        """
 
         def run_parser():
             # setup
@@ -74,31 +105,3 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
             tg.fill()
 
         return run_parser
-
-
-class OCardGenerator(CardGenerator):
-    def get_all_o(self, defaults):
-        return []
-
-    def get_all(self):
-        """
-        Collect all runcards
-
-        Returns
-        -------
-            observables : list(dict)
-                list of runcards
-        """
-        # default interpolation setup
-        interpolation_xgrid = np.unique(
-            np.concatenate([np.geomspace(1e-4, 0.15, 20), np.linspace(0.15, 1.0, 12)])
-        )
-        interpolation_polynomial_degree = 4
-        interpolation_is_log = True
-        defaults = dict(
-            interpolation_xgrid=interpolation_xgrid.tolist(),
-            interpolation_polynomial_degree=interpolation_polynomial_degree,
-            interpolation_is_log=interpolation_is_log,
-        )
-        cards = self.get_all_o(defaults)
-        return cards
