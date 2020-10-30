@@ -4,18 +4,26 @@ from setuptools import setup, find_packages
 
 setup(
     name="banana-hep",
-    author="F. Hekhorn, A.Candido",
+    author="Felix Hekhorn, Alessandro Candido",
     version="0.1.0",
     description="mm yummy banana",
-    package_data={"banana": ["data/templatePDF.dat", "data/templatePDF.info", "data/theory_template.yaml"]},
+    package_data={
+        "banana": [
+            "data/templatePDF.dat",
+            "data/templatePDF.info",
+            "data/theory_template.yaml",
+        ]
+    },
     package_dir={"": "src"},
     packages=find_packages("src"),
     install_requires=[
+        "ipython",
         "numpy",
         "pandas",
         "rich",
         "pyyaml",
-        "tinydb~=4.1"
+        "tinydb~=4.1",
+        "human_dates2",
     ],
     entry_points={
         "console_scripts": [

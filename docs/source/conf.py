@@ -17,9 +17,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'banana'
-copyright = '2020, N3PDF team'
-author = 'N3PDF team'
+project = "banana"
+copyright = "2020, N3PDF team"
+author = "Felix Hekhorn, Alessandro Candido"
+
+# The full version, including alpha/beta/rc tags
+release = "0.1.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -28,22 +31,22 @@ author = 'N3PDF team'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autosectionlabel',
-    'sphinx.ext.napoleon',
-    'sphinxcontrib.bibtex',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.napoleon",
+    "sphinxcontrib.bibtex",
     "sphinx.ext.extlinks",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -56,12 +59,12 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 
 # -- Extension configuration -------------------------------------------------
@@ -71,9 +74,9 @@ html_static_path = ['_static']
 # Example configuration for intersphinx: refer to the Python standard library.
 # Thanks https://github.com/bskinn/sphobjinv
 intersphinx_mapping = {
-    "python": ('https://docs.python.org/3/', None),
-    "scipy": ('https://docs.scipy.org/doc/scipy/reference', None),
-    "numpy": ("https://numpy.org/doc/stable", None)
+    "python": ("https://docs.python.org/3/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
 }
 
 # -- Options for todo extension ----------------------------------------------
