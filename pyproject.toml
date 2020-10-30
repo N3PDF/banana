@@ -1,0 +1,2 @@
+[tool.pytest.ini_options]
+addopts = '--cov=banana --cov-report=html --cov-report=xml --strict-markers'
