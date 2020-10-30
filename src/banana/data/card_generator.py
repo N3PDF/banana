@@ -7,7 +7,6 @@ import abc
 import numpy as np
 
 from .. import mode_selector
-from ..utils import str_datetime
 from . import power_set
 
 
@@ -41,7 +40,7 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
         table.truncate()
         # adjust creation time
         for c in cards:
-            c["_created"] = str_datetime(datetime.now())
+            c["_created"] = datetime.now().isoformat()
         print(f"writing {len(cards)} cards to {self.table_name}")
         table.insert_multiple(cards)
 
