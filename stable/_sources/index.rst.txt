@@ -7,7 +7,7 @@ Welcome to banana!
 ==================
 
 .. image:: ../_assets/logo.png
-  :width: 300
+  :width: 450
   :align: center
   :alt: banana logo
 
