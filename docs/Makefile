@@ -26,9 +26,6 @@ help:
 	@rm -f $(BANANAOUT)/modules.rst
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-
-
-
 # # sphinx
 # html: todos
 # 	sphinx-apidoc --module-first -o "$(EKOOUT)" "$(EKODIR)"
@@ -49,6 +46,7 @@ cleanall: clean clean-todos
 
 # TODOs
 todos:
+	mkdir -p source/development && touch ${TODOOUTFILE}
 	python generate_code_todos.py "$(BANANADIR)" "$(TODOOUTFILE)"
 
 clean-todos:
