@@ -58,6 +58,7 @@ def get_pdf(pdf_name):
         pdf = lhapdf.mkPDF(pdf_name, 0)
     return pdf
 
+
 class DBInterface(mode_selector.ModeSelector):
     """
     Interface to access DB
@@ -75,7 +76,7 @@ class DBInterface(mode_selector.ModeSelector):
         self.theory_query = tinydb.Query()
         self.o_query = tinydb.Query()
 
-        self.defaults = { # TODO move in banana.yaml
+        self.defaults = {  # TODO move in banana.yaml
             "XIR": self.theory_query.XIR == 1.0,
             "XIF": self.theory_query.XIF == 1.0,
             "NfFF": self.theory_query.NfFF == 3,
