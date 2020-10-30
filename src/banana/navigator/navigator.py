@@ -1,10 +1,10 @@
 import numpy as np
+from datetime import datetime
 import pandas as pd
 from human_dates import human_dates
 
 from yadism import observable_name as on
 
-from ..utils import unstr_datetime
 from .. import mode_selector
 from .df_dict import DFdict
 from . import table_manager as tm
@@ -102,7 +102,7 @@ class NavigatorApp(mode_selector.ModeSelector):
             obj = {"doc_id": theo.doc_id}
             for f in ["PTO", "XIF", "XIR", "TMC", "NfFF", "FNS", "DAMP"]:
                 obj[f] = theo[f]
-            dt = unstr_datetime(theo["_modify_time"])
+            dt = datetime.fromisoformat(theo["_modify_time"])
             obj["modified"] = human_dates(dt)
             data.append(obj)
         # output
@@ -152,7 +152,7 @@ class NavigatorApp(mode_selector.ModeSelector):
                 sfs += 1
                 esfs += len(ob[sf])
             obj["structure_functions"] = f"{sfs} SF @ {esfs} points"
-            dt = unstr_datetime(ob["_modify_time"])
+            dt = datetime.fromisoformat(ob["_modify_time"])
             obj["modified"] = human_dates(dt)
             data.append(obj)
         # output
@@ -230,7 +230,7 @@ class NavigatorApp(mode_selector.ModeSelector):
             if "_pdf" in lg:
                 obj["pdf"] = lg["_pdf"]
             if "_creation_time" in lg:
-                dt = unstr_datetime(lg["_creation_time"])
+                dt = datetime.fromisoformat(lg["_creation_time"])
                 obj["created"] = human_dates(dt)
             data.append(obj)
         # output
