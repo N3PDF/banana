@@ -23,8 +23,8 @@ def power_set(inp):
 
     Returns
     -------
-        list
-            power set of all possibilities
+        list(dict)
+            power set of all possibilities, preserving the keys
     """
     return [
         dict(zip(inp.keys(), values)) for values in itertools.product(*inp.values())

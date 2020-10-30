@@ -12,7 +12,7 @@ from . import power_set
 
 class CardGenerator(mode_selector.ModeSelector, abc.ABC):
     """
-    Compile all cards to compare against.
+    Generate all cards in the DB
 
     Parameters
     ----------
@@ -22,8 +22,6 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
             target table
         mode : str
             active mode
-        external : str
-            external program name to compare to if in sandbox mode
     """
 
     @abc.abstractproperty

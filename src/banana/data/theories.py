@@ -15,10 +15,12 @@ here = pathlib.Path(__file__).parent
 
 class TheoriesGenerator(card_generator.CardGenerator):
     """
-    Compile all theories to compare against
+    Generate all theories.
 
     Parameters
     ----------
+        cfg : dict
+            banana configuration
         mode : str
             active mode
     """
@@ -26,12 +28,12 @@ class TheoriesGenerator(card_generator.CardGenerator):
     table_name = "theories"
 
     def get_all(self):
-        """Insert all test options"""
+        """Return a list of cards to be inserted."""
         # read template
         with open(here / "theory_template.yaml") as f:
             template = yaml.safe_load(f)
         # get all possible combinations
-        full = power_set(self.mode_cfg["theories"])
+        full = power_set(self.mode_cfg[self.table_name])
         cards = []
         for config in full:
             template.update(config)
