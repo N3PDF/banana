@@ -1,0 +1,58 @@
+name: unit tests
+
+on:
+  push:
+    branches-ignore:
+      - "*docs*"
+
+jobs:
+  unittests:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 3
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+      fail-fast: false
+
+    steps:
+      # checkout the repo on the github runner
+      # with fetch-depth = 0 all the repo is checked out with full-history
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }} 🐍
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      # install the actual python package 'yadism'
+      - name: Install yadism
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+      - name: Prepare Test environment
+        run: |
+          # install packages needed for testing
+          pip install -r test_requirements.txt
+      # pass with the linter
+      #   - only for 'dis', 'eko' is a dependency (supposed to be delivered
+      #     already checked)
+      - name: Lint with pylint
+        run: |
+          pip install pylint
+          # Search for actual errors
+          pylint src/*/*.py -E
+          # For warnings instead return always zero
+          pylint src/*/*.py --exit-zero
+      #  run the test with 'pytest'
+      - name: Test yadism
+        run: |
+          # run tests
+          pytest tests
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true

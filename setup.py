@@ -16,7 +16,14 @@ setup(
     },
     package_dir={"": "src"},
     packages=find_packages("src"),
-    install_requires=["numpy", "rich", "pyyaml", "tinydb~=4.1"],
+    install_requires=[
+        "ipython",
+        "numpy",
+        "rich",
+        "pyyaml",
+        "tinydb~=4.1",
+        "human_dates2",
+    ],
     entry_points={
         "console_scripts": [
             "generate_pdf=banana.data.generate_pdf:generate_pdf",
