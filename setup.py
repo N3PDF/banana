@@ -73,6 +73,7 @@ def setup_package():
         install_requires=[
             "ipython",
             "numpy",
+            "pandas",
             "rich",
             "pyyaml",
             "tinydb~=4.1",
