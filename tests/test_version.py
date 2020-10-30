@@ -8,7 +8,7 @@ import pytest
 import pygit2
 import semver
 
-import yadism.version as v
+import banana.version as v
 
 repo_path = pathlib.Path(__file__).absolute().parents[1]
 repo = pygit2.Repository(repo_path)
