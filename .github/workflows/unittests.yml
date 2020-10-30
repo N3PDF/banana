@@ -44,7 +44,7 @@ jobs:
           # For warnings instead return always zero
           pylint src/*/*.py --exit-zero
       #  run the test with 'pytest'
-      - name: Test yadism 🧪
+      - name: Test banana 🧪
         run: |
           # run tests
           pytest tests
