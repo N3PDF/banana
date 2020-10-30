@@ -1,9 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+Auxilary module to generate some debug PDF which consist of selected pid of a parent
+set
+"""
 import pathlib
 import argparse
 import shutil
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from jinja2 import Environment, FileSystemLoader
 import lhapdf
@@ -18,14 +22,16 @@ here = pathlib.Path(__file__).parent.absolute()
 env = Environment(loader=FileSystemLoader(str(here)))
 
 
-def stringify(ls, fmt="%.6e"):
+def _stringify(ls, fmt="%.6e"):
+    """Stringify array"""
     return " ".join([fmt % x for x in ls])
 
 
-def stringify2(ls):
+def _stringify2(ls):
+    """stringify array"""
     table = ""
     for line in ls:
-        table += ("% .8e " % line[0]) + stringify(line[1:], fmt="%.8e") + "\n"
+        table += ("% .8e " % line[0]) + _stringify(line[1:], fmt="%.8e") + "\n"
     return table
 
 
@@ -35,13 +41,28 @@ def stringify2(ls):
 
 
 def dump_pdf(name, xgrid, Q2grid, pids, pdf_table):
-    # collect data
+    """
+    Write LHAPDF data file
 
+    Parameters
+    ----------
+        name : str
+            target name
+        xgrid : list(float)
+            target x-grid
+        Q2grid : list(float)
+            target Q2-grid
+        pids: list(int)
+            active pids
+        pdf_table : numpy.ndarray
+            pdf grid
+    """
+    # collect data
     data = dict(
-        xgrid=stringify(xgrid),
-        Q2grid=stringify(Q2grid),
-        pids=stringify(pids, fmt="%d"),
-        pdf_table=stringify2(pdf_table),
+        xgrid=_stringify(xgrid),
+        Q2grid=_stringify(Q2grid),
+        pids=_stringify(pids, fmt="%d"),
+        pdf_table=_stringify2(pdf_table),
     )
 
     # ===========
@@ -53,8 +74,19 @@ def dump_pdf(name, xgrid, Q2grid, pids, pdf_table):
 
 
 def dump_info(name, description, pids):
-    # collect data
+    """
+    Write LHAPDF info file
 
+    Parameters
+    ----------
+        name : str
+            target name
+        description : str
+            description
+        pids : list(int)
+            active pids
+    """
+    # collect data
     data = dict(
         description=description,
         pids=pids,
@@ -72,8 +104,22 @@ def dump_info(name, description, pids):
 # PDFs
 # ==========
 
-
 def make_debug_pdf(name, active_pids, lhapdf_like=None):
+    """
+    Create a new pdf.
+
+    If the parent PDF is set to None (via `lhapdf_like`) the target
+    functional form is set to :math:`xf(x) = x(1-x)`.
+
+    Parameters
+    ----------
+        name : str
+            target name
+        active_pids : list(int)
+            active pids
+        lhapdf_like : None or object
+            parent pdf
+    """
     # check flavors
     max_nf = 3
     for q in range(4, 6 + 1):
@@ -103,22 +149,19 @@ def make_debug_pdf(name, active_pids, lhapdf_like=None):
     dump_info(name, description, pids_out)
 
 
-def check(pdfset, pid):
-    pdf = lhapdf.mkPDF(pdfset, 0)
-    f = lambda x: x * (1.0 - x)
-    xs = np.logspace(-8, -0.2, 100) * (1.0 + 0.5 * np.random.rand(100))
-    # xs = np.array([.1,.5,.8])
-    xs = np.unique(xs)
-    other = [pdf.xfxQ2(pid, x, 10.0) for x in xs]
-    ref = f(xs)
-    # print(xs)
-    # print(other/ref)
-    plt.title(pdfset)
-    plt.plot(xs, (other - ref) / ref)
-    plt.show()
-
-
 def make_filter_pdf(name, active_pids, pdf_name):
+    """
+    Create a new pdf from a parent PDF.
+
+    Parameters
+    ----------
+        name : str
+            target name
+        active_pids : list(int)
+            active pids
+        pdf_name : str
+            parent pdf set from LHAPDF
+    """
     pdf = lhapdf.mkPDF(pdf_name)
     pdf_set = pdf.set().name
     src = pathlib.Path(lhapdf.paths()[0]) / pdf_set
@@ -151,6 +194,7 @@ def make_filter_pdf(name, active_pids, pdf_name):
 
 
 def generate_pdf():
+    """Entry point to :func:`make_filter_pdf` and :func:`make_debug_pdf`"""
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "name",
@@ -180,10 +224,11 @@ def generate_pdf():
         make_filter_pdf(args.name, args.pids, args.from_pdf_set)
     # install
     if args.install:
-        _install_pdf(args.name)
+        run_install_pdf(args.name)
 
 
 def install_pdf():
+    """Entry point to :func:`run_install_pdf`"""
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "name",
@@ -191,10 +236,20 @@ def install_pdf():
         help="pdf name",
     )
     args = ap.parse_args()
-    _install_pdf(args.name)
+    run_install_pdf(args.name)
 
 
-def _install_pdf(name):
+def run_install_pdf(name):
+    """
+    Install set into LHAPDF.
+
+    The set to be installed has to be in the current directory.
+
+    Parameters
+    ----------
+        name : str
+            source pdf name
+    """
     print(f"install_pdf {name}")
     target = pathlib.Path(lhapdf.paths()[0])
     src = pathlib.Path(name)

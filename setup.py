@@ -12,6 +12,7 @@ setup(
     packages=find_packages("src"),
     install_requires=[
         "numpy",
+        "pandas",
         "rich",
         "pyyaml",
         "tinydb~=4.1"
