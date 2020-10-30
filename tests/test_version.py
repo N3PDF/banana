@@ -34,7 +34,7 @@ class TestVersion:
 
     def test_released(self):
         # define release detectors
-        release_branches = ["master", "release", "hotfix"]
+        release_branches = ["main", "release", "hotfix"]
 
         def is_tag_branch(branch_name):
             if branch_name[0] != "v":
