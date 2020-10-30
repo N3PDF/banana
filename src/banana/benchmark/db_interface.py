@@ -230,7 +230,7 @@ class DBInterface(mode_selector.ModeSelector):
             f"comparing for theory=[b]{theory.doc_id}[/b] and "
             f"obs=[b]{observables.doc_id}[/b] ..."
         )
-        log_tab["_creation_time"] = utils.str_datetime(datetime.datetime.now())
+        log_tab["_creation_time"] = datetime.datetime.now().isoformat()
         log_tab["_theory_doc_id"] = theory.doc_id
         log_tab["_observables_doc_id"] = observables.doc_id
         if isinstance(yad_tab, Exception):
