@@ -9,10 +9,10 @@ banana.navigator package
 Submodules
 ----------
 
-banana.navigator.df\_dict module
---------------------------------
+banana.navigator.dfdict module
+------------------------------
 
-.. automodule:: banana.navigator.df_dict
+.. automodule:: banana.navigator.dfdict
    :members:
    :undoc-members:
    :show-inheritance:
