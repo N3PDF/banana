@@ -11,7 +11,7 @@ import numpy as np
 
 from jinja2 import Environment, FileSystemLoader
 import lhapdf
-from .. import toyLH
+from .. import toy
 
 # ==========
 # globals
@@ -219,7 +219,7 @@ def generate_pdf():
         # create
         make_debug_pdf(args.name, args.pids, pdf_set)
     elif args.from_pdf_set == "toyLH":  # from toy
-        pdf_set = toyLH.mkPDF("toyLH", 0)
+        pdf_set = toy.mkPDF("toyLH", 0)
         make_debug_pdf(args.name, args.pids, pdf_set)
     else:
         make_filter_pdf(args.name, args.pids, args.from_pdf_set)

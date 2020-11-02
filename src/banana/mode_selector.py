@@ -3,12 +3,10 @@
 Banana is driven by different "modes" that represent different configurations:
 
 - different input databases
-- (at the moment there is only a **single** output databas)
+- (at the moment there is only a **single** output database)
 - different tables in the databases
 - different entries in the tables
 """
-import pathlib
-
 import tinydb
 
 
@@ -25,8 +23,8 @@ class ModeSelector:
     """
 
     def __init__(self, cfg, mode):
-        self.mode_cfg = cfg["modes"][mode]
         self.mode = mode
+        self.mode_cfg = cfg["modes"][mode]
         # load DBs
         self.idb = tinydb.TinyDB(
             cfg["dir"] / cfg["data_dir"] / self.mode_cfg["input_db"]

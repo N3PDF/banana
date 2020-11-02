@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import argparse
-import copy
 import abc
 
-import numpy as np
-
 from .. import mode_selector
-from . import power_set
 
 
 class CardGenerator(mode_selector.ModeSelector, abc.ABC):
@@ -27,8 +23,8 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
     @abc.abstractproperty
     def table_name(self):
         """target table name in the `input` database"""
-        pass
 
+    @abc.abstractmethod
     def get_all(self):
         """
         Return a list of cards to be inserted.
@@ -40,7 +36,6 @@ class CardGenerator(mode_selector.ModeSelector, abc.ABC):
             list
                 list of cards
         """
-        return []
 
     def write(self, cards):
         """
