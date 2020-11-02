@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-toyLHPDFs from APFEL:
----------------------
+toyLH pdf
+---------
 This routine returns the toyLH PDFs at the intitial scale
 which is supposed to be Q = sqrt(2) GeV.
 """
@@ -10,6 +10,20 @@ import atexit
 
 
 def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
+    """
+    Functional implementation
+
+    Parameters
+    ----------
+        pid : int
+            pid
+        x : float
+            momentum fraction
+
+    Returns
+        xpdf : float
+            momentum density :math:`xf_j(x)`
+    """
     N_uv = 5.107200e0
     auv = 0.8e0
     buv = 3e0
@@ -23,8 +37,6 @@ def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
     adb = -0.1e0
     bdb = 6e0
     fs = 0.2e0
-
-    # User defined PDFs
 
     xuv = N_uv * x ** auv * (1e0 - x) ** buv
     xdv = N_dv * x ** adv * (1e0 - x) ** bdv
@@ -41,6 +53,7 @@ def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
     if x > 1e0:
         return 0.0
 
+    # assign
     xpdf[3] = xs
     xpdf[2] = xuv + xubar
     xpdf[1] = xdv + xdbar
@@ -80,7 +93,6 @@ class toyPDF:
         -------
         float
             The value of xf(x,q2).
-
         """
 
         return toyLHPDFs(pid, x)
@@ -100,8 +112,7 @@ class toyPDF:
         Returns
         -------
         type
-            The value of xf(x,q2).
-
+            The value of xf(x,q).
         """
 
         return toyLHPDFs(pid, x)
@@ -124,7 +135,8 @@ class toyPDF:
 
 
 def mkPDF(_setname, _member):
-    """Factory functions for making single PDF members.
+    """
+    Factory functions for making single PDF members.
 
     Create a new PDF with the given PDF set name and member ID.
 
@@ -139,7 +151,6 @@ def mkPDF(_setname, _member):
     -------
     toyPDF
         PDF object.
-
     """
 
     return toyPDF()
