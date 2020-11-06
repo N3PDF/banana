@@ -174,7 +174,7 @@ def make_filter_pdf(name, active_pids, pdf_name):
         cnt = o.readlines()
     # head
     new_cnt = cnt[:6]
-    pids = np.array(cnt[5].split(" "), dtype=np.int_)
+    pids = np.array(cnt[5].strip().split(" "), dtype=np.int_)
     # data
     zero = cnt[-2].split(" ")[0]
     for l in cnt[6:-1]:
