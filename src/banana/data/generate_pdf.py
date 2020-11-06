@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Auxilary module to generate some debug PDF which consist of selected pid of a parent
-set
+Auxilary module to generate some debug PDF which consist of selected pid of a parent set
 """
 import pathlib
 import argparse
@@ -214,15 +213,15 @@ def generate_pdf():
     print(args)
     pathlib.Path(args.name).mkdir(exist_ok=True)
     # find callable
-    if args.from_pdf_set == "":
+    if args.from_pdf_set == "toyLH":  # from toy
+        pdf_set = toy.mkPDF("toyLH", 0)
+        make_debug_pdf(args.name, args.pids, pdf_set)
+    elif isinstance(args.from_pdf_set, str) and len(args.from_pdf_set) > 0:
+        make_filter_pdf(args.name, args.pids, args.from_pdf_set)
+    else:
         pdf_set = None
         # create
         make_debug_pdf(args.name, args.pids, pdf_set)
-    elif args.from_pdf_set == "toyLH":  # from toy
-        pdf_set = toy.mkPDF("toyLH", 0)
-        make_debug_pdf(args.name, args.pids, pdf_set)
-    else:
-        make_filter_pdf(args.name, args.pids, args.from_pdf_set)
     # install
     if args.install:
         run_install_pdf(args.name)
