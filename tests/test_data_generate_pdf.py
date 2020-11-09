@@ -4,6 +4,7 @@ import os
 from unittest import mock
 
 import numpy as np
+import pytest
 import lhapdf
 
 from banana.data import generate_pdf
@@ -31,9 +32,11 @@ def lhapdf_path(newdir):
 
 def test_generate_pdf_debug(tmp_path):
     with cd(tmp_path):
-        with mock.patch('sys.argv', ['',"test-d-bbar-only", "1", "-5"]):
-            generate_pdf.generate_pdf()
-            with lhapdf_path(tmp_path):
+        install_path = tmp_path / "datadir"
+        install_path.mkdir()
+        with lhapdf_path(install_path):
+            with mock.patch('sys.argv', ['',"test-d-bbar-only", "1", "-5", "-i"]):
+                generate_pdf.generate_pdf()
                 pdf = lhapdf.mkPDF("test-d-bbar-only", 0)
                 for x in [.1, .2]:
                     np.testing.assert_allclose(pdf.xfxQ2(21,x,1), 0.)
@@ -45,17 +48,24 @@ def test_generate_pdf_debug(tmp_path):
 
 def test_generate_pdf_toy(tmp_path):
     with cd(tmp_path):
-        with mock.patch('sys.argv', ['',"test-toy-u-only", "-p", "toyLH", "2"]):
-            generate_pdf.generate_pdf()
-            with lhapdf_path(tmp_path):
-                pdf = lhapdf.mkPDF("test-toy-u-only", 0)
-                ref = toy.mkPDF("",0)
-                for x in [.1, .2]:
-                    np.testing.assert_allclose(pdf.xfxQ2(21,x,1), 0.)
-                    np.testing.assert_allclose(pdf.xfxQ2(5,x,10), 0.)
-                    # we have to use large Q2
-                    # - otherwise lhapdf will crash us (and even there it is ...)
-                    np.testing.assert_allclose(pdf.xfxQ2(2,x,1000), ref.xfxQ2(2,x,1000),rtol=1e-5)
+        install_path = tmp_path / "datadir"
+        install_path.mkdir()
+        with lhapdf_path(install_path):
+            with mock.patch('sys.argv', ['',"test-toy-u-only", "-p", "toyLH", "2"]):
+                generate_pdf.generate_pdf()
+            with mock.patch('sys.argv', ['',"test-toy-u-only"]):
+                generate_pdf.install_pdf()
+            pdf = lhapdf.mkPDF("test-toy-u-only", 0)
+            ref = toy.mkPDF("",0)
+            for x in [.1, .2]:
+                np.testing.assert_allclose(pdf.xfxQ2(21,x,1), 0.)
+                np.testing.assert_allclose(pdf.xfxQ2(5,x,10), 0.)
+                # we have to use large Q2
+                # - otherwise lhapdf will crash us (and even there it is ...)
+                np.testing.assert_allclose(pdf.xfxQ2(2,x,1000), ref.xfxQ2(2,x,1000),rtol=1e-5)
+            with pytest.raises(FileExistsError):
+                with mock.patch('sys.argv', ['',"test-toy-u-only"]):
+                    generate_pdf.install_pdf()
 
 def test_generate_pdf_parent(tmp_path):
     with cd(tmp_path):

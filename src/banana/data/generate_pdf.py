@@ -5,6 +5,7 @@ Auxilary module to generate some debug PDF which consist of selected pid of a pa
 import pathlib
 import argparse
 import shutil
+import re
 
 import numpy as np
 
@@ -172,22 +173,29 @@ def make_filter_pdf(name, active_pids, pdf_name):
     cnt = []
     with open(src / ("%s_%04d.dat" % (pdf_set, pdf.memberID)), "r") as o:
         cnt = o.readlines()
-    # head
-    new_cnt = cnt[:6]
-    pids = np.array(cnt[5].strip().split(" "), dtype=np.int_)
-    # data
-    zero = cnt[-2].split(" ")[0]
-    for l in cnt[6:-1]:
-        elems = l.strip().split(" ")
-        new_elems = []
-        for pid, e in zip(pids, elems):
-            if pid in active_pids:
-                new_elems.append(e)
-            else:
-                new_elems.append(zero)
-        new_cnt.append((" ".join(new_elems)).strip() + "\n")
-    # end
-    new_cnt.append(cnt[-1])
+    zero = re.split(r"\s+",cnt[-2].strip())[0]
+    # file head
+    head_section = cnt.index("---\n")
+    new_cnt = cnt[:head_section+1]
+    while head_section < len(cnt) - 1:
+        # section head
+        next_head_section = cnt.index("---\n",head_section+1)
+        new_cnt.extend(cnt[head_section+1:head_section+4])
+        # determine participating pids
+        pids = np.array(cnt[head_section+3].strip().split(" "), dtype=np.int_)
+        # data
+        for l in cnt[head_section+4:next_head_section]:
+            elems = re.split(r"\s+",l.strip())
+            new_elems = []
+            for pid, e in zip(pids, elems):
+                if pid in active_pids:
+                    new_elems.append(e)
+                else:
+                    new_elems.append(zero)
+            new_cnt.append((" ".join(new_elems)).strip() + "\n")
+        new_cnt.append(cnt[next_head_section])
+        # iterate
+        head_section = next_head_section
     # write output
     with open(target / ("%s_%04d.dat" % (name, pdf.memberID)), "w") as o:
         o.write("".join(new_cnt))
