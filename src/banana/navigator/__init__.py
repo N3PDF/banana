@@ -3,113 +3,45 @@ import inspect
 import IPython
 from traitlets.config.loader import Config
 
-from yadism import observable_name as on
+from .navigator import NavigatorApp, t, o, c, l
+from .utils import compare_dicts
 
-from .navigator import NavigatorApp, t, o, l, compare_dicts
-
-
-def yelp(*args):
-    """
-    Help function (renamed to avoid clash of names) - short cut: h.
-    """
-    if len(args) == 0:
-        print(
-            f"""Welcome to yadism benchmark skript!
-Available variables:
-    t = "{t}" -> query theories
-    o = "{o}" -> query observables
-    l = "{l}" -> query logs
-Available functions:
-    h() - this help
+help_vars = f"""t = "{t}" -> query theories
+    c = "{c}" -> query cache
+    l = "{l}" -> query logs"""
+help_fncs = """h() - this help
     m(str) - change mode
     g(tbl,id) - getter
-    ls(tbl) - listing table with reduced informations
-    dfl(id) - log as DataFrame
-    diff(id,id) - subtractig logs
-    truncate_logs() - clear log table
-    simlogs(id) - find similar logs
-"""
-        )
-    elif len(args) == 1:
-        return help(*args)
-    return None
+    ls(tbl) - listing table with reduced informations"""
 
 
-h = yelp
+def register_globals(mod, app):
+    new_objs = {
+        # table short cuts
+        "t": t,
+        "o": o,
+        "c": c,
+        "l": l,
+        # functions
+        "m": app.change_mode,
+        "g": app.get,
+        "ls": app.list_all,
+        "truncate_logs": app.logs.truncate,
+        "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2))
+    }
+
+    mod.update(new_objs)
 
 
-app = NavigatorApp("sandbox")
-
-
-def m(*args):
-    global app
-    return app.change_mode(*args)
-
-
-def g(*args):
-    global app
-    return app.get(*args)
-
-
-def ls(*args):
-    global app
-    return app.list_all(*args)
-
-
-def dfl(*args):
-    global app
-    return app.get_log_DFdict(*args)
-
-
-def diff(*args):
-    global app
-    return app.subtract_tables(*args)
-
-
-def truncate_logs():
-    global app
-    return app.logs.truncate()
-
-
-def simlogs(*args):
-    global app
-    return app.list_all_sim_logs(*args)
-
-
-def cmpt(id1, id2):
-    return compare_dicts(g(t, id1), g(t, id2))
-
-
-def check_dfdl(id_):
-    dfd = dfl(id_)
-    for n, df in dfd.items():
-        for l in df.iloc:
-            if abs(l["rel_err[%]"]) > 1 and abs(l["APFEL"] - l["yadism"]) > 1e-6:
-                print(n, l, sep="\n")
-
-
-def crashedfl(id_):
-    dfd = g(l, id_)
-    if "_crash" not in dfd:
-        raise ValueError("log didn't crash!")
-    cdfd = {}
-    for sf in dfd:
-        if on.ObservableName.is_valid(sf):
-            cdfd[sf] = f"{len(dfd[sf])} points"
-        else:
-            cdfd[sf] = dfd[sf]
-    return cdfd
-
-
-def launch_navigator():
+def launch_navigator(pkg, bench):
     c = Config()
-    banner = """
-        Welcome to yadism benchmark skript!
+    banner = f"""
+        Welcome to {pkg} benchmark skript!
         call yelp() or h() for a brief overview.
     """
     c.TerminalInteractiveShell.banner2 = inspect.cleandoc(banner) + "\n" * 2
 
-    init_cmds = ["""from yadmark.navigator import *""", """from yadism import *"""]
+    init_cmds = [f"""from {bench}.navigator import *""", f"""from {pkg} import *"""]
     args = ["--pylab"]
     for cmd in init_cmds:
         args.append(f"--InteractiveShellApp.exec_lines={cmd}")

@@ -1,15 +1,13 @@
+# -*- coding: utf-8 -*-
+
+
 class DFdict(dict):
     """
-    TODO: translate in docs:
-        output the table: since there are many table produced by this
-        function output instead a suitable object
-        the object should be iterable so you can explore all the values,
-        but it has a __str__ (or __repr__?) method that will automatically
-        loop and print if its dropped directly in the interpreter
+    Collects some dataframe/objects in a dictionary giving a nice representation
     """
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.msgs = []
 
     def print(self, *msgs, sep=" ", end="\n"):

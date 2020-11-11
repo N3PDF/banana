@@ -173,19 +173,19 @@ def make_filter_pdf(name, active_pids, pdf_name):
     cnt = []
     with open(src / ("%s_%04d.dat" % (pdf_set, pdf.memberID)), "r") as o:
         cnt = o.readlines()
-    zero = re.split(r"\s+",cnt[-2].strip())[0]
+    zero = re.split(r"\s+", cnt[-2].strip())[0]
     # file head
     head_section = cnt.index("---\n")
-    new_cnt = cnt[:head_section+1]
+    new_cnt = cnt[: head_section + 1]
     while head_section < len(cnt) - 1:
         # section head
-        next_head_section = cnt.index("---\n",head_section+1)
-        new_cnt.extend(cnt[head_section+1:head_section+4])
+        next_head_section = cnt.index("---\n", head_section + 1)
+        new_cnt.extend(cnt[head_section + 1 : head_section + 4])
         # determine participating pids
-        pids = np.array(cnt[head_section+3].strip().split(" "), dtype=np.int_)
+        pids = np.array(cnt[head_section + 3].strip().split(" "), dtype=np.int_)
         # data
-        for l in cnt[head_section+4:next_head_section]:
-            elems = re.split(r"\s+",l.strip())
+        for l in cnt[head_section + 4 : next_head_section]:
+            elems = re.split(r"\s+", l.strip())
             new_elems = []
             for pid, e in zip(pids, elems):
                 if pid in active_pids:
