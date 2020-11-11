@@ -32,3 +32,11 @@ banana.navigator.table\_manager module
    :members:
    :undoc-members:
    :show-inheritance:
+
+banana.navigator.utils module
+-----------------------------
+
+.. automodule:: banana.navigator.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
