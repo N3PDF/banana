@@ -3,7 +3,7 @@
 
 class DFdict(dict):
     """
-    Collects some dataframe/objects in a dictionary giving a nice representation
+    Collects dataframes in a dictionary printing them along side.
     """
 
     def __init__(self, *args, **kwargs):
@@ -11,6 +11,18 @@ class DFdict(dict):
         self.msgs = []
 
     def print(self, *msgs, sep=" ", end="\n"):
+        """
+        Add new messages to the representation
+
+        Parameters
+        ----------
+            msgs : str
+                messages
+            sep : str
+                separator
+            end : str
+                end-of-line marker
+        """
         if len(msgs) > 0:
             self.msgs.append(msgs[0])
 
@@ -29,7 +41,12 @@ class DFdict(dict):
 
     def to_document(self):
         """
-        TinyDB compatibility layer
+        Convert dataframes back to a true dictionary
+
+        Returns
+        -------
+            d : dict
+                raw dictionary
         """
         d = {}
         for k, v in self.items():
