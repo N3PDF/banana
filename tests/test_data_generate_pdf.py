@@ -5,7 +5,11 @@ from unittest import mock
 
 import numpy as np
 import pytest
-import lhapdf
+
+try:
+    import lhapdf
+except ImportError:
+    pytest.skip("No LHAPDF interface around", allow_module_level=True)
 
 from banana.data import generate_pdf
 from banana import toy
