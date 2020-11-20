@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import mock
+import pathlib
 
 import yaml
 import pytest
@@ -8,9 +9,12 @@ from banana.data import theories
 
 
 @pytest.fixture
-def banana_cfg(tmp_path):
+def banana_cfg(fs):
+    fs.create_file('/tmp/input.json')
+    fs.create_file('/tmp/output.json')
+    fs.add_real_file(pathlib.Path(__file__).parent / "../src/banana/data/theory_template.yaml")
     cfg = {
-        "dir": tmp_path,
+        "dir": pathlib.Path("/tmp/"),
         "data_dir": ".",
         "modes": {"test": {"input_db": "input.json", "theories": {"PTO": [0, 1]}}},
     }
@@ -56,15 +60,6 @@ def read_input(cur_banana_cfg):
 
 
 def test_run_parser_empty(banana_cfg, monkeypatch):
-    # monkeypatch.setattr(builtins, 'input', lambda x: "y")
-    # monkeypatch.setattr('builtins.input', lambda _: "y")
-    # with mock.patch('sys.argv', ['',"test"]):
-    #     gp = theories.TheoriesGenerator.get_run_parser(banana_cfg)
-    #     gp()
-    # with mock.patch.object(builtins, 'input', lambda x: "n"):
-    #    with mock.patch('sys.stdout', new_callable=StringIO):
-    #        gp()
-
     monkeypatch.setattr("argparse.ArgumentParser", MockAP)
     monkeypatch.setattr("builtins.input", lambda _: "n")
     gp = theories.TheoriesGenerator.get_run_parser(banana_cfg)
@@ -74,15 +69,6 @@ def test_run_parser_empty(banana_cfg, monkeypatch):
 
 
 def test_run_parser(banana_cfg, monkeypatch):
-    # monkeypatch.setattr(builtins, 'input', lambda x: "y")
-    # monkeypatch.setattr('builtins.input', lambda _: "y")
-    # with mock.patch('sys.argv', ['',"test"]):
-    #     gp = theories.TheoriesGenerator.get_run_parser(banana_cfg)
-    #     gp()
-    # with mock.patch.object(builtins, 'input', lambda x: "n"):
-    #    with mock.patch('sys.stdout', new_callable=StringIO):
-    #        gp()
-
     monkeypatch.setattr("argparse.ArgumentParser", MockAP)
     monkeypatch.setattr("builtins.input", lambda _: "y")
     gp = theories.TheoriesGenerator.get_run_parser(banana_cfg)
