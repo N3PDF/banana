@@ -16,6 +16,7 @@ def banana_cfg(fs):
     cfg = {
         "dir": pathlib.Path("/tmp/"),
         "data_dir": ".",
+        "input_tables": ["theories", "otest"],
         "modes": {"test": {"input_db": "input.json", "theories": {"PTO": [0, 1]}}},
     }
     return cfg
