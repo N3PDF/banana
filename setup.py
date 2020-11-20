@@ -74,6 +74,7 @@ def setup_package():
             "ipython",
             "numpy",
             "pandas",
+            "jinja2",
             "rich",
             "pyyaml",
             "tinydb~=4.1",
