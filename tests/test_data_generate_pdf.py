@@ -24,6 +24,7 @@ def cd(newdir):
     finally:
         os.chdir(prevdir)
 
+# lets follow the same spirit
 @contextmanager
 def lhapdf_path(newdir):
     path = lhapdf.paths()

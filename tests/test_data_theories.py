@@ -5,6 +5,7 @@ import pathlib
 import yaml
 import pytest
 
+from banana import data as bdata
 from banana.data import theories
 
 
@@ -12,7 +13,7 @@ from banana.data import theories
 def banana_cfg(fs):
     fs.create_file('/tmp/input.json')
     fs.create_file('/tmp/output.json')
-    fs.add_real_file(pathlib.Path(__file__).parent / "../src/banana/data/theory_template.yaml")
+    fs.add_real_file(pathlib.Path(bdata.__file__).parent / "theory_template.yaml")
     cfg = {
         "dir": pathlib.Path("/tmp/"),
         "data_dir": ".",
