@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Test the generation of yadism/version.py by setup.py.
+Test the generation of banana/version.py by setup.py.
 """
 import pathlib
 
-import pytest
 import pygit2
 import semver
 
