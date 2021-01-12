@@ -14,6 +14,8 @@ class DFdict(dict):
         """
         Add new messages to the representation
 
+        .. todo :: will likely be removed in the future
+
         Parameters
         ----------
             msgs : str

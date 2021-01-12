@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Module to collect utilites to help with the data generation:
-
-- theories
-- o-cards: i.e. either observables or operators
-- pdfs
-
 """
 import itertools
-
 
 def power_set(inp):
     """

@@ -1,5 +1,5 @@
 # Theory
-ID: 22
+ID: 0
 PTO: 0
 FNS: "FFNS"
 DAMP: 0
@@ -10,7 +10,7 @@ XIF: 1.0
 NfFF: 3
 MaxNfAs: 6
 MaxNfPdf: 6
-Q0: 1
+Q0: 1.0
 alphas: 0.11800000000000001
 Qref: 91.2
 QED: 0
@@ -19,15 +19,18 @@ Qedref: 1.777
 SxRes: 0
 SxOrd: "LL"
 HQ: "POLE"
-mc: 2
-Qmc: 2
+mc: 2.0
+Qmc: 2.0
 kcThr: 1.0
-mb: 4
-Qmb: 4
+kDIScThr: 1.0
+mb: 4.5
+Qmb: 4.5
 kbThr: 1.0
+kDISbThr: 1.0
 mt: 173.07
 Qmt: 173.07
 ktThr: 1.0
+kDIStThr: 1.0
 CKM: "0.97428 0.22530 0.003470 0.22520 0.97345 0.041000 0.00862 0.04030 0.999152"
 MZ: 91.1876
 MW: 80.398
