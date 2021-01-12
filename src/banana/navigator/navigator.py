@@ -62,10 +62,10 @@ class NavigatorApp(mode_selector.ModeSelector, abc.ABC):
             name : str
                 full name
         """
-        if table_abbrev == "logs"[:len(table_abbrev)]:
+        if table_abbrev == "logs"[: len(table_abbrev)]:
             return "logs"
         for tab in self.input_tables:
-            if table_abbrev == tab[:len(table_abbrev)]:
+            if table_abbrev == tab[: len(table_abbrev)]:
                 return tab
         raise ValueError(f"Unknown table {table_abbrev}")
 

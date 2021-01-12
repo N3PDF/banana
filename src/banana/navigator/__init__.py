@@ -27,7 +27,7 @@ def register_globals(mod, app):
         "g": app.get,
         "ls": app.list_all,
         "truncate_logs": app.logs.truncate,
-        "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2))
+        "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2)),
     }
 
     mod.update(new_objs)

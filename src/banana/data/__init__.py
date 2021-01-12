@@ -4,6 +4,7 @@ Module to collect utilites to help with the data generation:
 """
 import itertools
 
+
 def power_set(inp):
     """
     Compute the power set of a dictionary.

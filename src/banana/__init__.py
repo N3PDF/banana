@@ -2,6 +2,7 @@
 import pathlib
 import yaml
 
+
 def load_config(pkg_path):
     banana_cfg = {}
     with open(pkg_path / "banana.yaml", "r") as o:

@@ -33,7 +33,6 @@ def get_pdf(pdf_name):
 
 
 class BenchmarkRunner:
-
     def init_ocards(self, conn):
         pass
 
@@ -58,6 +57,7 @@ class BenchmarkRunner:
             with conn:
                 conn.execute(theories.create_table())
             self.init_ocards(conn)
+            # init cache/logs
         return conn
 
     def generate_theories(self, conn, theory_updates):
@@ -67,13 +67,19 @@ class BenchmarkRunner:
             t["uid"] = None
             t.update(upd)
             ts.append(dict(sorted(t.items())))
-        sql_tmpl = "INSERT INTO theories("+",".join(ts[0].keys())+") VALUES ("+",".join(list("?"*len(ts[0])))+")"
+        sql_tmpl = (
+            "INSERT INTO theories("
+            + ",".join(ts[0].keys())
+            + ") VALUES ("
+            + ",".join(list("?" * len(ts[0])))
+            + ")"
+        )
         with conn:
-            conn.executemany(sql_tmpl,[list(t.values()) for t in ts])
-    
+            conn.executemany(sql_tmpl, [list(t.values()) for t in ts])
+
     def run(self, theory_updates, observables, pdfs):
         # open db
         db_path = self.banana_cfg["database_path"]
         conn = self.db(db_path)
+        # init input
         self.generate_theories(conn, theory_updates)
-        

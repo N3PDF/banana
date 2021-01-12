@@ -21,7 +21,6 @@ from .. import mode_selector
 from . import external
 
 
-
 def get_pdf(pdf_name):
     """
     Load PDF object from either LHAPDF or :mod:`toyLH`

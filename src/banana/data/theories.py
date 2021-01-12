@@ -10,6 +10,7 @@ default_theory = {}
 with open(_here / "theory_template.yaml") as f:
     default_theory = yaml.safe_load(f)
 
+
 def create_table():
     """
     SQL command for creating the theories table
@@ -24,13 +25,9 @@ def create_table():
         uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     """
 
-    sql_mapping = {
-        int: "INTEGER",
-        float: "REAL",
-        str: "TEXT"
-    }
+    sql_mapping = {int: "INTEGER", float: "REAL", str: "TEXT"}
 
-    for k,v in default_theory.items():
+    for k, v in default_theory.items():
         sql_tmpl += f"    {k} {sql_mapping[type(v)]},\n"
 
     sql_tmpl = sql_tmpl[:-2]
