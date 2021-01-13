@@ -14,6 +14,7 @@ with open(_here / "theory_template.yaml") as f:
 default_card = dict(sorted(default_card.items()))
 
 # db interface
-def generate(conn, updates):
-    records, fields = sql.prepare_records(default_card, updates)
+def load(conn, updates):
+    raw_records, records, fields = sql.prepare_records(default_card, updates)
     sql.insert(conn, "theories", fields, records)
+    return raw_records

@@ -3,10 +3,18 @@ import pickle
 import hashlib
 import copy
 
-mapping = {int: "INTEGER", float: "REAL", str: "TEXT", dict: "BLOB", list: "BLOB", bool: "BOOL"}
+mapping = {
+    int: "INTEGER",
+    float: "REAL",
+    str: "TEXT",
+    dict: "BLOB",
+    list: "BLOB",
+    bool: "BOOL",
+}
 """
 Mapping of Python types to SQLite types.
 """
+
 
 def create_table(name, obj):
     """
@@ -39,6 +47,7 @@ def create_table(name, obj):
 
     return tmpl
 
+
 def serialize(data):
     """
     Eventually turn some elements into their binary representation
@@ -63,6 +72,7 @@ def serialize(data):
             ndata.append(d)
     return tuple(ndata)
 
+
 def add_hash(record):
     """
     Add a hash value as last element to the record.
@@ -80,6 +90,7 @@ def add_hash(record):
     h = hashlib.sha256(pickle.dumps(record))
     return (*record, h.digest())
 
+
 def prepare_records(base, updates):
     """
     Generate all records from the base.
@@ -93,17 +104,24 @@ def prepare_records(base, updates):
 
     Returns
     -------
-        records : list
+        raw_records : list(dict)
+            list of all dictionaries
+        records : list(tuple)
             all records ready for insertion
+        fields : list(str)
+            all fields ready for insertion
     """
     records = []
+    raw_records = []
     for upd in updates:
         record = copy.copy(base)
         record.update(upd)
+        raw_records.append(record)
         serialized_record = serialize(record)
         hashed_record = add_hash(serialized_record)
         records.append(hashed_record)
-    return (records, list(base.keys())+["hash"])
+    return (raw_records, records, list(base.keys()) + ["hash"])
+
 
 def insert(conn, table, fields, records):
     """
