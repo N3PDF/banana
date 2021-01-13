@@ -3,6 +3,7 @@
 import sqlite3
 import pathlib
 import copy
+import abc
 
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ import pytest
 
 from .. import toy
 
-from ..data import power_set, theories
+from ..data import power_set, theories, sql
 
 
 def get_pdf(pdf_name):
@@ -33,7 +34,15 @@ def get_pdf(pdf_name):
 
 
 class BenchmarkRunner:
-    def init_ocards(self, conn):
+
+    banana_cfg = {}
+
+    @abc.abstractstaticmethod
+    def init_ocards(conn):
+        pass
+
+    @abc.abstractstaticmethod
+    def generate_ocards(conn, ocard_updates):
         pass
 
     def db(self, db_path):
@@ -55,31 +64,15 @@ class BenchmarkRunner:
         conn = sqlite3.connect(db_path)
         if init:
             with conn:
-                conn.execute(theories.create_table())
+                conn.execute(sql.create_table("theories", theories.default_card))
             self.init_ocards(conn)
             # init cache/logs
         return conn
 
-    def generate_theories(self, conn, theory_updates):
-        ts = []
-        for upd in theory_updates:
-            t = copy.copy(theories.default_theory)
-            t["uid"] = None
-            t.update(upd)
-            ts.append(dict(sorted(t.items())))
-        sql_tmpl = (
-            "INSERT INTO theories("
-            + ",".join(ts[0].keys())
-            + ") VALUES ("
-            + ",".join(list("?" * len(ts[0])))
-            + ")"
-        )
-        with conn:
-            conn.executemany(sql_tmpl, [list(t.values()) for t in ts])
-
-    def run(self, theory_updates, observables, pdfs):
+    def run(self, theory_updates, ocard_updates, pdfs):
         # open db
         db_path = self.banana_cfg["database_path"]
         conn = self.db(db_path)
         # init input
-        self.generate_theories(conn, theory_updates)
+        theories.generate(conn, theory_updates)
+        self.generate_ocards(conn, ocard_updates)

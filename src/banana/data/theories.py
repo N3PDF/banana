@@ -3,35 +3,17 @@ import pathlib
 
 import yaml
 
+from . import sql
+
 _here = pathlib.Path(__file__).parent
 
 # load default theory
-default_theory = {}
+default_card = {}
 with open(_here / "theory_template.yaml") as f:
-    default_theory = yaml.safe_load(f)
+    default_card = yaml.safe_load(f)
+default_card = dict(sorted(default_card.items()))
 
-
-def create_table():
-    """
-    SQL command for creating the theories table
-
-    Returns
-    -------
-        sql : str
-            SQL command
-    """
-    sql_tmpl = """
-    CREATE TABLE theories (
-        uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-    """
-
-    sql_mapping = {int: "INTEGER", float: "REAL", str: "TEXT"}
-
-    for k, v in default_theory.items():
-        sql_tmpl += f"    {k} {sql_mapping[type(v)]},\n"
-
-    sql_tmpl = sql_tmpl[:-2]
-
-    sql_tmpl += """);"""
-
-    return sql_tmpl
+# db interface
+def generate(conn, updates):
+    records, fields = sql.prepare_records(default_card, updates)
+    sql.insert(conn, "theories", fields, records)
