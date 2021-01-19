@@ -6,14 +6,12 @@ import abc
 import subprocess
 import itertools
 import pickle
-import io
 
 import rich
 import rich.box
 import rich.panel
 import rich.progress
 import rich.markdown
-from yaml import serialize
 
 from .. import toy
 
@@ -64,9 +62,10 @@ class CacheNotFound(LookupError):
 class BenchmarkRunner:
 
     banana_cfg = {}
-    """
-    Global configuration.
-    """
+    """Global configuration"""
+
+    external = ""
+    """External reference program name"""
 
     console = rich.console.Console()
 
@@ -80,7 +79,6 @@ class BenchmarkRunner:
             conn : sqlite3.Connection
                 DB connection
         """
-        pass
 
     @abc.abstractstaticmethod
     def load_ocards(conn, ocard_updates, /):
@@ -99,7 +97,6 @@ class BenchmarkRunner:
             ocards : list(dict)
                 all requested o-cards
         """
-        pass
 
     @abc.abstractmethod
     def run_me(self, theory, ocard, pdf, /):
@@ -120,7 +117,6 @@ class BenchmarkRunner:
             me : dict
                 our result
         """
-        pass
 
     @abc.abstractmethod
     def run_external(self, theory, ocard, pdf, /):
@@ -141,7 +137,6 @@ class BenchmarkRunner:
             me : dict
                 external result
         """
-        pass
 
     @abc.abstractmethod
     def log(self, theory, ocard, pdf, me, ext, /):
@@ -166,7 +161,6 @@ class BenchmarkRunner:
             log : dict
                 log
         """
-        pass
 
     def db(self, db_path):
         """

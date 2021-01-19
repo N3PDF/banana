@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from banana.navigator import dfdict
+from banana.data import dfdict
 
 class TestDFdict():
     def test_print(self):
         dfd = dfdict.DFdict()
         dfd["a"] = 1
-        assert str(dfd) == "1\n\n"
+        assert str(dfd) == "a\n1\n\n"
         dfd.print("test")
-        assert str(dfd) == "1\n\ntest\n"
+        assert str(dfd) == "a\n1\n\ntest\n"
         dfd.print("te", "st")
-        assert str(dfd) == "1\n\ntest\nte st\n"
+        assert str(dfd) == "a\n1\n\ntest\nte st\n"
 
     def test_to_doc(self):
         dfd = dfdict.DFdict()
