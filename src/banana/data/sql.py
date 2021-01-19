@@ -3,6 +3,8 @@ import pickle
 import hashlib
 import copy
 
+from banana.data import dfdict
+
 mapping = {
     int: "INTEGER",
     float: "REAL",
@@ -11,6 +13,7 @@ mapping = {
     list: "BLOB",
     bytes: "BLOB",
     bool: "BOOL",
+    dfdict.DFdict: "BLOB",
 }
 """
 Mapping of Python types to SQLite types.
@@ -63,7 +66,7 @@ def serialize(data):
         ndata : list
             improved data
     """
-    blobbed_types = [list, dict]
+    blobbed_types = [list, dict, dfdict.DFdict]
     sorted_data = dict(sorted(data.items()))
     ndata = []
     for d in sorted_data.values():

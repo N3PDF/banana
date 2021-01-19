@@ -53,6 +53,10 @@ default_cache = {"t_hash": b"", "o_hash": b"", "pdf": "", "external": "", "resul
 default_cache = dict(sorted(default_cache.items()))
 
 
+default_log = {"t_hash": b"", "o_hash": b"", "pdf": "", "external": "", "log": b""}
+default_log = dict(sorted(default_log.items()))
+
+
 class CacheNotFound(LookupError):
     pass
 
@@ -185,6 +189,7 @@ class BenchmarkRunner:
             with conn:
                 conn.execute(sql.create_table("theories", theories.default_card))
                 conn.execute(sql.create_table("cache", default_cache, False))
+                conn.execute(sql.create_table("logs", default_log, False))
             self.init_ocards(conn)
             # init log
         return conn
@@ -212,13 +217,14 @@ class BenchmarkRunner:
         sql_tmpl = "SELECT result FROM cache WHERE t_hash=? AND o_hash=? AND pdf=? AND external=?"
         ext = None
         with conn:
-            res = conn.execute(sql_tmpl,(t["hash"], o["hash"], pdf.set().name, self.external))
+            res = conn.execute(
+                sql_tmpl, (t["hash"], o["hash"], pdf.set().name, self.external)
+            )
             ext = res.fetchone()
         # if not found, raise an Error to be pythonic
         if ext is None:
             raise CacheNotFound
         return pickle.loads(ext[0])
-
 
     def insert_external(self, conn, t, o, pdf):
         """
@@ -241,10 +247,20 @@ class BenchmarkRunner:
         # obtain data
         ext = self.run_external(t, o, pdf)
         # create record
-        record = {"t_hash": t["hash"], "o_hash": o["hash"], "pdf": pdf.set().name, "external": self.external, "result": ext}
+        record = {
+            "t_hash": t["hash"],
+            "o_hash": o["hash"],
+            "pdf": pdf.set().name,
+            "external": self.external,
+            "result": ext,
+        }
         serialized_record = sql.serialize(record)
         with conn:
-            sql.insertmany(conn, "cache", sql.RecordsFrame(default_cache.keys(), [serialized_record]))
+            sql.insertmany(
+                conn,
+                "cache",
+                sql.RecordsFrame(default_cache.keys(), [serialized_record]),
+            )
         return ext
 
     def run_config(self, conn, t, o, pdf_name):
@@ -273,8 +289,49 @@ class BenchmarkRunner:
             self.console.print("Compute external result")
             ext = self.insert_external(conn, t, o, pdf)
         # create log
+        log_record = self.insert_log(conn, t, o, pdf, me, ext)
+        print(log_record)  # TODO delegate to rich
+
+    def insert_log(self, conn, t, o, pdf, me, ext):
+        """
+        Obtain an external run.
+
+        Parameters
+        ----------
+            t : dict
+                theory card
+            o : dict
+                o-card
+            pdf_name : str
+                applied PDF
+            me : dict
+                our result
+            ext : str
+                external result
+
+        Returns
+        -------
+            log_record : dict
+                result
+        """
+        # obtain data
         log_record = self.log(t, o, pdf, me, ext)
-        print(log_record)
+        # create record
+        record = {
+            "t_hash": t["hash"],
+            "o_hash": o["hash"],
+            "pdf": pdf.set().name,
+            "external": self.external,
+            "log": log_record,
+        }
+        serialized_record = sql.serialize(record)
+        with conn:
+            sql.insertmany(
+                conn,
+                "logs",
+                sql.RecordsFrame(default_log.keys(), [serialized_record]),
+            )
+        return log_record
 
     def run(self, theory_updates, ocard_updates, pdfs):
         """
@@ -282,7 +339,7 @@ class BenchmarkRunner:
 
         Parameters
         ----------
-             theory_updates : list(dict)
+            theory_updates : list(dict)
                 generated theories
             ocard_updates : list(dict)
                 generated ocards
@@ -296,7 +353,6 @@ class BenchmarkRunner:
         ts = theories.load(conn, theory_updates)
         os = self.load_ocards(conn, ocard_updates)
         # print some load informations
-        # TODO delegate to console.print
         self.console.print(
             rich.panel.Panel.fit(
                 f"Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)}",
@@ -305,10 +361,11 @@ class BenchmarkRunner:
         )
         # iterate all combinations
         full = itertools.product(ts, os, pdfs)
-        #for t, o, pdf_name in rich.progress.track(
+        # for t, o, pdf_name in rich.progress.track(
         #    full, total=len(ts) * len(os) * len(pdfs), console=self.console
-        #):
-        for t,o, pdf_name in full:
+        # ):
+        # TODO find a way to display 2 progress bars
+        for t, o, pdf_name in full:
             self.console.print(
                 f"Computing for theory=[b]{t['ID']}[/b], "
                 + f"ocard=[b]{o['prDIS']}[/b] and pdf=[b]{pdf_name}[/b] ..."
