@@ -34,6 +34,7 @@ class DFdict(dict):
         self.msgs.append(end)
 
     def __setitem__(self, key, value):
+        self.print(key)
         self.print(value)
         self.print()
         super().__setitem__(key, value)
