@@ -123,7 +123,7 @@ def prepare_records(base, updates):
     return (raw_records, records, list(base.keys()) + ["hash"])
 
 
-def insert(conn, table, fields, records):
+def insertmany(conn, table, fields, records):
     """
     Insert all records into the DB.
 
@@ -147,3 +147,28 @@ def insert(conn, table, fields, records):
     )
     with conn:
         conn.executemany(tmpl, records)
+
+# db interface
+def insertnew(conn, table, records, fields):
+    """
+    Insert all records that do not exist yet (determined by hash).
+
+
+    Parameters
+    ----------
+        conn : sqlite3.Connection
+            database
+        table : string
+            target table
+        records : list
+            list with all records
+        fields : list
+            list with all fields
+    """
+    # check if they already exist
+    with conn:
+        elems = conn.execute(f"SELECT hash FROM {table} WHERE hash IN ("+",".join("?"*len(records))+")", [r[-1] for r in records])
+        available = list(map(lambda x: x[0],elems.fetchall()))
+        new_records = list(filter(lambda x: x[-1] not in available, records))
+    # insert them now
+    insertmany(conn, table, fields, new_records)

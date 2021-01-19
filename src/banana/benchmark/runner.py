@@ -101,14 +101,15 @@ class BenchmarkRunner:
         # init input
         ts = theories.load(conn, theory_updates)
         os = self.load_ocards(conn, ocard_updates)
-
+        # print some load informations
+        # TODO delegate to console.print
         rich.print(
             rich.panel.Panel.fit(
-                f" Theories: {len(ts)} OCards: {len(os)}  PDFs: {len(pdfs)}",
+                f" Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)}",
                 rich.box.HORIZONTALS,
             )
         )
-
+        # iterate all combinations
         full = itertools.product(ts, os, pdfs)
         for t, o, pdf_name in rich.progress.track(
             full, total=len(ts) * len(os) * len(pdfs)
