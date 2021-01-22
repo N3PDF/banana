@@ -1,2 +1,9 @@
+[build-system]
+requires = [
+    'setuptools >= 40.9.0',
+    'pygit2',
+]
+build-backend = 'setuptools.build_meta'
+
 [tool.pytest.ini_options]
 addopts = '--cov=banana --cov-report=html --cov-report=xml --strict-markers'
