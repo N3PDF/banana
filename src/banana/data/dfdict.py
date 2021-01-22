@@ -1,18 +1,30 @@
+# -*- coding: utf-8 -*-
+
+
 class DFdict(dict):
     """
-    TODO: translate in docs:
-        output the table: since there are many table produced by this
-        function output instead a suitable object
-        the object should be iterable so you can explore all the values,
-        but it has a __str__ (or __repr__?) method that will automatically
-        loop and print if its dropped directly in the interpreter
+    Collects dataframes in a dictionary printing them along side.
     """
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.msgs = []
 
     def print(self, *msgs, sep=" ", end="\n"):
+        """
+        Add new messages to the representation
+
+        .. todo :: will likely be removed in the future
+
+        Parameters
+        ----------
+            msgs : str
+                messages
+            sep : str
+                separator
+            end : str
+                end-of-line marker
+        """
         if len(msgs) > 0:
             self.msgs.append(msgs[0])
 
@@ -22,6 +34,7 @@ class DFdict(dict):
         self.msgs.append(end)
 
     def __setitem__(self, key, value):
+        self.print(key)
         self.print(value)
         self.print()
         super().__setitem__(key, value)
@@ -31,7 +44,12 @@ class DFdict(dict):
 
     def to_document(self):
         """
-        TinyDB compatibility layer
+        Convert dataframes back to a true dictionary
+
+        Returns
+        -------
+            d : dict
+                raw dictionary
         """
         d = {}
         for k, v in self.items():

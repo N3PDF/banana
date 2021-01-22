@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Module to collect utilites to help with the data generation:
-
-- theories
-- o-cards: i.e. either observables or operators
-- pdfs
-
 """
 import itertools
 
@@ -23,8 +18,8 @@ def power_set(inp):
 
     Returns
     -------
-        list
-            power set of all possibilities
+        list(dict)
+            power set of all possibilities, preserving the keys
     """
     return [
         dict(zip(inp.keys(), values)) for values in itertools.product(*inp.values())

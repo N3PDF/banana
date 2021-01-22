@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Auxilary module to generate some debug PDF which consist of selected pid of a parent
-set
+Auxilary module to generate some debug PDF which consist of selected pid of a parent set
 """
 import pathlib
 import argparse
 import shutil
+import re
 
 import numpy as np
 
 from jinja2 import Environment, FileSystemLoader
 import lhapdf
-from .. import toyLH
+from .. import toy
 
 # ==========
 # globals
@@ -173,22 +173,29 @@ def make_filter_pdf(name, active_pids, pdf_name):
     cnt = []
     with open(src / ("%s_%04d.dat" % (pdf_set, pdf.memberID)), "r") as o:
         cnt = o.readlines()
-    # head
-    new_cnt = cnt[:6]
-    pids = np.array(cnt[5].split(" "), dtype=np.int_)
-    # data
-    zero = cnt[-2].split(" ")[0]
-    for l in cnt[6:-1]:
-        elems = l.strip().split(" ")
-        new_elems = []
-        for pid, e in zip(pids, elems):
-            if pid in active_pids:
-                new_elems.append(e)
-            else:
-                new_elems.append(zero)
-        new_cnt.append((" ".join(new_elems)).strip() + "\n")
-    # end
-    new_cnt.append(cnt[-1])
+    zero = re.split(r"\s+", cnt[-2].strip())[0]
+    # file head
+    head_section = cnt.index("---\n")
+    new_cnt = cnt[: head_section + 1]
+    while head_section < len(cnt) - 1:
+        # section head
+        next_head_section = cnt.index("---\n", head_section + 1)
+        new_cnt.extend(cnt[head_section + 1 : head_section + 4])
+        # determine participating pids
+        pids = np.array(cnt[head_section + 3].strip().split(" "), dtype=np.int_)
+        # data
+        for l in cnt[head_section + 4 : next_head_section]:
+            elems = re.split(r"\s+", l.strip())
+            new_elems = []
+            for pid, e in zip(pids, elems):
+                if pid in active_pids:
+                    new_elems.append(e)
+                else:
+                    new_elems.append(zero)
+            new_cnt.append((" ".join(new_elems)).strip() + "\n")
+        new_cnt.append(cnt[next_head_section])
+        # iterate
+        head_section = next_head_section
     # write output
     with open(target / ("%s_%04d.dat" % (name, pdf.memberID)), "w") as o:
         o.write("".join(new_cnt))
@@ -214,15 +221,15 @@ def generate_pdf():
     print(args)
     pathlib.Path(args.name).mkdir(exist_ok=True)
     # find callable
-    if args.from_pdf_set == "":
+    if args.from_pdf_set == "toyLH":  # from toy
+        pdf_set = toy.mkPDF("toyLH", 0)
+        make_debug_pdf(args.name, args.pids, pdf_set)
+    elif isinstance(args.from_pdf_set, str) and len(args.from_pdf_set) > 0:
+        make_filter_pdf(args.name, args.pids, args.from_pdf_set)
+    else:
         pdf_set = None
         # create
         make_debug_pdf(args.name, args.pids, pdf_set)
-    elif args.from_pdf_set == "toyLH":  # from toy
-        pdf_set = toyLH.mkPDF("toyLH", 0)
-        make_debug_pdf(args.name, args.pids, pdf_set)
-    else:
-        make_filter_pdf(args.name, args.pids, args.from_pdf_set)
     # install
     if args.install:
         run_install_pdf(args.name)

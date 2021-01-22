@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 class TableManager:
     """
     Wrapper to a single table
