@@ -81,7 +81,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractstaticmethod
-    def load_ocards(conn, ocard_updates, /):
+    def load_ocards(conn, ocard_updates):
         """
         Load o-cards from the DB.
 
@@ -99,7 +99,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def run_me(self, theory, ocard, pdf, /):
+    def run_me(self, theory, ocard, pdf):
         """
         Execute our program.
 
@@ -119,7 +119,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def run_external(self, theory, ocard, pdf, /):
+    def run_external(self, theory, ocard, pdf):
         """
         Execute external program.
 
@@ -139,7 +139,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def log(self, theory, ocard, pdf, me, ext, /):
+    def log(self, theory, ocard, pdf, me, ext):
         """
         Create log from our and external result.
 
