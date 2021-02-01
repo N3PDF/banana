@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import abc
+import sqlite3
 
 import pandas as pd
 from human_dates import human_dates
 
-from .. import mode_selector
 from . import table_manager as tm
 
 # define some shortcuts
@@ -15,7 +15,7 @@ c = "c"
 l = "l"
 
 
-class NavigatorApp(mode_selector.ModeSelector, abc.ABC):
+class NavigatorApp(abc.ABC):
     """
     Navigator base class holding all elementry operations.
 
@@ -23,21 +23,23 @@ class NavigatorApp(mode_selector.ModeSelector, abc.ABC):
     ----------
         cfg : dict
             banana configuration
-        mode : string
+        external : string
             mode identifier
     """
 
-    def __init__(self, cfg, mode):
-        super().__init__(cfg, mode)
-        self.cfg = cfg
+    def __init__(self, banana_cfg, external=None):
+        self.cfg = banana_cfg
+        self.external = external
+        db_path = self.cfg["database_path"]
+        self.conn = sqlite3.connect(db_path)
         # read input
-        self.input_tables = {}
-        for table in self.cfg["input_tables"]:
-            self.input_tables[table] = tm.TableManager(self.idb.table(table))
-        # load logs
-        self.logs = tm.TableManager(self.odb.table("logs"))
+        # self.input_tables = {}
+        # for table in self.cfg["input_tables"]:
+        #     self.input_tables[table] = tm.TableManager(self.idb.table(table))
+        # # load logs
+        # self.logs = tm.TableManager(self.odb.table("logs"))
 
-    def change_mode(self, mode):
+    def change_external(self, external):
         """
         Change mode
 
@@ -46,7 +48,7 @@ class NavigatorApp(mode_selector.ModeSelector, abc.ABC):
             mode : string
                 mode identifier
         """
-        self.__init__(self.cfg, mode)
+        self.external = external
 
     def table_name(self, table_abbrev):
         """
