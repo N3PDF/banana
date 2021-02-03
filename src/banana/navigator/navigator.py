@@ -33,11 +33,11 @@ class NavigatorApp(abc.ABC):
         db_path = self.cfg["database_path"]
         self.conn = sqlite3.connect(db_path)
         # read input
-        # self.input_tables = {}
-        # for table in self.cfg["input_tables"]:
-        #     self.input_tables[table] = tm.TableManager(self.idb.table(table))
-        # # load logs
-        # self.logs = tm.TableManager(self.odb.table("logs"))
+        self.input_tables = {}
+        for table in self.cfg["input_tables"]:
+            self.input_tables[table] = tm.TableManager(self.conn,table)
+        # load logs
+        self.logs = tm.TableManager(self.conn, "logs")
 
     def change_external(self, external):
         """
@@ -135,10 +135,10 @@ class NavigatorApp(abc.ABC):
             input_data = self.get(table)
         data = []
         for el in input_data:
-            obj = {"doc_id": el.doc_id}
+            obj = {"hash": el["hash"].hex()[:7]}
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
-            dt = datetime.fromisoformat(el["_created"])
-            obj["created"] = human_dates(dt)
+            #dt = datetime.fromisoformat(el["_created"])
+            #obj["created"] = human_dates(dt)
             data.append(obj)
         # output
         df = pd.DataFrame(data)

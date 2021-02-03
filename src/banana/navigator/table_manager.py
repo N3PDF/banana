@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ..data import sql
+
 
 class TableManager:
     """
@@ -29,9 +31,8 @@ class TableManager:
 
     def all(self):
         """Retrieve all entries"""
-        return []
+        return sql.select_all(self.conn, self.table_name)
 
-    def get(self, hash):
+    def get(self, hash_partial):
         """Retrieve an entry"""
-
-        return {}
+        return sql.select_hash(self.conn, self.table_name, bytes.fromhex(hash_partial))

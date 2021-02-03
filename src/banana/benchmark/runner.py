@@ -361,7 +361,7 @@ class BenchmarkRunner:
         # TODO find a way to display 2 progress bars
         for t, o, pdf_name in full:
             self.console.print(
-                f"Computing for theory=[b]{t['ID']}[/b], "
-                + f"ocard=[b]{o['prDIS']}[/b] and pdf=[b]{pdf_name}[/b] ..."
+                f"Computing for theory=[b]{t['hash'].hex()[:7]}[/b], "
+                + f"ocard=[b]{o['hash'].hex()[:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
             )
             self.run_config(conn, t, o, pdf_name)

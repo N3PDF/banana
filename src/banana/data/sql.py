@@ -259,10 +259,9 @@ def insertnew(conn, table, rf):
     # insert them now
     insertmany(conn, table, RecordsFrame(rf.fields, new_records))
 
-
-def select_hash(conn, table, hash_partial):
+def select_hash(conn, table, bin_hash_partial):
     """
-    Find a record by its hash
+    Find a record by its hash.
 
     Parameters
     ----------
@@ -270,22 +269,18 @@ def select_hash(conn, table, hash_partial):
             database
         table : string
             target table
-        hash_partial : str
-            hash identifier
+        bin_hash_partial : bytes
+            binary hash identifier
 
     Returns
     -------
-        obj : dict
+        dict
             record
     """
-    # TODO move hex management to upper level
-    # if the thing is not even, trash the last one
-    if len(hash_partial) % 2 == 1:
-        hash_partial = hash_partial[:-1]
     with conn:
         elems = conn.execute(
-            f"SELECT * FROM {table} WHERE SUBSTR(hash,1,{len(hash_partial)/2}) = ?",
-            [sqlite3.Binary(bytes.fromhex(hash_partial))],
+            f"SELECT * FROM {table} WHERE SUBSTR(hash,1,{len(bin_hash_partial)}) = ?",
+            [sqlite3.Binary(bin_hash_partial)],
         )
         available = elems.fetchall()
     # too much?
@@ -294,3 +289,28 @@ def select_hash(conn, table, hash_partial):
     # deserialize the thing
     fs = fields(conn, table)
     return deserialize(available[0], fs)
+
+def select_all(conn, table):
+    """
+    Collect all records.
+
+    Parameters
+    ----------
+        conn : sqlite3.Connection
+            database
+        table : string
+            target table
+
+    Returns
+    -------
+        list(dict)
+            list of records
+    """
+    with conn:
+        elems = conn.execute(
+            f"SELECT * FROM {table} WHERE 1 = 1"
+        )
+        available = elems.fetchall()
+    # deserialize the thing
+    fs = fields(conn, table)
+    return [deserialize(a, fs) for a in available]
