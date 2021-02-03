@@ -35,7 +35,7 @@ class NavigatorApp(abc.ABC):
         # read input
         self.input_tables = {}
         for table in self.cfg["input_tables"]:
-            self.input_tables[table] = tm.TableManager(self.conn,table)
+            self.input_tables[table] = tm.TableManager(self.conn, table)
         # load logs
         self.logs = tm.TableManager(self.conn, "logs")
 
@@ -135,10 +135,14 @@ class NavigatorApp(abc.ABC):
             input_data = self.get(table)
         data = []
         for el in input_data:
-            obj = {"hash": el["hash"].hex()[:7]}
+            # obj = {"hash": el["hash"].hex()[:7]}
+            obj = {}
+            for k, v in el.items():
+                if "hash" in k:
+                    obj[k] = v.hex()[:7]
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
-            #dt = datetime.fromisoformat(el["_created"])
-            #obj["created"] = human_dates(dt)
+            # dt = datetime.fromisoformat(el["_created"])
+            # obj["created"] = human_dates(dt)
             data.append(obj)
         # output
         df = pd.DataFrame(data)

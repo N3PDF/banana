@@ -96,7 +96,7 @@ def deserialize(data, fields):
     """
     obj = {}
     for f, el in zip(fields, data):
-        if isinstance(el, bytes) and f != "hash":
+        if isinstance(el, bytes) and "hash" not in f:
             obj[f] = pickle.loads(el)
         else:
             obj[f] = el
@@ -232,7 +232,6 @@ def insertmany(conn, table, rf):
         conn.executemany(tmpl, rf.records)
 
 
-# db interface
 def insertnew(conn, table, rf):
     """
     Insert all records that do not exist yet (determined by hash).
@@ -258,6 +257,7 @@ def insertnew(conn, table, rf):
         new_records = list(filter(lambda x: x[hash_idx] not in available, rf.records))
     # insert them now
     insertmany(conn, table, RecordsFrame(rf.fields, new_records))
+
 
 def select_hash(conn, table, bin_hash_partial):
     """
@@ -290,6 +290,7 @@ def select_hash(conn, table, bin_hash_partial):
     fs = fields(conn, table)
     return deserialize(available[0], fs)
 
+
 def select_all(conn, table):
     """
     Collect all records.
@@ -307,9 +308,7 @@ def select_all(conn, table):
             list of records
     """
     with conn:
-        elems = conn.execute(
-            f"SELECT * FROM {table} WHERE 1 = 1"
-        )
+        elems = conn.execute(f"SELECT * FROM {table} WHERE 1 = 1")
         available = elems.fetchall()
     # deserialize the thing
     fs = fields(conn, table)
