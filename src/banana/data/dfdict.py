@@ -10,6 +10,10 @@ class DFdict(dict):
         super().__init__(*args, **kwargs)
         self.msgs = []
 
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.__init__()
+
     def print(self, *msgs, sep=" ", end="\n"):
         """
         Add new messages to the representation
@@ -33,14 +37,14 @@ class DFdict(dict):
                 self.msgs.append(msg)
         self.msgs.append(end)
 
-    def __setitem__(self, key, value):
-        self.print(key)
-        self.print(value)
-        self.print()
-        super().__setitem__(key, value)
+    # def __setitem__(self, key, value):
+    #     self.print(key)
+    #     self.print(value)
+    #     self.print()
+    #     super().__setitem__(key, value)
 
-    def __repr__(self):
-        return "".join([str(x) for x in self.msgs])
+    # def __repr__(self):
+    #    return "".join([str(x) for x in self.msgs])
 
     def to_document(self):
         """

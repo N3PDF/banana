@@ -2,6 +2,7 @@
 import pickle
 import hashlib
 import copy
+import sqlite3
 
 from banana.data import dfdict
 
@@ -77,6 +78,52 @@ def serialize(data):
     return tuple(ndata)
 
 
+def deserialize(data, fields):
+    """
+    Undo the binary representation.
+
+    Parameters
+    ----------
+        data : list
+            raw data
+        fields : list(str)
+            fields
+
+    Returns
+    -------
+        obj : dict
+            composed object
+    """
+    obj = {}
+    for f, el in zip(fields, data):
+        if isinstance(el, bytes) and "hash" not in f:
+            obj[f] = pickle.loads(el)
+        else:
+            obj[f] = el
+    return obj
+
+
+def fields(conn, table):
+    """
+    Retrieve the list of fields for this table (from SQL)
+
+    Parameters
+    ----------
+        conn : sqlite3.Connection
+            database
+        table : string
+            target table
+
+    Returns
+    -------
+        list(str)
+            fields
+    """
+    with conn:
+        fs = conn.execute("pragma table_info(%s)" % table).fetchall()
+    return [f[1] for f in fs]
+
+
 def add_hash(record):
     """
     Add a hash value as last element to the record.
@@ -145,6 +192,21 @@ def prepare_records(base, updates):
 
 
 def question_args(seq):
+    """
+    Join sufficient ?s (Not only 3)
+
+    See: https://de.wikipedia.org/wiki/Die_drei_%3F%3F%3F
+
+    Parameters
+    ----------
+        seq : list
+            arguments
+
+    Returns
+    -------
+        str
+            sql template
+    """
     return "(" + ",".join(list("?" * len(seq))) + ")"
 
 
@@ -170,7 +232,6 @@ def insertmany(conn, table, rf):
         conn.executemany(tmpl, rf.records)
 
 
-# db interface
 def insertnew(conn, table, rf):
     """
     Insert all records that do not exist yet (determined by hash).
@@ -196,3 +257,59 @@ def insertnew(conn, table, rf):
         new_records = list(filter(lambda x: x[hash_idx] not in available, rf.records))
     # insert them now
     insertmany(conn, table, RecordsFrame(rf.fields, new_records))
+
+
+def select_hash(conn, table, bin_hash_partial):
+    """
+    Find a record by its hash.
+
+    Parameters
+    ----------
+        conn : sqlite3.Connection
+            database
+        table : string
+            target table
+        bin_hash_partial : bytes
+            binary hash identifier
+
+    Returns
+    -------
+        dict
+            record
+    """
+    with conn:
+        elems = conn.execute(
+            f"SELECT * FROM {table} WHERE SUBSTR(hash,1,{len(bin_hash_partial)}) = ?",
+            [sqlite3.Binary(bin_hash_partial)],
+        )
+        available = elems.fetchall()
+    # too much?
+    if len(available) > 1:
+        raise KeyError("hash is not unique")
+    # deserialize the thing
+    fs = fields(conn, table)
+    return deserialize(available[0], fs)
+
+
+def select_all(conn, table):
+    """
+    Collect all records.
+
+    Parameters
+    ----------
+        conn : sqlite3.Connection
+            database
+        table : string
+            target table
+
+    Returns
+    -------
+        list(dict)
+            list of records
+    """
+    with conn:
+        elems = conn.execute(f"SELECT * FROM {table} WHERE 1 = 1")
+        available = elems.fetchall()
+    # deserialize the thing
+    fs = fields(conn, table)
+    return [deserialize(a, fs) for a in available]

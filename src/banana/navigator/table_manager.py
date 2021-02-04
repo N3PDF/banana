@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ..data import sql
+
 
 class TableManager:
     """
@@ -7,28 +9,30 @@ class TableManager:
 
     Parameters
     ----------
-        table : tinydb.Table
-            table
+        conn : sqlite3.Connection
+            DB connection
+        table_name : str
+            table name
     """
 
-    def __init__(self, table):
-        self.table = table
+    def __init__(self, conn, table_name):
+        self.conn = conn
+        self.table_name = table_name
 
     def truncate(self):
         """Truncate all elements."""
         # deny rest
-        if self.table.name != "logs":
+        if self.table_name != "logs":
             raise RuntimeError("only logs are allowed to be emptied by this interface!")
         # ask for confirmation
         if input("Purge all logs? [y/n]") != "y":
             print("Doing nothing.")
             return
-        self.table.truncate()
 
     def all(self):
         """Retrieve all entries"""
-        return self.table.all()
+        return sql.select_all(self.conn, self.table_name)
 
-    def get(self, doc_id):
+    def get(self, hash_partial):
         """Retrieve an entry"""
-        return self.table.get(doc_id=doc_id)
+        return sql.select_hash(self.conn, self.table_name, bytes.fromhex(hash_partial))
