@@ -321,7 +321,7 @@ class BenchmarkRunner:
         raw_records, rf = sql.prepare_records(default_log, [record])
         with conn:
             sql.insertnew(conn, "logs", rf)
-        return log_record
+        return raw_records[0]
 
     def run(self, theory_updates, ocard_updates, pdfs):
         """
