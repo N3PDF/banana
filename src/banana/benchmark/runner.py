@@ -40,8 +40,10 @@ def get_pdf(pdf_name):
 
         # is the set installed? if not do it now
         if pdf_name not in lhapdf.availablePDFSets():
-            print(f"PDFSet {pdf_name} is not installed! Installing now ...")
-            subprocess.run(["lhapdf", "get", pdf_name], check=True)
+            print(f"PDFSet {pdf_name} is not installed! Installing now via lhapdf ...")
+            res = subprocess.run(["lhapdf", "get", pdf_name], check=True,capture_output=True)
+            if len(res.stdout) == 0:
+                raise ValueError("lhapdf could not install the set!")
             print(f"{pdf_name} installed.")
         pdf = lhapdf.mkPDF(pdf_name, 0)
     return pdf
