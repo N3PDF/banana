@@ -138,7 +138,7 @@ class NavigatorApp(abc.ABC):
         data = []
         for el in input_data:
             # obj = {"hash": el["hash"].hex()[:6]}
-            obj = {}
+            obj = {"uid": el["uid"]}
             for k, v in el.items():
                 if "hash" in k:
                     obj[k] = v.hex()[:self.hash_len]
