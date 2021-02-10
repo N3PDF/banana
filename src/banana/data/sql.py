@@ -259,6 +259,14 @@ def insertnew(conn, table, rf):
     insertmany(conn, table, RecordsFrame(rf.fields, new_records))
 
 
+class HashError(KeyError):
+    def __init__(self, descr, hashes=None):
+        if hashes is not None:
+            msg = "the following hashes have been found:"
+            msg += "\n- " + "\n- ".join(hashes) + "\n"
+        super().__init__(descr)
+
+
 def select_hash(conn, table, bin_hash_partial):
     """
     Find a record by its hash.
@@ -285,7 +293,9 @@ def select_hash(conn, table, bin_hash_partial):
         available = elems.fetchall()
     # too much?
     if len(available) > 1:
-        raise KeyError("hash is not unique")
+        raise HashError("hash is not unique", available)
+    elif len(available) < 1:
+        raise HashError("hash not found")
     # deserialize the thing
     fs = fields(conn, table)
     return deserialize(available[0], fs)
