@@ -37,14 +37,14 @@ class DFdict(dict):
                 self.msgs.append(msg)
         self.msgs.append(end)
 
-    # def __setitem__(self, key, value):
-    #     self.print(key)
-    #     self.print(value)
-    #     self.print()
-    #     super().__setitem__(key, value)
+    def __setitem__(self, key, value):
+        self.print(key)
+        self.print(value)
+        self.print()
+        super().__setitem__(key, value)
 
-    # def __repr__(self):
-    #    return "".join([str(x) for x in self.msgs])
+    def __repr__(self):
+        return "".join([str(x) for x in self.msgs])
 
     def to_document(self):
         """
@@ -59,4 +59,30 @@ class DFdict(dict):
         for k, v in self.items():
             d[k] = v.to_dict(orient="records")
 
+        d["__msgs__"] = self.msgs
+
         return d
+
+    @classmethod
+    def from_document(cls, d):
+        """
+        Load dataframes from a previous dictionary dump
+
+        Parameters
+        ----------
+        d : dict
+            raw dictionary, containing a dump of a DFdict object
+
+        Returns
+        -------
+        DFdict
+            the loaded DFdict
+        """
+        dfd = cls()
+        for k, v in d.items():
+            dfd[k] = v
+
+        del dfd["__msgs__"]
+        dfd.msgs = d["__msgs__"]
+
+        return dfd

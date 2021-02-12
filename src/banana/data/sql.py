@@ -21,7 +21,7 @@ Mapping of Python types to SQLite types.
 """
 
 
-def create_table(name, obj, add_hash=True):
+def create_table(table):
     """
     SQL command for creating the table
 
@@ -39,16 +39,9 @@ def create_table(name, obj, add_hash=True):
         tmpl : str
             SQL command
     """
-    tmpl = f"CREATE TABLE {name} (\n"
-    fields = ["uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE"]
-    # add explicit hash?
-    if add_hash:
-        fields.append("hash BLOB UNIQUE")
-    # collect fields
-    for k, v in obj.items():
-        fields.append(f"{k} {mapping[type(v)]}")
+    tmpl = f"CREATE TABLE {table.name} (\n"
     # collect
-    tmpl += ",\n".join(fields)
+    tmpl += ",\n".join(table.fields)
     tmpl += "\n);"
     return tmpl
 
