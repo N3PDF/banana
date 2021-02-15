@@ -51,12 +51,12 @@ def setup_package():
         ],
         install_requires=[
             "ipython",
+            "SQLAlchemy",
             "numpy",
             "pandas",
             "jinja2",
             "rich",
             "pyyaml",
-            "tinydb~=4.1",
             "human_dates2",
         ],
         entry_points={
