@@ -12,6 +12,7 @@ import rich.box
 import rich.panel
 import rich.progress
 import rich.markdown
+import sqlalchemy.orm
 
 from .. import toy
 
@@ -77,14 +78,14 @@ class BenchmarkRunner:
     """Base clase that describes db schema"""
 
     @abc.abstractstaticmethod
-    def load_ocards(conn, ocard_updates):
+    def load_ocards(session, ocard_updates):
         """
         Load o-cards from the DB.
 
         Parameters
         ----------
-            conn : sqlite3.Connection
-                DB connection
+            session : sqlalchemy.orm.session.Session
+                DB session
             ocard_updates : list(dict)
                 o-card configurations
 
@@ -169,26 +170,27 @@ class BenchmarkRunner:
 
         Returns
         -------
-            conn : sqlite3.Connection
-                db connection
+            session : sqlalchemy.orm.session.Session
+                db session
         """
-        # check the existence before opening, as sqlite creates an empty file by default
-        init = not pathlib.Path(db_path).exists()
-        conn = sqlite3.connect(db_path)
         engine = db.engine(db_path)
-        if init:
+        # create the database if not existing
+        if not pathlib.Path(db_path).exists():
             __import__("ipdb").set_trace()
             db.create_db(self.db_base_cls, engine)
-        return conn
+        #
+        self.db_base_cls.metadata.bind = engine
+        session = sqlalchemy.orm.sessionmaker(bind=engine)()
+        return session
 
-    def load_external(self, conn, t, o, pdf):
+    def load_external(self, session, t, o, pdf):
         """
         Look into the DB.
 
         Parameters
         ----------
-            conn : sqlite3.Connection
-                db connection
+            session : sqlalchemy.orm.session.Session
+                db session
             t : dict
                 theory card
             o : dict
@@ -213,7 +215,7 @@ class BenchmarkRunner:
             raise CacheNotFound
         return pickle.loads(ext[0])
 
-    def insert_external(self, conn, t, o, pdf):
+    def insert_external(self, session, t, o, pdf):
         """
         Obtain an external run.
 
@@ -250,14 +252,14 @@ class BenchmarkRunner:
             )
         return ext
 
-    def run_config(self, conn, t, o, pdf_name):
+    def run_config(self, session, t, o, pdf_name):
         """
         Run a single configuration.
 
         Parameters
         ----------
-            conn : sqlite3.Connection
-                db connection
+            session : sqlalchemy.orm.session.Session
+                db session
             t : dict
                 theory card
             o : dict
@@ -270,16 +272,16 @@ class BenchmarkRunner:
         me = self.run_me(t, o, pdf)
         # get external from cache if possible
         try:
-            ext = self.load_external(conn, t, o, pdf)
+            ext = self.load_external(session, t, o, pdf)
             self.console.print("Cache contains the external result")
         except CacheNotFound:
             self.console.print("Compute external result")
-            ext = self.insert_external(conn, t, o, pdf)
+            ext = self.insert_external(session, t, o, pdf)
         # create log
-        log_record = self.insert_log(conn, t, o, pdf, me, ext)
+        log_record = self.insert_log(session, t, o, pdf, me, ext)
         print(log_record)  # TODO delegate to rich
 
-    def insert_log(self, conn, t, o, pdf, me, ext):
+    def insert_log(self, session, t, o, pdf, me, ext):
         """
         Obtain an external run.
 
@@ -331,10 +333,10 @@ class BenchmarkRunner:
         """
         # open db
         db_path = self.banana_cfg["database_path"]
-        conn = self.db(db_path)
+        session = self.db(db_path)
         # init input
         ts = theories.load(conn, theory_updates)
-        os = self.load_ocards(conn, ocard_updates)
+        os = self.load_ocards(session, ocard_updates)
         # print some load informations
         self.console.print(
             rich.panel.Panel.fit(
@@ -353,4 +355,4 @@ class BenchmarkRunner:
                 f"Computing for theory=[b]{t['hash'].hex()[:7]}[/b], "
                 + f"ocard=[b]{o['hash'].hex()[:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
             )
-            self.run_config(conn, t, o, pdf_name)
+            self.run_config(session, t, o, pdf_name)
