@@ -8,9 +8,10 @@ so we can keep declaring a size for fields where it matters.
 Same considerations apply to datetime, with the further gain that SQLite it's
 storing as he wish but able to use some dedicated functions.
 """
+import pathlib
 
 import sqlalchemy
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, Float, String, Text, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -29,7 +30,48 @@ Base = declarative_base(cls=MyBase)
 
 class Theory(Base):
     __tablename__ = "theories"
-    pto = Column(Integer)
+    ID = Column(Integer)
+    PTO = Column(Integer)
+    CKM = Column(Text)
+    Comments = Column(Text)
+    DAMP = Column(Integer)
+    EScaleVar = Column(Integer)
+    FNS = Column(Text)
+    GF = Column(Float)
+    HQ = Column(Text)
+    IC = Column(Integer)
+    MP = Column(Float)
+    MW = Column(Float)
+    MZ = Column(Float)
+    MaxNfAs = Column(Integer)
+    MaxNfPdf = Column(Integer)
+    ModEv = Column(Text)
+    NfFF = Column(Integer)
+    Q0 = Column(Float)
+    QED = Column(Integer)
+    Qedref = Column(Float)
+    Qmb = Column(Float)
+    Qmc = Column(Float)
+    Qmt = Column(Float)
+    Qref = Column(Float)
+    SIN2TW = Column(Float)
+    SxOrd = Column(Text)
+    SxRes = Column(Integer)
+    TMC = Column(Integer)
+    XIF = Column(Float)
+    XIR = Column(Float)
+    alphaqed = Column(Float)
+    alphas = Column(Float)
+    global_nx = Column(Integer)
+    kDISbThr = Column(Float)
+    kDIScThr = Column(Float)
+    kDIStThr = Column(Float)
+    kbThr = Column(Float)
+    kcThr = Column(Float)
+    ktThr = Column(Float)
+    mb = Column(Float)
+    mc = Column(Float)
+    mt = Column(Float)
 
 
 # mixin
@@ -50,10 +92,18 @@ class Log(CalcResult, Base):
     log = Column(Text)
 
 
-# Create an engine that stores data in the local directory's
-# sqlalchemy_example.db file.
-engine = sqlalchemy.create_engine("sqlite:///sqlalchemy_example.db")
+def engine(path):
+    # Create an engine that stores data in the local directory's
+    # sqlalchemy_example.db file.
+    path = pathlib.Path(path).absolute()
+    return sqlalchemy.create_engine(f"sqlite:///{str(path)}")
 
-# Create all tables in the engine. This is equivalent to "Create Table"
-# statements in raw SQL.
-Base.metadata.create_all(engine)
+
+def create_db(base_cls, engine):
+    # Create all tables in the engine. This is equivalent to "Create Table"
+    # statements in raw SQL.
+    base_cls.metadata.create_all(engine)
+
+
+if __name__ == "__main__":
+    create_db(Base, engine("sqlalchemy_example.db"))

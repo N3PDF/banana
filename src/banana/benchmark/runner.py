@@ -15,7 +15,7 @@ import rich.markdown
 
 from .. import toy
 
-from ..data import theories, sql
+from ..data import theories, sql, db
 
 
 def get_pdf(pdf_name):
@@ -41,7 +41,9 @@ def get_pdf(pdf_name):
         # is the set installed? if not do it now
         if pdf_name not in lhapdf.availablePDFSets():
             print(f"PDFSet {pdf_name} is not installed! Installing now via lhapdf ...")
-            res = subprocess.run(["lhapdf", "get", pdf_name], check=True,capture_output=True)
+            res = subprocess.run(
+                ["lhapdf", "get", pdf_name], check=True, capture_output=True
+            )
             if len(res.stdout) == 0:
                 raise ValueError("lhapdf could not install the set!")
             print(f"{pdf_name} installed.")
@@ -71,16 +73,8 @@ class BenchmarkRunner:
 
     console = rich.console.Console()
 
-    @abc.abstractstaticmethod
-    def init_ocards(conn):
-        """
-        Create o-card table.
-
-        Parameters
-        ----------
-            conn : sqlite3.Connection
-                DB connection
-        """
+    db_base_cls = None
+    """Base clase that describes db schema"""
 
     @abc.abstractstaticmethod
     def load_ocards(conn, ocard_updates):
@@ -181,13 +175,10 @@ class BenchmarkRunner:
         # check the existence before opening, as sqlite creates an empty file by default
         init = not pathlib.Path(db_path).exists()
         conn = sqlite3.connect(db_path)
+        engine = db.engine(db_path)
         if init:
-            with conn:
-                conn.execute(sql.create_table("theories", theories.default_card))
-                conn.execute(sql.create_table("cache", default_cache, False))
-                conn.execute(sql.create_table("logs", default_log))
-            self.init_ocards(conn)
-            # init log
+            __import__("ipdb").set_trace()
+            db.create_db(self.db_base_cls, engine)
         return conn
 
     def load_external(self, conn, t, o, pdf):
