@@ -103,7 +103,3 @@ def create_db(base_cls, engine):
     # Create all tables in the engine. This is equivalent to "Create Table"
     # statements in raw SQL.
     base_cls.metadata.create_all(engine)
-
-
-if __name__ == "__main__":
-    create_db(Base, engine("sqlalchemy_example.db"))

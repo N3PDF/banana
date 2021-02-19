@@ -13,7 +13,9 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import pathlib
 
+source_dir = pathlib.Path(__file__).parent
 
 # -- Project information -----------------------------------------------------
 
@@ -47,6 +49,12 @@ extensions = [
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
+
+# The master toctree document.
+master_doc = "index"
+bibtex_bibfiles = [
+    str(p.relative_to(source_dir)) for p in (source_dir / "refs").glob("*.bib")
+]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
