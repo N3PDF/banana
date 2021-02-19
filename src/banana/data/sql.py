@@ -220,9 +220,10 @@ def insertnew(session, table, df):
     df : pandas.DataFrame
         dataframe all records
     """
-    hashes = session.query(table.hash).all()
+    # TODO: why the hash field is a 1-tuple?
+    hashes = [h[0] for h in session.query(table.hash).all()]
     new_records = df[~df["hash"].isin(hashes)]
-    insertmany(session, table, df)
+    insertmany(session, table, new_records)
 
 
 class HashError(KeyError):

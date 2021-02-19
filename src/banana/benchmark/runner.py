@@ -199,14 +199,14 @@ class BenchmarkRunner:
             ext : dict
                 exernal result if available
         """
-        ext = session.query(
+        ext = session.query(db.Cache).filter(
             db.Cache.t_hash == t["hash"],
             db.Cache.o_hash == o["hash"],
             db.Cache.pdf == pdf.set().name,
             db.Cache.external == self.external,
         )
         # if not found or multiple found, ext.one() will raise an Error
-        return pickle.loads(ext.one())
+        return pickle.loads(ext.one().result)
 
     def insert_external(self, session, t, o, pdf):
         """
