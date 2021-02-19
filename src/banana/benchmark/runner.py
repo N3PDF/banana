@@ -12,6 +12,7 @@ import rich.box
 import rich.panel
 import rich.progress
 import rich.markdown
+import pandas as pd
 import sqlalchemy.orm
 
 from .. import toy
@@ -58,10 +59,6 @@ default_cache = dict(sorted(default_cache.items()))
 
 default_log = {"t_hash": b"", "o_hash": b"", "pdf": "", "external": "", "log": b""}
 default_log = dict(sorted(default_log.items()))
-
-
-class CacheNotFound(LookupError):
-    pass
 
 
 class BenchmarkRunner:
@@ -176,9 +173,8 @@ class BenchmarkRunner:
         engine = db.engine(db_path)
         # create the database if not existing
         if not pathlib.Path(db_path).exists():
-            __import__("ipdb").set_trace()
             db.create_db(self.db_base_cls, engine)
-        #
+        # make a session to the db and return it
         self.db_base_cls.metadata.bind = engine
         session = sqlalchemy.orm.sessionmaker(bind=engine)()
         return session
@@ -203,17 +199,14 @@ class BenchmarkRunner:
             ext : dict
                 exernal result if available
         """
-        sql_tmpl = "SELECT result FROM cache WHERE t_hash=? AND o_hash=? AND pdf=? AND external=?"
-        ext = None
-        with conn:
-            res = conn.execute(
-                sql_tmpl, (t["hash"], o["hash"], pdf.set().name, self.external)
-            )
-            ext = res.fetchone()
-        # if not found, raise an Error to be pythonic
-        if ext is None:
-            raise CacheNotFound
-        return pickle.loads(ext[0])
+        ext = session.query(
+            db.Cache.t_hash == t["hash"],
+            db.Cache.o_hash == o["hash"],
+            db.Cache.pdf == pdf.set().name,
+            db.Cache.external == self.external,
+        )
+        # if not found or multiple found, ext.one() will raise an Error
+        return pickle.loads(ext.one())
 
     def insert_external(self, session, t, o, pdf):
         """
@@ -221,17 +214,19 @@ class BenchmarkRunner:
 
         Parameters
         ----------
-            t : dict
-                theory card
-            o : dict
-                o-card
-            pdf_name : str
-                applied PDF
+        session : sqlalchemy.orm.session.Session
+            DB ORM session
+        t : dict
+            theory card
+        o : dict
+            o-card
+        pdf_name : str
+            applied PDF
 
         Returns
         -------
-            ext : dict
-                result
+        ext : dict
+            result
         """
         # obtain data
         ext = self.run_external(t, o, pdf)
@@ -244,12 +239,11 @@ class BenchmarkRunner:
             "result": ext,
         }
         serialized_record = sql.serialize(record)
-        with conn:
-            sql.insertmany(
-                conn,
-                "cache",
-                sql.RecordsFrame(default_cache.keys(), [serialized_record]),
-            )
+        sql.insertmany(
+            session,
+            db.Cache,
+            pd.DataFrame([serialized_record], columns=default_cache.keys()),
+        )
         return ext
 
     def run_config(self, session, t, o, pdf_name):
@@ -258,14 +252,14 @@ class BenchmarkRunner:
 
         Parameters
         ----------
-            session : sqlalchemy.orm.session.Session
-                db session
-            t : dict
-                theory card
-            o : dict
-                o-card
-            pdf_name : str
-                applied PDF
+        session : sqlalchemy.orm.session.Session
+            DB ORM session
+        t : dict
+            theory card
+        o : dict
+            o-card
+        pdf_name : str
+            applied PDF
         """
         pdf = get_pdf(pdf_name)
         # get our result
@@ -274,7 +268,7 @@ class BenchmarkRunner:
         try:
             ext = self.load_external(session, t, o, pdf)
             self.console.print("Cache contains the external result")
-        except CacheNotFound:
+        except sqlalchemy.orm.exc.NoResultFound:
             self.console.print("Compute external result")
             ext = self.insert_external(session, t, o, pdf)
         # create log
@@ -287,21 +281,23 @@ class BenchmarkRunner:
 
         Parameters
         ----------
-            t : dict
-                theory card
-            o : dict
-                o-card
-            pdf_name : str
-                applied PDF
-            me : dict
-                our result
-            ext : str
-                external result
+        session : sqlalchemy.orm.session.Session
+            DB ORM session
+        t : dict
+            theory card
+        o : dict
+            o-card
+        pdf_name : str
+            applied PDF
+        me : dict
+            our result
+        ext : str
+            external result
 
         Returns
         -------
-            log_record : dict
-                result
+        log_record : dict
+            result
         """
         # obtain data
         log_record = self.log(t, o, pdf, me, ext)
@@ -313,9 +309,8 @@ class BenchmarkRunner:
             "external": self.external,
             "log": log_record,
         }
-        raw_records, rf = sql.prepare_records(default_log, [record])
-        with conn:
-            sql.insertnew(conn, "logs", rf)
+        raw_records, df = sql.prepare_records(default_log, [record])
+        sql.insertnew(session, db.Log, df)
         return raw_records[0]
 
     def run(self, theory_updates, ocard_updates, pdfs):
@@ -335,7 +330,7 @@ class BenchmarkRunner:
         db_path = self.banana_cfg["database_path"]
         session = self.db(db_path)
         # init input
-        ts = theories.load(conn, theory_updates)
+        ts = theories.load(session, theory_updates)
         os = self.load_ocards(session, ocard_updates)
         # print some load informations
         self.console.print(

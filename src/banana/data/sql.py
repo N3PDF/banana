@@ -4,6 +4,8 @@ import hashlib
 import copy
 import sqlite3
 
+import pandas as pd
+
 from banana.data import dfdict
 
 mapping = {
@@ -135,23 +137,6 @@ def add_hash(record):
     return (*record, h.digest())
 
 
-class RecordsFrame:
-    """
-    Container to communicate with the database.
-
-    Parameters
-    ----------
-        fields : list
-            list with all fields
-        records : list
-            list with all records
-    """
-
-    def __init__(self, fields, records):
-        self.fields = fields
-        self.records = records
-
-
 def prepare_records(base, updates):
     """
     Generate all records from the base.
@@ -181,7 +166,7 @@ def prepare_records(base, updates):
         hashed_record = add_hash(serialized_record)
         document["hash"] = hashed_record[-1]
         records.append(hashed_record)
-    return (documents, RecordsFrame(list(base.keys()) + ["hash"], records))
+    return (documents, pd.DataFrame(records, columns=(list(base.keys()) + ["hash"])))
 
 
 def question_args(seq):
@@ -203,53 +188,41 @@ def question_args(seq):
     return "(" + ",".join(list("?" * len(seq))) + ")"
 
 
-def insertmany(conn, table, rf):
+def insertmany(session, table, df):
     """
     Insert all records into the DB.
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-        rf : RecordsFrame
-            list with all records
+    session : sqlalchemy.session.Session
+        database
+    table : sqlalchemy.types.Type
+        target table
+    df : pandas.DataFrame
+        dataframe all records
     """
-    tmpl = (
-        f"INSERT INTO {table}("
-        + ",".join(rf.fields)
-        + f") VALUES {question_args(rf.fields)}"
-    )
-    with conn:
-        conn.executemany(tmpl, rf.records)
+    session.bulk_insert_mappings(table, df.to_dict(orient="records"))
+    # TODO: do we want to commit here or somewhere else?
+    session.commit()
 
 
-def insertnew(conn, table, rf):
+def insertnew(session, table, df):
     """
     Insert all records that do not exist yet (determined by hash).
 
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-        rf : RecordsFrame
-            list with all records
+    session : sqlalchemy.session.Session
+        database
+    table : sqlalchemy.types.Type
+        target table
+    df : pandas.DataFrame
+        dataframe all records
     """
-    # check if they already exist
-    hash_idx = rf.fields.index("hash")
-    with conn:
-        elems = conn.execute(
-            f"SELECT hash FROM {table} WHERE hash IN {question_args(rf.records)}",
-            [r[hash_idx] for r in rf.records],
-        )
-        available = list(map(lambda x: x[0], elems.fetchall()))
-        new_records = list(filter(lambda x: x[hash_idx] not in available, rf.records))
-    # insert them now
-    insertmany(conn, table, RecordsFrame(rf.fields, new_records))
+    hashes = session.query(table.hash).all()
+    new_records = df[~df["hash"].isin(hashes)]
+    insertmany(session, table, df)
 
 
 class HashError(KeyError):
