@@ -307,7 +307,7 @@ class BenchmarkRunner:
             "o_hash": o["hash"],
             "pdf": pdf.set().name,
             "external": self.external,
-            "log": log_record,
+            "log": log_record.to_document(),
         }
         raw_records, df = sql.prepare_records(default_log, [record])
         sql.insertnew(session, db.Log, df)

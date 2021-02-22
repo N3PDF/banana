@@ -9,14 +9,14 @@ class TableManager:
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            DB connection
-        table_name : str
-            table name
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_name : str
+        table name
     """
 
-    def __init__(self, conn, table_name):
-        self.conn = conn
+    def __init__(self, session, table_name):
+        self.session = session
         self.table_name = table_name
 
     def truncate(self):
@@ -31,8 +31,10 @@ class TableManager:
 
     def all(self):
         """Retrieve all entries"""
-        return sql.select_all(self.conn, self.table_name)
+        return sql.select_all(self.session, self.table_name)
 
     def get(self, hash_partial):
         """Retrieve an entry"""
-        return sql.select_hash(self.conn, self.table_name, bytes.fromhex(hash_partial))
+        return sql.select_hash(
+            self.session, self.table_name, bytes.fromhex(hash_partial)
+        )

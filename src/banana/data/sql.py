@@ -93,6 +93,8 @@ def deserialize(data, fields):
     for f, el in zip(fields, data):
         if isinstance(el, bytes) and "hash" not in f:
             obj[f] = pickle.loads(el)
+            if isinstance(obj[f], dict) and "__msgs__" in obj[f]:
+                obj[f] = dfdict.DFdict.from_document(obj[f])
         else:
             obj[f] = el
     return obj
