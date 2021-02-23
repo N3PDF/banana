@@ -23,44 +23,19 @@ Mapping of Python types to SQLite types.
 """
 
 
-def create_table(table):
-    """
-    SQL command for creating the table
-
-    Parameters
-    ----------
-        name : str
-            table name
-        obj : dict
-            column-names to example values mapping
-        add_hash : bool
-            add hash field?
-
-    Returns
-    -------
-        tmpl : str
-            SQL command
-    """
-    tmpl = f"CREATE TABLE {table.name} (\n"
-    # collect
-    tmpl += ",\n".join(table.fields)
-    tmpl += "\n);"
-    return tmpl
-
-
 def serialize(data):
     """
     Eventually turn some elements into their binary representation.
 
     Parameters
     ----------
-        data : dict
-            raw data
+    data : dict
+        raw data
 
     Returns
     -------
-        ndata : list
-            improved data
+    ndata : list
+        improved data
     """
     blobbed_types = [list, dict, dfdict.DFdict]
     sorted_data = dict(sorted(data.items()))
@@ -136,7 +111,7 @@ def add_hash(record):
             data + hash
     """
     h = hashlib.sha256(pickle.dumps(record))
-    return (*record, h.digest())
+    return (*record, h.digest().hex())
 
 
 def prepare_records(base, updates):
@@ -257,7 +232,7 @@ def select_hash(conn, table, bin_hash_partial):
     with conn:
         elems = conn.execute(
             f"SELECT * FROM {table} WHERE SUBSTR(hash,1,{len(bin_hash_partial)}) = ?",
-            [sqlite3.Binary(bin_hash_partial)],
+            [bin_hash_partial],
         )
         available = elems.fetchall()
     # too much?

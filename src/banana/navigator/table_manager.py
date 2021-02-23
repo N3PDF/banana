@@ -35,6 +35,4 @@ class TableManager:
 
     def get(self, hash_partial):
         """Retrieve an entry"""
-        return sql.select_hash(
-            self.session, self.table_name, bytes.fromhex(hash_partial)
-        )
+        return sql.select_hash(self.session, self.table_name, hash_partial)

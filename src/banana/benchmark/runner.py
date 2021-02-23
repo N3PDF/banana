@@ -6,6 +6,7 @@ import abc
 import subprocess
 import itertools
 import pickle
+import hashlib
 
 import rich
 import rich.box
@@ -230,20 +231,21 @@ class BenchmarkRunner:
         """
         # obtain data
         ext = self.run_external(t, o, pdf)
-        # create record
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
             "pdf": pdf.set().name,
             "external": self.external,
-            "result": ext,
+            # TODO: pay attention, the hash will be computed on the binarized
+            "result": pickle.dumps(ext),
         }
-        serialized_record = sql.serialize(record)
-        sql.insertmany(
-            session,
-            db.Cache,
-            pd.DataFrame([serialized_record], columns=default_cache.keys()),
+        # create record
+        new_cache = db.Cache(
+            **record, hash=hashlib.sha256(pickle.dumps(record)).digest().hex()
         )
+        session.add(new_cache)
+        # TODO: do we want to commit here or somewhere else?
+        session.commit()
         return ext
 
     def run_config(self, session, t, o, pdf_name):
@@ -307,11 +309,17 @@ class BenchmarkRunner:
             "o_hash": o["hash"],
             "pdf": pdf.set().name,
             "external": self.external,
-            "log": log_record.to_document(),
+            # TODO: pay attention, the hash will be computed on the binarized
+            "log": pickle.dumps(log_record.to_document()),
         }
-        raw_records, df = sql.prepare_records(default_log, [record])
-        sql.insertnew(session, db.Log, df)
-        return raw_records[0]
+        new_log = db.Log(
+            **record,
+            hash=hashlib.sha256(pickle.dumps(record)).digest().hex(),
+        )
+        session.add(new_log)
+        # TODO: do we want to commit here or somewhere else?
+        session.commit()
+        return log_record
 
     def run(self, theory_updates, ocard_updates, pdfs):
         """
@@ -347,7 +355,7 @@ class BenchmarkRunner:
         # TODO find a way to display 2 progress bars
         for t, o, pdf_name in full:
             self.console.print(
-                f"Computing for theory=[b]{t['hash'].hex()[:7]}[/b], "
-                + f"ocard=[b]{o['hash'].hex()[:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
+                f"Computing for theory=[b]{t['hash'][:7]}[/b], "
+                + f"ocard=[b]{o['hash'][:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
             )
             self.run_config(session, t, o, pdf_name)
