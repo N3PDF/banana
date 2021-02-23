@@ -8,20 +8,6 @@ import pandas as pd
 
 from banana.data import dfdict
 
-mapping = {
-    int: "INTEGER",
-    float: "REAL",
-    str: "TEXT",
-    dict: "BLOB",
-    list: "BLOB",
-    bytes: "BLOB",
-    bool: "BOOL",
-    dfdict.DFdict: "BLOB",
-}
-"""
-Mapping of Python types to SQLite types.
-"""
-
 
 def serialize(data):
     """
@@ -123,25 +109,6 @@ def prepare_records(base, updates):
         document["hash"] = hashed_record[-1]
         records.append(hashed_record)
     return (documents, pd.DataFrame(records, columns=(list(base.keys()) + ["hash"])))
-
-
-def question_args(seq):
-    """
-    Join sufficient ?s (Not only 3)
-
-    See: https://de.wikipedia.org/wiki/Die_drei_%3F%3F%3F
-
-    Parameters
-    ----------
-        seq : list
-            arguments
-
-    Returns
-    -------
-        str
-            sql template
-    """
-    return "(" + ",".join(list("?" * len(seq))) + ")"
 
 
 def insertmany(session, table, df):

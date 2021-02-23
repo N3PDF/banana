@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sqlite3
 import pathlib
 import abc
 import subprocess
@@ -13,12 +12,11 @@ import rich.box
 import rich.panel
 import rich.progress
 import rich.markdown
-import pandas as pd
-import sqlalchemy.orm
+import sqlalchemy.orm, sqlalchemy.ext
 
 from .. import toy
 
-from ..data import theories, sql, db
+from ..data import theories, db
 
 
 def get_pdf(pdf_name):
@@ -312,13 +310,17 @@ class BenchmarkRunner:
             # TODO: pay attention, the hash will be computed on the binarized
             "log": pickle.dumps(log_record.to_document()),
         }
+        log_hash = hashlib.sha256(pickle.dumps(record)).digest().hex()
         new_log = db.Log(
             **record,
-            hash=hashlib.sha256(pickle.dumps(record)).digest().hex(),
+            hash=log_hash,
         )
-        session.add(new_log)
-        # TODO: do we want to commit here or somewhere else?
-        session.commit()
+        try:
+            session.add(new_log)
+            # TODO: do we want to commit here or somewhere else?
+            session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            print(f"\nLog already present, hash={log_hash}\n")
         return log_record
 
     def run(self, theory_updates, ocard_updates, pdfs):
