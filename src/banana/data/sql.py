@@ -2,8 +2,8 @@
 import pickle
 import hashlib
 import copy
-import sqlite3
 
+import sqlalchemy.sql
 import pandas as pd
 
 from banana.data import dfdict
@@ -48,7 +48,7 @@ def serialize(data):
     return tuple(ndata)
 
 
-def deserialize(data, fields):
+def deserialize(data):
     """
     Undo the binary representation.
 
@@ -56,8 +56,6 @@ def deserialize(data, fields):
     ----------
         data : list
             raw data
-        fields : list(str)
-            fields
 
     Returns
     -------
@@ -65,8 +63,10 @@ def deserialize(data, fields):
             composed object
     """
     obj = {}
-    for f, el in zip(fields, data):
-        if isinstance(el, bytes) and "hash" not in f:
+    for f, el in data.__dict__.items():
+        if f[0] == "_":
+            continue
+        elif isinstance(el, bytes):
             obj[f] = pickle.loads(el)
             if isinstance(obj[f], dict) and "__msgs__" in obj[f]:
                 obj[f] = dfdict.DFdict.from_document(obj[f])
@@ -75,40 +75,19 @@ def deserialize(data, fields):
     return obj
 
 
-def fields(conn, table):
-    """
-    Retrieve the list of fields for this table (from SQL)
-
-    Parameters
-    ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-
-    Returns
-    -------
-        list(str)
-            fields
-    """
-    with conn:
-        fs = conn.execute("pragma table_info(%s)" % table).fetchall()
-    return [f[1] for f in fs]
-
-
 def add_hash(record):
     """
     Add a hash value as last element to the record.
 
     Parameters
     ----------
-        record : tuple
-            data
+    record : tuple
+        data
 
     Returns
     -------
-        hashed_record : tuple
-            data + hash
+    hashed_record : tuple
+        data + hash
     """
     h = hashlib.sha256(pickle.dumps(record))
     return (*record, h.digest().hex())
@@ -211,59 +190,56 @@ class HashError(KeyError):
         super().__init__(descr)
 
 
-def select_hash(conn, table, bin_hash_partial):
+def select_hash(session, table_object, hash_partial):
     """
     Find a record by its hash.
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-        bin_hash_partial : bytes
-            binary hash identifier
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.ext.declarative.api.DeclarativeMeta
+        table object
+    hash_partial : str
+        hash identifier
 
     Returns
     -------
-        dict
-            record
+    dict
+        record
     """
-    with conn:
-        elems = conn.execute(
-            f"SELECT * FROM {table} WHERE SUBSTR(hash,1,{len(bin_hash_partial)}) = ?",
-            [bin_hash_partial],
+    available = (
+        session.query(table_object)
+        .filter(
+            sqlalchemy.sql.func.substr(table_object.hash, 1, len(hash_partial))
+            == hash_partial
         )
-        available = elems.fetchall()
+        .all()
+    )
     # too much?
     if len(available) > 1:
         raise HashError("hash is not unique", available)
     elif len(available) < 1:
         raise HashError("hash not found")
     # deserialize the thing
-    fs = fields(conn, table)
-    return deserialize(available[0], fs)
+    return deserialize(available[0])
 
 
-def select_all(conn, table):
+def select_all(session, table_object):
     """
     Collect all records.
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.ext.declarative.api.DeclarativeMeta
+        table object
 
     Returns
     -------
-        list(dict)
-            list of records
+    list(dict)
+        list of records
     """
-    with conn:
-        elems = conn.execute(f"SELECT * FROM {table} WHERE 1 = 1")
-        available = elems.fetchall()
-    # deserialize the thing
-    fs = fields(conn, table)
-    return [deserialize(a, fs) for a in available]
+    available = session.query(table_object).all()
+    return [deserialize(a) for a in available]

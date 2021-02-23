@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import abc
-import sqlite3
 
+import sqlalchemy.orm
 import pandas as pd
 from human_dates import human_dates
 
+from ..data import db
 from . import table_manager as tm
 
 # define some shortcuts
@@ -13,6 +14,8 @@ t = "t"
 o = "o"
 c = "c"
 l = "l"
+
+table_objects = dict(t=db.Theory, c=db.Cache, l=db.Log)
 
 
 class NavigatorApp(abc.ABC):
@@ -27,19 +30,22 @@ class NavigatorApp(abc.ABC):
             mode identifier
     """
 
+    table_objects = table_objects
     hash_len = 6
 
     def __init__(self, banana_cfg, external=None):
         self.cfg = banana_cfg
         self.external = external
         db_path = self.cfg["database_path"]
-        self.conn = sqlite3.connect(db_path)
+        self.session = sqlalchemy.orm.sessionmaker(db.engine(db_path))()
         # read input
         self.input_tables = {}
         for table in self.cfg["input_tables"]:
-            self.input_tables[table] = tm.TableManager(self.conn, table)
+            self.input_tables[table] = tm.TableManager(
+                self.session, self.table_objects[table[0]]
+            )
         # load logs
-        self.logs = tm.TableManager(self.conn, "logs")
+        self.logs = tm.TableManager(self.session, db.Log)
 
     def change_external(self, external):
         """
