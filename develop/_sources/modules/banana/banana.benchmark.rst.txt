@@ -17,18 +17,10 @@ Subpackages
 Submodules
 ----------
 
-banana.benchmark.db\_interface module
--------------------------------------
+banana.benchmark.runner module
+------------------------------
 
-.. automodule:: banana.benchmark.db_interface
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-banana.benchmark.regression module
-----------------------------------
-
-.. automodule:: banana.benchmark.regression
+.. automodule:: banana.benchmark.runner
    :members:
    :undoc-members:
    :show-inheritance:

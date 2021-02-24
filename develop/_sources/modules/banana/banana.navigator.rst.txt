@@ -9,14 +9,6 @@ banana.navigator package
 Submodules
 ----------
 
-banana.navigator.dfdict module
-------------------------------
-
-.. automodule:: banana.navigator.dfdict
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 banana.navigator.navigator module
 ---------------------------------
 

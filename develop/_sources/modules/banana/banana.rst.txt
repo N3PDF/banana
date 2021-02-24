@@ -19,14 +19,6 @@ Subpackages
 Submodules
 ----------
 
-banana.mode\_selector module
-----------------------------
-
-.. automodule:: banana.mode_selector
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 banana.toy module
 -----------------
 

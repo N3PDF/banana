@@ -9,10 +9,18 @@ banana.data package
 Submodules
 ----------
 
-banana.data.card\_generator module
-----------------------------------
+banana.data.db module
+---------------------
 
-.. automodule:: banana.data.card_generator
+.. automodule:: banana.data.db
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+banana.data.dfdict module
+-------------------------
+
+.. automodule:: banana.data.dfdict
    :members:
    :undoc-members:
    :show-inheritance:
@@ -21,6 +29,14 @@ banana.data.generate\_pdf module
 --------------------------------
 
 .. automodule:: banana.data.generate_pdf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+banana.data.sql module
+----------------------
+
+.. automodule:: banana.data.sql
    :members:
    :undoc-members:
    :show-inheritance:
