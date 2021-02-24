@@ -10,7 +10,7 @@ help_vars = f"""t = "{t}" -> query theories
     c = "{c}" -> query cache
     l = "{l}" -> query logs"""
 help_fncs = """h() - this help
-    m(str) - change mode
+    ext(str) - change external
     g(tbl,id) - getter
     ls(tbl) - listing table with reduced informations"""
 
@@ -23,10 +23,10 @@ def register_globals(mod, app):
         "c": c,
         "l": l,
         # functions
-        "m": app.change_mode,
+        "ext": app.change_external,
         "g": app.get,
         "ls": app.list_all,
-        "truncate_logs": app.logs.truncate,
+        # "truncate_logs": app.logs.truncate,
         "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2)),
     }
 

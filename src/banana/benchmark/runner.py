@@ -40,8 +40,10 @@ def get_pdf(pdf_name):
 
         # is the set installed? if not do it now
         if pdf_name not in lhapdf.availablePDFSets():
-            print(f"PDFSet {pdf_name} is not installed! Installing now ...")
-            subprocess.run(["lhapdf", "get", pdf_name], check=True)
+            print(f"PDFSet {pdf_name} is not installed! Installing now via lhapdf ...")
+            res = subprocess.run(["lhapdf", "get", pdf_name], check=True,capture_output=True)
+            if len(res.stdout) == 0:
+                raise ValueError("lhapdf could not install the set!")
             print(f"{pdf_name} installed.")
         pdf = lhapdf.mkPDF(pdf_name, 0)
     return pdf
@@ -81,7 +83,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractstaticmethod
-    def load_ocards(conn, ocard_updates, /):
+    def load_ocards(conn, ocard_updates):
         """
         Load o-cards from the DB.
 
@@ -99,7 +101,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def run_me(self, theory, ocard, pdf, /):
+    def run_me(self, theory, ocard, pdf):
         """
         Execute our program.
 
@@ -119,7 +121,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def run_external(self, theory, ocard, pdf, /):
+    def run_external(self, theory, ocard, pdf):
         """
         Execute external program.
 
@@ -139,7 +141,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def log(self, theory, ocard, pdf, me, ext, /):
+    def log(self, theory, ocard, pdf, me, ext):
         """
         Create log from our and external result.
 
@@ -183,7 +185,7 @@ class BenchmarkRunner:
             with conn:
                 conn.execute(sql.create_table("theories", theories.default_card))
                 conn.execute(sql.create_table("cache", default_cache, False))
-                conn.execute(sql.create_table("logs", default_log, False))
+                conn.execute(sql.create_table("logs", default_log))
             self.init_ocards(conn)
             # init log
         return conn
@@ -318,14 +320,10 @@ class BenchmarkRunner:
             "external": self.external,
             "log": log_record,
         }
-        serialized_record = sql.serialize(record)
+        raw_records, rf = sql.prepare_records(default_log, [record])
         with conn:
-            sql.insertmany(
-                conn,
-                "logs",
-                sql.RecordsFrame(default_log.keys(), [serialized_record]),
-            )
-        return log_record
+            sql.insertnew(conn, "logs", rf)
+        return raw_records[0]
 
     def run(self, theory_updates, ocard_updates, pdfs):
         """
@@ -361,7 +359,7 @@ class BenchmarkRunner:
         # TODO find a way to display 2 progress bars
         for t, o, pdf_name in full:
             self.console.print(
-                f"Computing for theory=[b]{t['ID']}[/b], "
-                + f"ocard=[b]{o['prDIS']}[/b] and pdf=[b]{pdf_name}[/b] ..."
+                f"Computing for theory=[b]{t['hash'].hex()[:7]}[/b], "
+                + f"ocard=[b]{o['hash'].hex()[:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
             )
             self.run_config(conn, t, o, pdf_name)
