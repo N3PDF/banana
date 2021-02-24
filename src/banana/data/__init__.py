@@ -5,7 +5,7 @@ Module to collect utilites to help with the data generation:
 import itertools
 
 
-def power_set(inp):
+def cartesian_product(inp):
     """
     Compute the power set of a dictionary.
 

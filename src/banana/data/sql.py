@@ -2,55 +2,11 @@
 import pickle
 import hashlib
 import copy
-import sqlite3
+
+import sqlalchemy.sql
+import pandas as pd
 
 from banana.data import dfdict
-
-mapping = {
-    int: "INTEGER",
-    float: "REAL",
-    str: "TEXT",
-    dict: "BLOB",
-    list: "BLOB",
-    bytes: "BLOB",
-    bool: "BOOL",
-    dfdict.DFdict: "BLOB",
-}
-"""
-Mapping of Python types to SQLite types.
-"""
-
-
-def create_table(name, obj, add_hash=True):
-    """
-    SQL command for creating the table
-
-    Parameters
-    ----------
-        name : str
-            table name
-        obj : dict
-            column-names to example values mapping
-        add_hash : bool
-            add hash field?
-
-    Returns
-    -------
-        tmpl : str
-            SQL command
-    """
-    tmpl = f"CREATE TABLE {name} (\n"
-    fields = ["uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE"]
-    # add explicit hash?
-    if add_hash:
-        fields.append("hash BLOB UNIQUE")
-    # collect fields
-    for k, v in obj.items():
-        fields.append(f"{k} {mapping[type(v)]}")
-    # collect
-    tmpl += ",\n".join(fields)
-    tmpl += "\n);"
-    return tmpl
 
 
 def serialize(data):
@@ -59,13 +15,13 @@ def serialize(data):
 
     Parameters
     ----------
-        data : dict
-            raw data
+    data : dict
+        raw data
 
     Returns
     -------
-        ndata : list
-            improved data
+    ndata : list
+        improved data
     """
     blobbed_types = [list, dict, dfdict.DFdict]
     sorted_data = dict(sorted(data.items()))
@@ -78,7 +34,7 @@ def serialize(data):
     return tuple(ndata)
 
 
-def deserialize(data, fields):
+def deserialize(data):
     """
     Undo the binary representation.
 
@@ -86,8 +42,6 @@ def deserialize(data, fields):
     ----------
         data : list
             raw data
-        fields : list(str)
-            fields
 
     Returns
     -------
@@ -95,33 +49,16 @@ def deserialize(data, fields):
             composed object
     """
     obj = {}
-    for f, el in zip(fields, data):
-        if isinstance(el, bytes) and "hash" not in f:
+    for f, el in data.__dict__.items():
+        if f[0] == "_":
+            continue
+        elif isinstance(el, bytes):
             obj[f] = pickle.loads(el)
+            if isinstance(obj[f], dict) and "__msgs__" in obj[f]:
+                obj[f] = dfdict.DFdict.from_document(obj[f])
         else:
             obj[f] = el
     return obj
-
-
-def fields(conn, table):
-    """
-    Retrieve the list of fields for this table (from SQL)
-
-    Parameters
-    ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-
-    Returns
-    -------
-        list(str)
-            fields
-    """
-    with conn:
-        fs = conn.execute("pragma table_info(%s)" % table).fetchall()
-    return [f[1] for f in fs]
 
 
 def add_hash(record):
@@ -130,33 +67,16 @@ def add_hash(record):
 
     Parameters
     ----------
-        record : tuple
-            data
+    record : tuple
+        data
 
     Returns
     -------
-        hashed_record : tuple
-            data + hash
+    hashed_record : tuple
+        data + hash
     """
     h = hashlib.sha256(pickle.dumps(record))
-    return (*record, h.digest())
-
-
-class RecordsFrame:
-    """
-    Container to communicate with the database.
-
-    Parameters
-    ----------
-        fields : list
-            list with all fields
-        records : list
-            list with all records
-    """
-
-    def __init__(self, fields, records):
-        self.fields = fields
-        self.records = records
+    return (*record, h.digest().hex())
 
 
 def prepare_records(base, updates):
@@ -188,75 +108,45 @@ def prepare_records(base, updates):
         hashed_record = add_hash(serialized_record)
         document["hash"] = hashed_record[-1]
         records.append(hashed_record)
-    return (documents, RecordsFrame(list(base.keys()) + ["hash"], records))
+    return (documents, pd.DataFrame(records, columns=(list(base.keys()) + ["hash"])))
 
 
-def question_args(seq):
-    """
-    Join sufficient ?s (Not only 3)
-
-    See: https://de.wikipedia.org/wiki/Die_drei_%3F%3F%3F
-
-    Parameters
-    ----------
-        seq : list
-            arguments
-
-    Returns
-    -------
-        str
-            sql template
-    """
-    return "(" + ",".join(list("?" * len(seq))) + ")"
-
-
-def insertmany(conn, table, rf):
+def insertmany(session, table, df):
     """
     Insert all records into the DB.
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-        rf : RecordsFrame
-            list with all records
+    session : sqlalchemy.session.Session
+        database
+    table : sqlalchemy.types.Type
+        target table
+    df : pandas.DataFrame
+        dataframe all records
     """
-    tmpl = (
-        f"INSERT INTO {table}("
-        + ",".join(rf.fields)
-        + f") VALUES {question_args(rf.fields)}"
-    )
-    with conn:
-        conn.executemany(tmpl, rf.records)
+    session.bulk_insert_mappings(table, df.to_dict(orient="records"))
+    # TODO: do we want to commit here or somewhere else?
+    session.commit()
 
 
-def insertnew(conn, table, rf):
+def insertnew(session, table, df):
     """
     Insert all records that do not exist yet (determined by hash).
 
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-        rf : RecordsFrame
-            list with all records
+    session : sqlalchemy.session.Session
+        database
+    table : sqlalchemy.types.Type
+        target table
+    df : pandas.DataFrame
+        dataframe all records
     """
-    # check if they already exist
-    hash_idx = rf.fields.index("hash")
-    with conn:
-        elems = conn.execute(
-            f"SELECT hash FROM {table} WHERE hash IN {question_args(rf.records)}",
-            [r[hash_idx] for r in rf.records],
-        )
-        available = list(map(lambda x: x[0], elems.fetchall()))
-        new_records = list(filter(lambda x: x[hash_idx] not in available, rf.records))
-    # insert them now
-    insertmany(conn, table, RecordsFrame(rf.fields, new_records))
+    # TODO: why the hash field is a 1-tuple?
+    hashes = [h[0] for h in session.query(table.hash).all()]
+    new_records = df[~df["hash"].isin(hashes)]
+    insertmany(session, table, new_records)
 
 
 class HashError(KeyError):
@@ -267,59 +157,56 @@ class HashError(KeyError):
         super().__init__(descr)
 
 
-def select_hash(conn, table, bin_hash_partial):
+def select_hash(session, table_object, hash_partial):
     """
     Find a record by its hash.
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
-        bin_hash_partial : bytes
-            binary hash identifier
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.ext.declarative.api.DeclarativeMeta
+        table object
+    hash_partial : str
+        hash identifier
 
     Returns
     -------
-        dict
-            record
+    dict
+        record
     """
-    with conn:
-        elems = conn.execute(
-            f"SELECT * FROM {table} WHERE SUBSTR(hash,1,{len(bin_hash_partial)}) = ?",
-            [sqlite3.Binary(bin_hash_partial)],
+    available = (
+        session.query(table_object)
+        .filter(
+            sqlalchemy.sql.func.substr(table_object.hash, 1, len(hash_partial))
+            == hash_partial
         )
-        available = elems.fetchall()
+        .all()
+    )
     # too much?
     if len(available) > 1:
         raise HashError("hash is not unique", available)
     elif len(available) < 1:
         raise HashError("hash not found")
     # deserialize the thing
-    fs = fields(conn, table)
-    return deserialize(available[0], fs)
+    return deserialize(available[0])
 
 
-def select_all(conn, table):
+def select_all(session, table_object):
     """
     Collect all records.
 
     Parameters
     ----------
-        conn : sqlite3.Connection
-            database
-        table : string
-            target table
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.ext.declarative.api.DeclarativeMeta
+        table object
 
     Returns
     -------
-        list(dict)
-            list of records
+    list(dict)
+        list of records
     """
-    with conn:
-        elems = conn.execute(f"SELECT * FROM {table} WHERE 1 = 1")
-        available = elems.fetchall()
-    # deserialize the thing
-    fs = fields(conn, table)
-    return [deserialize(a, fs) for a in available]
+    available = session.query(table_object).all()
+    return [deserialize(a) for a in available]
