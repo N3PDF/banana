@@ -117,10 +117,12 @@ class NavigatorApp(abc.ABC):
                 created frame
         """
         # list all
-        t_m = self.table_manager(table)
+        tab_m = self.table_manager(table)
+
         if doc_id is None:
-            return t_m.all()
-        return t_m.get(doc_id)
+            return tab_m.all()
+
+        return tab_m.get(doc_id)
 
     def list_all(self, table, input_data=None):
         """
@@ -145,9 +147,7 @@ class NavigatorApp(abc.ABC):
         for el in input_data:
             # obj = {"hash": el["hash"][:6]}
             obj = {"uid": el["uid"]}
-            for k, v in el.items():
-                if "hash" in k:
-                    obj[k] = v[: self.hash_len]
+            obj["hash"] = el["hash"][: self.hash_len]
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
             # dt = datetime.fromisoformat(el["_created"])
             # obj["created"] = human_dates(dt)

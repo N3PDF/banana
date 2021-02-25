@@ -14,11 +14,9 @@ class DFdict(dict):
         self.__dict__.update(state)
         self.__init__()
 
-    def print(self, *msgs, sep=" ", end="\n"):
+    def print(self, *msgs, sep=" ", end="\n", position=None):
         """
         Add new messages to the representation
-
-        .. todo :: will likely be removed in the future
 
         Parameters
         ----------
@@ -29,13 +27,20 @@ class DFdict(dict):
             end : str
                 end-of-line marker
         """
+        buffer = []
+        # usually an empty print only add an empty line
         if len(msgs) > 0:
-            self.msgs.append(msgs[0])
+            buffer.append(msgs[0])
 
             for msg in msgs[1:]:
-                self.msgs.append(sep)
-                self.msgs.append(msg)
-        self.msgs.append(end)
+                buffer.append(sep)
+                buffer.append(msg)
+        buffer.append(end)
+
+        if position is None:
+            position = len(self.msgs)
+
+        self.msgs = self.msgs[:position] + buffer + self.msgs[position:]
 
     def __setitem__(self, key, value):
         self.print(key)

@@ -302,7 +302,6 @@ class BenchmarkRunner:
         # obtain data
         # TODO: quickfix for different eko/yadism format
         log_record = self.log(t, o, pdf, me, ext)
-        __import__("pdb").set_trace()
         if isinstance(log_record, dfdict.DFdict):
             log_document = log_record.to_document()
         else:
