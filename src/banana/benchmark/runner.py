@@ -16,7 +16,7 @@ import sqlalchemy.orm, sqlalchemy.ext
 
 from .. import toy
 
-from ..data import theories, db
+from ..data import theories, db, dfdict
 
 
 def get_pdf(pdf_name):
@@ -302,12 +302,13 @@ class BenchmarkRunner:
         # obtain data
         # TODO: quickfix for different eko/yadism format
         log_record = self.log(t, o, pdf, me, ext)
-        if isinstance(log_record, dict):
+        __import__("pdb").set_trace()
+        if isinstance(log_record, dfdict.DFdict):
+            log_document = log_record.to_document()
+        else:
             log_document = dict(
                 map(lambda t: (t[0], t[1].to_document()), log_record.items())
             )
-        else:
-            log_document = log_record.to_document()
 
         # create record
         record = {
