@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import pandas as pd
+import rich
+from rich import style
+import rich.panel, rich.box, rich.markdown
+
 
 class DFdict(dict):
     """
@@ -51,6 +56,32 @@ class DFdict(dict):
     def __repr__(self):
         return "".join([str(x) for x in self.msgs])
 
+    def fancy(self, file=None):
+        """
+        Print on stdout... with style!
+
+        Parameters
+        ----------
+        file : IO[str]
+            File to write to, None for stdout (passed down to `rich`)
+        """
+        for msg in self.msgs:
+            if isinstance(msg, str):
+                if msg == "\n":
+                    continue
+                elif msg in self:
+                    rich.print(file=file)
+                    rich.print(
+                        rich.panel.Panel.fit(
+                            msg, style="magenta", box=rich.box.HORIZONTALS
+                        ),
+                        file=file,
+                    )
+                else:
+                    rich.print(rich.markdown.Markdown(msg), file=file)
+            else:
+                rich.print(msg, file=file)
+
     def to_document(self):
         """
         Convert dataframes back to a true dictionary
@@ -85,7 +116,7 @@ class DFdict(dict):
         """
         dfd = cls()
         for k, v in d.items():
-            dfd[k] = v
+            dfd[k] = pd.DataFrame(v)
 
         del dfd["__msgs__"]
         dfd.msgs = d["__msgs__"]

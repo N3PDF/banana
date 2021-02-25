@@ -273,7 +273,7 @@ class BenchmarkRunner:
             ext = self.insert_external(session, t, o, pdf)
         # create log
         log_record = self.insert_log(session, t, o, pdf, me, ext)
-        print(log_record)  # TODO delegate to rich
+        log_record.fancy()
 
     def insert_log(self, session, t, o, pdf, me, ext):
         """
