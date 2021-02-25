@@ -300,7 +300,15 @@ class BenchmarkRunner:
             result
         """
         # obtain data
+        # TODO: quickfix for different eko/yadism format
         log_record = self.log(t, o, pdf, me, ext)
+        if isinstance(log_record, dict):
+            log_document = dict(
+                map(lambda t: (t[0], t[1].to_document()), log_record.items())
+            )
+        else:
+            log_document = log_record.to_document()
+
         # create record
         record = {
             "t_hash": t["hash"],
@@ -308,7 +316,7 @@ class BenchmarkRunner:
             "pdf": pdf.set().name,
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
-            "log": pickle.dumps(log_record.to_document()),
+            "log": pickle.dumps(log_document),
         }
         log_hash = hashlib.sha256(pickle.dumps(record)).digest().hex()
         new_log = db.Log(
