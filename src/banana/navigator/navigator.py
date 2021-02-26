@@ -156,12 +156,7 @@ class NavigatorApp(abc.ABC):
             #  - update timezone to local
             #  - cast to naïve timezone again
             # TODO: lift the former steps in human_dates
-            obj["ctime"] = human_dates(
-                el["ctime"]
-                .replace(tzinfo=timezone.utc)
-                .astimezone()
-                .replace(tzinfo=None)
-            )
+            obj["ctime"] = human_dates(el["ctime"])
             data.append(obj)
         # output
         df = pd.DataFrame(data)
