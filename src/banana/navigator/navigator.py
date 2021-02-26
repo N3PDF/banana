@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import timezone
 import abc
 
 import sqlalchemy.orm
@@ -149,8 +149,17 @@ class NavigatorApp(abc.ABC):
             obj = {"uid": el["uid"]}
             obj["hash"] = el["hash"][: self.hash_len]
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
-            # dt = datetime.fromisoformat(el["_created"])
-            # obj["created"] = human_dates(dt)
+            # datetime is saved in UTC, in order to convert:
+            #  - make datetime object aware of timezone
+            #  - update timezone to local
+            #  - cast to naïve timezone again
+            # TODO: lift the former steps in human_dates
+            obj["ctime"] = human_dates(
+                el["ctime"]
+                .replace(tzinfo=timezone.utc)
+                .astimezone()
+                .replace(tzinfo=None)
+            )
             data.append(obj)
         # output
         df = pd.DataFrame(data)

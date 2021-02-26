@@ -9,6 +9,7 @@ Same considerations apply to datetime, with the further gain that SQLite it's
 storing as he wish but able to use some dedicated functions.
 """
 import pathlib
+from datetime import datetime, timezone
 
 import sqlalchemy
 from sqlalchemy import Column, Integer, Float, String, Text, DateTime
@@ -21,8 +22,8 @@ class MyBase:
     hash = Column(String(64), unique=True)
     # TODO: should we use `func.utcnow`?
     # https://stackoverflow.com/a/33532154/8653979
-    ctime = Column(DateTime(timezone=True), server_default=func.now())
-    mtime = Column(DateTime(timezone=True), onupdate=func.now())
+    ctime = Column(DateTime(), default=lambda: datetime.now(timezone.utc))
+    mtime = Column(DateTime(), onupdate=lambda: datetime.now(timezone.utc))
 
 
 Base = declarative_base(cls=MyBase)
