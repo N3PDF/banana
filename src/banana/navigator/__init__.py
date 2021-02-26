@@ -26,9 +26,11 @@ def register_globals(mod, app):
         "ext": app.change_external,
         "g": app.get,
         "ls": app.list_all,
+        "dfl": app.log_as_dfd,
         "run": app.execute_runner,
         # "truncate_logs": app.logs.truncate,
         "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2)),
+        "compare": app.compare_external,
     }
 
     mod.update(new_objs)
