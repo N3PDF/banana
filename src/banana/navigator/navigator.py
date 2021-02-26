@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from datetime import timezone
 import abc
+from datetime import timezone
+import sys
+import importlib
 
 import sqlalchemy.orm
 import pandas as pd
@@ -164,3 +166,10 @@ class NavigatorApp(abc.ABC):
         # output
         df = pd.DataFrame(data)
         return df
+
+    def execute_runner(self, runner_name="sandbox"):
+        sys.path.insert(0, str(self.cfg["dir"] / "runners"))
+        runner = importlib.import_module(runner_name)
+        sys.path.pop(0)
+
+        runner.main()
