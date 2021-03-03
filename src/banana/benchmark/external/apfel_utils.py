@@ -1,7 +1,7 @@
 import apfel
 
 
-def load_apfel(theory, ocard, pdf="ToyLH"):
+def load_apfel(theory, ocard, pdf):
     """
     Set APFEL parameter from ``theory`` dictionary.
 
@@ -106,28 +106,6 @@ def load_apfel(theory, ocard, pdf="ToyLH"):
     # Intrinsic charm
     apfel.EnableIntrinsicCharm(theory.get("IC"))
 
-    # TODO: keep this?
-    # Not included in the map
-    #
-    # Truncated Epsilon
-    # APFEL::SetEpsilonTruncation(1E-1);
-    #
-    # Set maximum scale
-    # APFEL::SetQLimits(theory.Q0, theory.QM );
-    #
-    # if (theory.SIA)
-    # {
-    #   APFEL::SetPDFSet("kretzer");
-    #   APFEL::SetTimeLikeEvolution(true);
-    # }
-
-    # Set APFEL interpolation grid
-    #
-    # apfel.SetNumberOfGrids(3)
-    # apfel.SetGridParameters(1, 50, 3, 1e-5)
-    # apfel.SetGridParameters(2, 50, 3, 2e-1)
-    # apfel.SetGridParameters(3, 50, 3, 8e-1)
-
     # set APFEL grid to ours
     apfel.SetNumberOfGrids(1)
     # create a 'double *' using swig wrapper
@@ -144,14 +122,5 @@ def load_apfel(theory, ocard, pdf="ToyLH"):
 
     # set pdf
     apfel.SetPDFSet(pdf)
-
-    # Specific for DIS
-    # # set Target
-    # apfel.SetProcessDIS(ocard.get("prDIS", "EM"))
-    # apfel.SetPropagatorCorrection(ocard.get("PropagatorCorrection", 0))
-    # apfel.SetPolarizationDIS(ocard.get("PolarizationDIS", 0))
-    # apfel.SetProjectileDIS(ocard.get("ProjectileDIS", "electron"))
-    # # apfel initialization for DIS
-    # apfel.InitializeAPFEL_DIS()
 
     return apfel
