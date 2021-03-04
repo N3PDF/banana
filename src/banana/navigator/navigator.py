@@ -237,6 +237,44 @@ class NavigatorApp(abc.ABC):
 
         return id, log
 
+    def list_all_similar_logs(self, ref_hash):
+        """
+        Search logs which are similar to the one given, i.e., same theory and,
+        same observable, and same pdfset.
+
+        Parameters
+        ----------
+            ref_hash : hash
+                partial hash of the reference log
+
+        Returns
+        -------
+            df : pandas.DataFrame
+                created frame
+
+        Note
+        ----
+        The external it's not used to discriminate logs: even different
+        externals should return the same numbers, so it's relevant to keep all
+        of them.
+        """
+        # obtain reference log
+        ref_log = self.get(l, ref_hash)
+
+        related_logs = []
+        all_logs = self.get(l)
+
+        for lg in all_logs:
+            if lg["t_hash"] != ref_log["t_hash"]:
+                continue
+            if lg["o_hash"] != ref_log["o_hash"]:
+                continue
+            if lg["pdf"] != ref_log["pdf"]:
+                continue
+            related_logs.append(lg)
+
+        return self.list_all(l, related_logs)
+
     def compare_external(self, dfd1, dfd2):
         """
         Compare two results in the cache.
@@ -299,6 +337,35 @@ class NavigatorApp(abc.ABC):
             cache_diff[obs] = table_out
 
         return cache_diff
+
+    @abc.abstractstaticmethod
+    def is_valid_physical_object(name):
+        pass
+
+    def crashed_log(self, doc_hash):
+        """
+        Check if the log passed the default assertions
+
+        Paramters
+        ---------
+            doc_hash : hash
+                log hash
+
+        Returns
+        -------
+            cdfd : dict
+                log without kinematics
+        """
+        dfd = self.log_as_dfd(doc_hash)
+        if "_crash" not in dfd:
+            raise ValueError("log didn't crash!")
+        cdfd = {}
+        for name, df in dfd:
+            if self.is_valid_physical_object(name):
+                cdfd[name] = f"{len(df)} points"
+            else:
+                cdfd[name] = dfd[name]
+        return cdfd
 
     def execute_runner(self, runner_name="sandbox"):
         sys.path.insert(0, str(self.cfg["dir"] / "runners"))

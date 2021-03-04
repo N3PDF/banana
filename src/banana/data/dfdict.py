@@ -56,6 +56,32 @@ class DFdict(dict):
     def __repr__(self):
         return "".join([str(x) for x in self.msgs])
 
+    def merge(self, other):
+        merged = type(self)()
+
+        for k in set(self.keys()) | set(other.keys()):
+            if k not in other:
+                merged[k] = self[k]
+            elif k in other:
+                merged[k] = pd.concat([self[k], other[k]])
+            else:
+                merged[k] = other[k]
+
+        return merged
+
+    @property
+    def q2s(self):
+        q2s = set()
+        for df in self.values():
+            q2s |= set(df["Q2"])
+        return q2s
+
+    def q2_slice(self, q2):
+        sliced = type(self)()
+        for k, v in self.items():
+            sliced[k] = v[v["Q2"] == q2]
+        return sliced
+
     def fancy(self, file=None):
         """
         Print on stdout... with style!
