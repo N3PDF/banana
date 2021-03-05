@@ -132,7 +132,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def log(self, theory, ocard, pdf, me, ext):
+    def log(self, pdf, me, ext):
         """
         Create log from our and external result.
 

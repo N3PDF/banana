@@ -29,6 +29,7 @@ def register_globals(mod, app):
         "dfl": app.log_as_dfd,
         "run": app.execute_runner,
         # "truncate_logs": app.logs.truncate,
+        "diff": app.subtract_tables,
         "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2)),
         "simlogs": app.list_all_similar_logs,
         "compare": app.compare_external,
