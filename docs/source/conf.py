@@ -22,8 +22,13 @@ source_dir = pathlib.Path(__file__).parent
 # -- Project information -----------------------------------------------------
 
 project = "banana"
-copyright = "2020, N3PDF team"
+copyright = "2020-2021, N3PDF team" # pylint: disable=redefined-builtin
 author = "Felix Hekhorn, Alessandro Candido"
+
+# The short X.Y version
+version = banana.version.short_version
+if not banana.version.is_released:
+    version = "develop"
 
 # The full version, including alpha/beta/rc tags
 release = banana.version.full_version
@@ -86,6 +91,8 @@ html_static_path = ["_static"]
 
 
 # -- Extension configuration -------------------------------------------------
+
+autosectionlabel_prefix_document = True
 
 # -- Options for intersphinx extension ---------------------------------------
 

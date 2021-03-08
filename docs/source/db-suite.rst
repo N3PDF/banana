@@ -47,14 +47,14 @@ Input database will consist of the tables:
   - *PTO*: perturbative order
   - *XIF*, *XIR*: 
   - *mc*. *Qmc*, *mb*, *Qmb*, *mt*, *Qmt*:
-  - ...
+  - etc.
 
 - **observables**: each entry of this table will represent a *set of DIS
   observables*, and also some parameters involved in the computation of the
   observables themselves; the following entries are expected:
 
   - *xgrid*: the grid on which the interpolation is evaluated 
-  - ...
+  - etc.
 
 - **apfel_cache/qcdnum_cache/regression**: to keep a cache of the external output. Since it is stable
   there is no need of rerunning it multiple times to compute the same

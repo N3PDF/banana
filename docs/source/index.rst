@@ -16,6 +16,7 @@ Welcome to banana!
    :caption: Contents:
    
    DB <db-suite>
+   ORM <orm>
    API <modules/banana/banana>
    TODOs <development/code_todos>
 

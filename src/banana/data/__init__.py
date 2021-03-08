@@ -7,7 +7,7 @@ import itertools
 
 def cartesian_product(inp):
     """
-    Compute the power set of a dictionary.
+    Compute the cartesion product of a dictionary.
 
     Thank you: https://stackoverflow.com/questions/5228158/
 

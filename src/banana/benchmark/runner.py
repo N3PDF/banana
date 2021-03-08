@@ -12,7 +12,8 @@ import rich.box
 import rich.panel
 import rich.progress
 import rich.markdown
-import sqlalchemy.orm, sqlalchemy.ext
+import sqlalchemy.orm
+import sqlalchemy.ext
 
 from .. import toy
 

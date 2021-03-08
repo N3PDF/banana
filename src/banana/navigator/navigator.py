@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import abc
-from datetime import timezone
 import textwrap
 import sys
 import importlib
@@ -199,7 +198,7 @@ class NavigatorApp(abc.ABC):
         """
         Load all structure functions in log as DataFrame
 
-        #  Parameters
+        Parameters
         ----------
             doc_hash : hash
                 document hash
@@ -228,15 +227,15 @@ class NavigatorApp(abc.ABC):
     def load_dfd(dfd, retrieve_method):
         if isinstance(dfd, dfdict.DFdict):
             log = dfd
-            id = "not-an-id"
+            id_ = "not-an-id"
         else:
             log = retrieve_method(dfd)
-            id = dfd
+            id_ = dfd
 
         if log is None:
-            raise ValueError(f"Log id: '{id}' not found")
+            raise ValueError(f"Log id: '{id_}' not found")
 
-        return id, log
+        return id_, log
 
     def list_all_similar_logs(self, ref_hash):
         """
@@ -424,8 +423,8 @@ class NavigatorApp(abc.ABC):
         """
         Check if the log passed the default assertions
 
-        Paramters
-        ---------
+        Parameters
+        ----------
             doc_hash : hash
                 log hash
 
