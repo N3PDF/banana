@@ -15,6 +15,8 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import pathlib
 
+import banana.version
+
 source_dir = pathlib.Path(__file__).parent
 
 # -- Project information -----------------------------------------------------
@@ -24,8 +26,9 @@ copyright = "2020, N3PDF team"
 author = "Felix Hekhorn, Alessandro Candido"
 
 # The full version, including alpha/beta/rc tags
-release = "0.1.0"
+release = banana.version.full_version
 
+source_dir = pathlib.Path(__file__).parent
 
 # -- General configuration ---------------------------------------------------
 
@@ -46,6 +49,13 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.extlinks",
 ]
+
+# The master toctree document.
+master_doc = "index"
+bibtex_bibfiles = [
+    str(p.relative_to(source_dir)) for p in (source_dir / "refs").glob("*.bib")
+]
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

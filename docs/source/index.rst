@@ -15,6 +15,7 @@ Welcome to banana!
    :maxdepth: 2
    :caption: Contents:
    
+   DB <db-suite>
    API <modules/banana/banana>
    TODOs <development/code_todos>
 
