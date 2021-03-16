@@ -326,10 +326,11 @@ class BenchmarkRunner:
         )
         try:
             session.add(new_log)
-            # TODO: do we want to commit here or somewhere else?
             session.commit()
             print(f"\nLog added, hash={log_hash}\n")
         except sqlalchemy.exc.IntegrityError:
+            session.rollback()
+            # TODO update atime
             print(f"\nLog already present, hash={log_hash}\n")
         return log_record
 
