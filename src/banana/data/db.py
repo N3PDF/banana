@@ -13,7 +13,8 @@ from datetime import datetime, timezone
 
 import sqlalchemy
 from sqlalchemy import Column, Integer, Float, String, Text, DateTime
-#from sqlalchemy.sql import func
+
+# from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -93,11 +94,31 @@ class Log(CalcResult, Base):
     log = Column(Text)
 
 
-def engine(path):
-    # Create an engine that stores data in the local directory's
-    # sqlalchemy_example.db file.
-    path = pathlib.Path(path).absolute()
-    return sqlalchemy.create_engine(f"sqlite:///{str(path)}")
+def engine(
+    path="",
+    dialect="sqlite",
+    driver=None,
+    username=None,
+    password=None,
+    host=None,
+    port=None,
+):
+    # Create an engine that stores data in the local directory
+    infrastructure = dialect
+    if driver is not None:
+        infrastructure += f"+{driver}"
+    login = ""
+    if username is not None and password is not None:
+        login = f"{username}:{password}@"
+    address = ""
+    if host is not None:
+        address += f"{host}"
+    if port is not None:
+        address += f":{port}"
+    if path:
+        path = "/" + str(pathlib.Path(path).absolute())
+
+    return sqlalchemy.create_engine(f"{infrastructure}://{login}{address}{path}")
 
 
 def create_db(base_cls, engine):
