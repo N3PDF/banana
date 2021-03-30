@@ -159,6 +159,25 @@ class NavigatorApp(abc.ABC):
         df = pd.DataFrame(data)
         return df
 
+    def show_full_logs(self, t_fields=None, o_fields=None):
+        if t_fields is None:
+            t_fields = []
+
+        if o_fields is None:
+            o_fields = []
+
+        theories = self.list_all(t)[t_fields]
+        theories["theory"] = self.list_all(t)["hash"]
+        ocards = self.list_all(o)[o_fields]
+        ocards["ocard"] = self.list_all(o)["hash"]
+        logs_df = (
+            self.list_all(l).merge(theories, on="theory").merge(ocards, on="ocard")
+        )
+        columns = logs_df.columns.tolist()
+        columns.remove("ctime")
+        logs_df = logs_df[columns + ["ctime"]]
+        return logs_df.drop(["theory", "ocard"], axis=1)
+
     def cache_as_dfd(self, doc_hash):
         """
         Load all structure functions in log as DataFrame

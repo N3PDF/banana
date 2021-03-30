@@ -26,6 +26,7 @@ def register_globals(mod, app):
         "ext": app.change_external,
         "g": app.get,
         "ls": app.list_all,
+        "logs": app.show_full_logs,
         "dfl": app.log_as_dfd,
         "run": app.execute_runner,
         # "truncate_logs": app.logs.truncate,
