@@ -159,7 +159,7 @@ class NavigatorApp(abc.ABC):
         df = pd.DataFrame(data)
         return df
 
-    def show_full_logs(self, t_fields=None, o_fields=None):
+    def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
         if t_fields is None:
             t_fields = []
 
@@ -176,7 +176,9 @@ class NavigatorApp(abc.ABC):
         columns = logs_df.columns.tolist()
         columns.remove("ctime")
         logs_df = logs_df[columns + ["ctime"]]
-        return logs_df.drop(["theory", "ocard"], axis=1)
+        if not keep_hashes:
+            logs_df = logs_df.drop(["theory", "ocard"], axis=1)
+        return logs_df
 
     def cache_as_dfd(self, doc_hash):
         """
