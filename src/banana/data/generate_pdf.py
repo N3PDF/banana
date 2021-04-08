@@ -189,7 +189,15 @@ def make_filter_pdf(name, active_labels, pdf_name):
     target = pathlib.Path(name)
 
     # copy info file
-    shutil.copy(str(src / f"{pdf_set}.info"), str(target / f"{name}.info"))
+    with open(src / f"{pdf_set}.info") as info_f:
+        info = info_f.read()
+        if evol_basis:
+            old_info = info
+            info = re.sub(r"(ForcePositive:) \d", r"\1 0", info)
+            if info == old_info:
+                info += "ForcePositive: 0\n"
+        with open(target / f"{name}.info", "w") as new_info_f:
+            new_info_f.write(info)
     # read actual file
     cnt = []
     with open(src / ("%s_%04d.dat" % (pdf_set, pdf.memberID)), "r") as o:
