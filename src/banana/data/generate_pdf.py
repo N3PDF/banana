@@ -155,11 +155,19 @@ def make_debug_pdf(name, active_labels, lhapdf_like=None):
     else:
         pdf_callable = lhapdf_like.xfxQ2
     # iterate partons
-    for pid in pids_out:
-        if evol_basis or pid in active_labels:
-            pdf_table.append([pdf_callable(pid, x, Q2) for x in xgrid for Q2 in Q2grid])
-        else:
-            pdf_table.append([0.0 for _ in xgrid for _ in Q2grid])
+    if not evol_basis:
+        for pid in pids_out:
+            if pid in active_labels:
+                pdf_table.append(
+                    [pdf_callable(pid, x, Q2) for x in xgrid for Q2 in Q2grid]
+                )
+            else:
+                pdf_table.append([0.0 for _ in xgrid for _ in Q2grid])
+    else:
+        raise NotImplementedError
+        # TODO:
+        # for lab active_labels:
+        #   generate directly in evol_basis, and then rotate
     # write to output
     dump_pdf(name, xgrid, Q2grid, pids_out, np.array(pdf_table).T)
 
