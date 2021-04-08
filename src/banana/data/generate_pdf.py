@@ -11,6 +11,8 @@ import numpy as np
 
 from jinja2 import Environment, FileSystemLoader
 import lhapdf
+
+from . import basis_rotation as br
 from .. import toy
 
 # ==========
@@ -105,7 +107,18 @@ def dump_info(name, description, pids):
 # ==========
 
 
-def make_debug_pdf(name, active_pids, lhapdf_like=None):
+def project_evol_basis(elems, elems_pids, requested_labels):
+    elems = np.array(elems, dtype=float)
+    pids_indices = [br.flavor_basis_pids.index(pid) for pid in elems_pids]
+    evol_elems = br.rotate_flavor_to_evolution[:, pids_indices] @ elems
+    labels_indices = [br.evol_basis.index(lab) for lab in requested_labels]
+    filtered_evol_elems = np.zeros_like(evol_elems)
+    filtered_evol_elems[labels_indices] = evol_elems[labels_indices]
+    flav_elems = np.linalg.inv(br.rotate_flavor_to_evolution) @ filtered_evol_elems
+    return flav_elems[pids_indices]
+
+
+def make_debug_pdf(name, active_labels, lhapdf_like=None):
     """
     Create a new pdf.
 
@@ -121,11 +134,16 @@ def make_debug_pdf(name, active_pids, lhapdf_like=None):
         lhapdf_like : None or object
             parent pdf
     """
+    evol_basis = isinstance(active_labels[0], str)
+
     # check flavors
-    max_nf = 3
-    for q in range(4, 6 + 1):
-        if q in active_pids or -q in active_pids:
-            max_nf = q
+    if evol_basis:
+        max_nf = 6
+    else:
+        max_nf = 3
+        for q in range(4, 6 + 1):
+            if q in active_labels or -q in active_labels:
+                max_nf = q
     pids_out = list(range(-max_nf, 0)) + list(range(1, max_nf + 1)) + [21]
     # generate actual grids
     xgrid = np.geomspace(1e-9, 1, 240)
@@ -138,10 +156,10 @@ def make_debug_pdf(name, active_pids, lhapdf_like=None):
         pdf_callable = lhapdf_like.xfxQ2
     # iterate partons
     for pid in pids_out:
-        if pid in active_pids:
+        if evol_basis or pid in active_labels:
             pdf_table.append([pdf_callable(pid, x, Q2) for x in xgrid for Q2 in Q2grid])
         else:
-            pdf_table.append([0.0 for x in xgrid for Q2 in Q2grid])
+            pdf_table.append([0.0 for _ in xgrid for _ in Q2grid])
     # write to output
     dump_pdf(name, xgrid, Q2grid, pids_out, np.array(pdf_table).T)
 
@@ -150,7 +168,7 @@ def make_debug_pdf(name, active_pids, lhapdf_like=None):
     dump_info(name, description, pids_out)
 
 
-def make_filter_pdf(name, active_pids, pdf_name):
+def make_filter_pdf(name, active_labels, pdf_name):
     """
     Create a new pdf from a parent PDF.
 
@@ -163,10 +181,13 @@ def make_filter_pdf(name, active_pids, pdf_name):
         pdf_name : str
             parent pdf set from LHAPDF
     """
+    evol_basis = isinstance(active_labels[0], str)
+
     pdf = lhapdf.mkPDF(pdf_name)
     pdf_set = pdf.set().name
     src = pathlib.Path(lhapdf.paths()[0]) / pdf_set
     target = pathlib.Path(name)
+
     # copy info file
     shutil.copy(str(src / f"{pdf_set}.info"), str(target / f"{name}.info"))
     # read actual file
@@ -186,12 +207,17 @@ def make_filter_pdf(name, active_pids, pdf_name):
         # data
         for l in cnt[head_section + 4 : next_head_section]:
             elems = re.split(r"\s+", l.strip())
-            new_elems = []
-            for pid, e in zip(pids, elems):
-                if pid in active_pids:
-                    new_elems.append(e)
-                else:
-                    new_elems.append(zero)
+            if evol_basis:
+                new_elems = [
+                    f"{x:.8e}" for x in project_evol_basis(elems, pids, active_labels)
+                ]
+            else:
+                new_elems = []
+                for pid, e in zip(pids, elems):
+                    if pid in active_labels:
+                        new_elems.append(e)
+                    else:
+                        new_elems.append(zero)
             new_cnt.append((" ".join(new_elems)).strip() + "\n")
         new_cnt.append(cnt[next_head_section])
         # iterate
@@ -199,6 +225,36 @@ def make_filter_pdf(name, active_pids, pdf_name):
     # write output
     with open(target / ("%s_%04d.dat" % (name, pdf.memberID)), "w") as o:
         o.write("".join(new_cnt))
+
+
+def pdf_label(arg):
+    try:
+        value = int(arg)
+        if value not in br.flavor_basis_pids:
+            raise ValueError
+        return value
+    except ValueError:
+        if arg in br.flavor_basis_names:
+            return br.flavor_basis_pids[br.flavor_basis_names.index(arg)]
+        elif arg in br.evol_basis:
+            return arg
+        else:
+            raise argparse.ArgumentTypeError(f"'{arg}' is not a valid pdf label")
+
+
+def verify_labels(labels):
+    if all([isinstance(lab, int) for lab in labels]):
+        return labels
+    common_labels = {22: "ph", 21: "g"}
+    try:
+        labels = [common_labels[lab] if lab in common_labels else lab for lab in labels]
+        if all([isinstance(lab, str) for lab in labels]):
+            return labels
+        raise TypeError
+    except (KeyError, TypeError):
+        raise SystemExit(
+            "All the pdf labels should belong to the same basis (flavor or evolution)"
+        )
 
 
 def generate_pdf():
@@ -215,21 +271,22 @@ def generate_pdf():
         type=str,
         help="parent pdf set",
     )
-    ap.add_argument("pids", type=int, help="active pids", nargs="+")
+    ap.add_argument("labels", type=pdf_label, help="active pdfs", nargs="+")
     ap.add_argument("-i", "--install", action="store_true", help="install into LHAPDF")
     args = ap.parse_args()
     print(args)
     pathlib.Path(args.name).mkdir(exist_ok=True)
+    labels = verify_labels(args.labels)
     # find callable
-    if args.from_pdf_set == "toyLH":  # from toy
+    if args.from_pdf_set.lower() in ["toylh", "toy"]:  # from toy
         pdf_set = toy.mkPDF("toyLH", 0)
-        make_debug_pdf(args.name, args.pids, pdf_set)
+        make_debug_pdf(args.name, labels, pdf_set)
     elif isinstance(args.from_pdf_set, str) and len(args.from_pdf_set) > 0:
-        make_filter_pdf(args.name, args.pids, args.from_pdf_set)
+        make_filter_pdf(args.name, labels, args.from_pdf_set)
     else:
         pdf_set = None
         # create
-        make_debug_pdf(args.name, args.pids, pdf_set)
+        make_debug_pdf(args.name, labels, pdf_set)
     # install
     if args.install:
         run_install_pdf(args.name)
@@ -264,3 +321,7 @@ def run_install_pdf(name):
     if not src.exists():
         raise FileExistsError(src)
     shutil.move(str(src), str(target))
+
+
+if __name__ == "__main__":
+    generate_pdf()
