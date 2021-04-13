@@ -163,11 +163,25 @@ def make_debug_pdf(name, active_labels, lhapdf_like=None):
                 )
             else:
                 pdf_table.append([0.0 for _ in xgrid for _ in Q2grid])
+    elif lhapdf_like is not None:
+        pre_pdf_table = []
+        for x in xgrid:
+            for Q2 in Q2grid:
+                elems = [pdf_callable(pid, x, Q2) for pid in pids_out]
+                pre_pdf_table.append(project_evol_basis(elems, pids_out, active_labels))
+        pdf_table = np.array(pre_pdf_table).T
     else:
-        raise NotImplementedError
-        # TODO:
-        # for lab active_labels:
-        #   generate directly in evol_basis, and then rotate
+        evol_pdf_table = []
+        for pid in br.evol_basis:
+            if pid in active_labels:
+                evol_pdf_table.append(
+                    [pdf_callable(pid, x, Q2) for x in xgrid for Q2 in Q2grid]
+                )
+            else:
+                evol_pdf_table.append([0.0 for _ in xgrid for _ in Q2grid])
+        pdf_table = np.linalg.inv(br.rotate_flavor_to_evolution) @ np.array(
+            evol_pdf_table
+        )
     # write to output
     dump_pdf(name, xgrid, Q2grid, pids_out, np.array(pdf_table).T)
 
@@ -294,15 +308,16 @@ def generate_pdf():
     pathlib.Path(args.name).mkdir(exist_ok=True)
     labels = verify_labels(args.labels)
     # find callable
-    if args.from_pdf_set.lower() in ["toylh", "toy"]:  # from toy
-        pdf_set = toy.mkPDF("toyLH", 0)
-        make_debug_pdf(args.name, labels, pdf_set)
-    elif isinstance(args.from_pdf_set, str) and len(args.from_pdf_set) > 0:
-        make_filter_pdf(args.name, labels, args.from_pdf_set)
-    else:
+    if args.from_pdf_set is None:
         pdf_set = None
         # create
         make_debug_pdf(args.name, labels, pdf_set)
+    elif args.from_pdf_set.lower() in ["toylh", "toy"]:  # from toy
+        pdf_set = toy.mkPDF("toyLH", 0)
+        make_debug_pdf(args.name, labels, pdf_set)
+    else:
+        make_filter_pdf(args.name, labels, args.from_pdf_set)
+
     # install
     if args.install:
         run_install_pdf(args.name)
