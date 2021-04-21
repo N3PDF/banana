@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-def compare_dicts(d1, d2, exclude_underscored=False, key_width=20, value_width=30):
+def compare_dicts(d1, d2, exclude_underscored=False, key_width=20, value_width=30, exclude_keys=None):
     """
     Check which entries of the two dictionaries are different, and output
     the values.
@@ -20,6 +20,8 @@ def compare_dicts(d1, d2, exclude_underscored=False, key_width=20, value_width=3
     print("┌", "─" * (key_width + 2), "┬", "─" * (value_width * 2 + 1 + 2), "┐", sep="")
     for k in d1.keys() | d2.keys():
         if exclude_underscored and k[0] == "_":
+            continue
+        if exclude_keys is not None and k in exclude_keys:
             continue
 
         if k not in d1:

@@ -31,7 +31,7 @@ def register_globals(mod, app):
         "run": app.execute_runner,
         # "truncate_logs": app.logs.truncate,
         "diff": app.subtract_tables,
-        "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2)),
+        "cmpt": lambda id1, id2: compare_dicts(app.get(t, id1), app.get(t, id2), exclude_keys=["uid", "hash", "ctime"]),
         "simlogs": app.list_all_similar_logs,
         "compare": app.compare_external,
         "crashed_log": app.crashed_log,
