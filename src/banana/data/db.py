@@ -64,6 +64,7 @@ class Theory(Base):
     XIR = Column(Float)
     alphaqed = Column(Float)
     alphas = Column(Float)
+    fact_to_ren_scale_ratio = Column(Float)
     global_nx = Column(Integer)
     kDISbThr = Column(Float)
     kDIScThr = Column(Float)
