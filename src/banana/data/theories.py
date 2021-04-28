@@ -4,6 +4,7 @@ import pathlib
 import yaml
 
 from . import sql
+from . import db
 
 _here = pathlib.Path(__file__).parent
 
@@ -14,9 +15,9 @@ with open(_here / "theory_template.yaml") as f:
 default_card = dict(sorted(default_card.items()))
 
 # db interface
-def load(conn, updates):
+def load(session, updates):
     # add hash
-    raw_records, rf = sql.prepare_records(default_card, updates)
+    raw_records, df = sql.prepare_records(default_card, updates)
     # insert new ones
-    sql.insertnew(conn, "theories", rf)
+    sql.insertnew(session, db.Theory, df)
     return raw_records

@@ -4,3 +4,4 @@ pytest-cov
 pyfakefs
 pygit2
 semver
+packutil

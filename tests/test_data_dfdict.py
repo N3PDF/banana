@@ -2,7 +2,8 @@
 import pandas as pd
 from banana.data import dfdict
 
-class TestDFdict():
+
+class TestDFdict:
     def test_print(self):
         dfd = dfdict.DFdict()
         dfd["a"] = 1
@@ -17,5 +18,7 @@ class TestDFdict():
         d = {"a": [1]}
         df = pd.DataFrame.from_dict(d)
         dfd["test"] = df
-        assert dfd.to_document() == {"test":[{"a": 1}]}
-
+        doc = dfd.to_document()
+        assert doc["__msgs__"] == ["test", "\n", df, "\n", "\n"]
+        del doc["__msgs__"]
+        assert doc == {"test": [{"a": 1}]}

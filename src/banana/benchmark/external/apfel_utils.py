@@ -1,9 +1,7 @@
-import platform
-
-import numpy as np
+import apfel
 
 
-def load_apfel(theory, observables, pdf="ToyLH"):
+def load_apfel(theory, ocard, pdf):
     """
     Set APFEL parameter from ``theory`` dictionary.
 
@@ -11,13 +9,16 @@ def load_apfel(theory, observables, pdf="ToyLH"):
     ----------
     theory : dict
         theory and process parameters
+    ocard : dict
+        ocard parameters
+    pdf : str
+        pdf name
 
     Returns
     -------
     module
         loaded apfel wrapper
     """
-    import apfel  # pylint:disable=import-outside-toplevel
 
     # Cleanup APFEL common blocks
     apfel.CleanUp()
@@ -105,119 +106,21 @@ def load_apfel(theory, observables, pdf="ToyLH"):
     # Intrinsic charm
     apfel.EnableIntrinsicCharm(theory.get("IC"))
 
-    # Not included in the map
-    #
-    # Truncated Epsilon
-    # APFEL::SetEpsilonTruncation(1E-1);
-    #
-    # Set maximum scale
-    # APFEL::SetQLimits(theory.Q0, theory.QM );
-    #
-    # if (theory.SIA)
-    # {
-    #   APFEL::SetPDFSet("kretzer");
-    #   APFEL::SetTimeLikeEvolution(true);
-    # }
-
-    # Set APFEL interpolation grid
-    #
-    # apfel.SetNumberOfGrids(3)
-    # apfel.SetGridParameters(1, 50, 3, 1e-5)
-    # apfel.SetGridParameters(2, 50, 3, 2e-1)
-    # apfel.SetGridParameters(3, 50, 3, 8e-1)
-
     # set APFEL grid to ours
-    if platform.node() in ["FHe19b", "topolinia-arch"]:
-        apfel.SetNumberOfGrids(1)
-        # create a 'double *' using swig wrapper
-        yad_xgrid = observables["interpolation_xgrid"]
-        xgrid = apfel.new_doubles(len(yad_xgrid))
+    apfel.SetNumberOfGrids(1)
+    # create a 'double *' using swig wrapper
+    yad_xgrid = ocard["interpolation_xgrid"]
+    xgrid = apfel.new_doubles(len(yad_xgrid))
 
-        # fill the xgrid with
-        for j, x in enumerate(yad_xgrid):
-            apfel.doubles_setitem(xgrid, j, x)
+    # fill the xgrid with
+    for j, x in enumerate(yad_xgrid):
+        apfel.doubles_setitem(xgrid, j, x)
 
-        yad_deg = observables["interpolation_polynomial_degree"]
-        # 1 = gridnumber
-        apfel.SetExternalGrid(1, len(yad_xgrid) - 1, yad_deg, xgrid)
+    yad_deg = ocard["interpolation_polynomial_degree"]
+    # 1 = gridnumber
+    apfel.SetExternalGrid(1, len(yad_xgrid) - 1, yad_deg, xgrid)
 
-    # set DIS params
+    # set pdf
     apfel.SetPDFSet(pdf)
-    apfel.SetProcessDIS(observables.get("prDIS", "EM"))
-    apfel.SetPropagatorCorrection(observables.get("PropagatorCorrection", 0))
-    apfel.SetPolarizationDIS(observables.get("PolarizationDIS", 0))
-    apfel.SetProjectileDIS(observables.get("ProjectileDIS", "electron"))
-    # set Target
-
-    # apfel initialization for DIS
-    apfel.InitializeAPFEL_DIS()
 
     return apfel
-
-
-def compute_apfel_data(theory, observables, pdf):
-    """
-    Run APFEL to compute observables.
-
-    Parameters
-    ----------
-        theory : dict
-            theory runcard
-        observables : dict
-            observables runcard
-        pdf : Any
-            PDF object (LHAPDF like)
-
-    Returns
-    -------
-        apf_tab : dict
-            AFPEL numbers
-    """
-    # setup APFEL
-    apfel = load_apfel(theory, observables, pdf.set().name)
-
-    # mapping observables names to APFEL methods
-    apfel_methods = {
-        "F2light": apfel.F2light,
-        "FLlight": apfel.FLlight,
-        "F3light": apfel.F3light,
-        "F2charm": apfel.F2charm,
-        "F2bottom": apfel.F2bottom,
-        "F2top": apfel.F2top,
-        "FLcharm": apfel.FLcharm,
-        "FLbottom": apfel.FLbottom,
-        "FLtop": apfel.FLtop,
-        "F3charm": apfel.F3charm,
-        "F3bottom": apfel.F3bottom,
-        "F3top": apfel.F3top,
-        "F2total": apfel.F2total,
-        "FLtotal": apfel.FLtotal,
-        "F3total": apfel.F3total,
-    }
-
-    # compute observables with APFEL
-    apf_tab = {}
-    for FX, apfel_FX in apfel_methods.items():
-        if FX not in observables:
-            # if not in the runcard just skip
-            continue
-
-        # iterate over input kinematics
-        apf_tab[FX] = []
-        for kinematics in observables.get(FX, []):
-            Q2 = kinematics["Q2"]
-            x = kinematics["x"]
-
-            # disable APFEL evolution: we are interested in the pure DIS part
-            #
-            # setting initial scale to muF (sqrt(Q2)*xiF) APFEL is going to:
-            # - take the PDF at the scale of muF (exactly as we are doing)
-            # - evolve from muF to muF because the final scale is the second
-            #   argument times xiF (internally), so actually it's not evolving
-            apfel.ComputeStructureFunctionsAPFEL(
-                np.sqrt(Q2) * theory["XIF"], np.sqrt(Q2)
-            )
-            value = apfel_FX(x)
-
-            apf_tab[FX].append(dict(x=x, Q2=Q2, value=value))
-    return apf_tab

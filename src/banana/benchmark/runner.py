@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import sqlite3
 import pathlib
 import abc
 import subprocess
 import itertools
 import pickle
+import hashlib
 
 import rich
 import rich.box
 import rich.panel
 import rich.progress
 import rich.markdown
+import sqlalchemy.orm
+import sqlalchemy.ext
 
 from .. import toy
 
-from ..data import theories, sql
+from ..data import theories, db, dfdict
 
 
 def get_pdf(pdf_name):
@@ -41,7 +43,9 @@ def get_pdf(pdf_name):
         # is the set installed? if not do it now
         if pdf_name not in lhapdf.availablePDFSets():
             print(f"PDFSet {pdf_name} is not installed! Installing now via lhapdf ...")
-            res = subprocess.run(["lhapdf", "get", pdf_name], check=True,capture_output=True)
+            res = subprocess.run(
+                ["lhapdf", "get", pdf_name], check=True, capture_output=True
+            )
             if len(res.stdout) == 0:
                 raise ValueError("lhapdf could not install the set!")
             print(f"{pdf_name} installed.")
@@ -57,10 +61,6 @@ default_log = {"t_hash": b"", "o_hash": b"", "pdf": "", "external": "", "log": b
 default_log = dict(sorted(default_log.items()))
 
 
-class CacheNotFound(LookupError):
-    pass
-
-
 class BenchmarkRunner:
 
     banana_cfg = {}
@@ -71,26 +71,18 @@ class BenchmarkRunner:
 
     console = rich.console.Console()
 
-    @abc.abstractstaticmethod
-    def init_ocards(conn):
-        """
-        Create o-card table.
-
-        Parameters
-        ----------
-            conn : sqlite3.Connection
-                DB connection
-        """
+    db_base_cls = None
+    """Base clase that describes db schema"""
 
     @abc.abstractstaticmethod
-    def load_ocards(conn, ocard_updates):
+    def load_ocards(session, ocard_updates):
         """
         Load o-cards from the DB.
 
         Parameters
         ----------
-            conn : sqlite3.Connection
-                DB connection
+            session : sqlalchemy.orm.session.Session
+                DB session
             ocard_updates : list(dict)
                 o-card configurations
 
@@ -175,29 +167,26 @@ class BenchmarkRunner:
 
         Returns
         -------
-            conn : sqlite3.Connection
-                db connection
+            session : sqlalchemy.orm.session.Session
+                db session
         """
-        # check the existence before opening, as sqlite creates an empty file by default
-        init = not pathlib.Path(db_path).exists()
-        conn = sqlite3.connect(db_path)
-        if init:
-            with conn:
-                conn.execute(sql.create_table("theories", theories.default_card))
-                conn.execute(sql.create_table("cache", default_cache, False))
-                conn.execute(sql.create_table("logs", default_log))
-            self.init_ocards(conn)
-            # init log
-        return conn
+        engine = db.engine(db_path)
+        # create the database if not existing
+        if not pathlib.Path(db_path).exists():
+            db.create_db(self.db_base_cls, engine)
+        # make a session to the db and return it
+        self.db_base_cls.metadata.bind = engine
+        session = sqlalchemy.orm.sessionmaker(bind=engine)()
+        return session
 
-    def load_external(self, conn, t, o, pdf):
+    def load_external(self, session, t, o, pdf):
         """
         Look into the DB.
 
         Parameters
         ----------
-            conn : sqlite3.Connection
-                db connection
+            session : sqlalchemy.orm.session.Session
+                db session
             t : dict
                 theory card
             o : dict
@@ -210,120 +199,140 @@ class BenchmarkRunner:
             ext : dict
                 exernal result if available
         """
-        sql_tmpl = "SELECT result FROM cache WHERE t_hash=? AND o_hash=? AND pdf=? AND external=?"
-        ext = None
-        with conn:
-            res = conn.execute(
-                sql_tmpl, (t["hash"], o["hash"], pdf.set().name, self.external)
-            )
-            ext = res.fetchone()
-        # if not found, raise an Error to be pythonic
-        if ext is None:
-            raise CacheNotFound
-        return pickle.loads(ext[0])
+        ext = session.query(db.Cache).filter(
+            db.Cache.t_hash == t["hash"],
+            db.Cache.o_hash == o["hash"],
+            db.Cache.pdf == pdf.set().name,
+            db.Cache.external == self.external,
+        )
+        # if not found or multiple found, ext.one() will raise an Error
+        return pickle.loads(ext.one().result)
 
-    def insert_external(self, conn, t, o, pdf):
+    def insert_external(self, session, t, o, pdf):
         """
         Obtain an external run.
 
         Parameters
         ----------
-            t : dict
-                theory card
-            o : dict
-                o-card
-            pdf_name : str
-                applied PDF
+        session : sqlalchemy.orm.session.Session
+            DB ORM session
+        t : dict
+            theory card
+        o : dict
+            o-card
+        pdf_name : str
+            applied PDF
 
         Returns
         -------
-            ext : dict
-                result
+        ext : dict
+            result
         """
         # obtain data
         ext = self.run_external(t, o, pdf)
-        # create record
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
             "pdf": pdf.set().name,
             "external": self.external,
-            "result": ext,
+            # TODO: pay attention, the hash will be computed on the binarized
+            "result": pickle.dumps(ext),
         }
-        serialized_record = sql.serialize(record)
-        with conn:
-            sql.insertmany(
-                conn,
-                "cache",
-                sql.RecordsFrame(default_cache.keys(), [serialized_record]),
-            )
+        # create record
+        new_cache = db.Cache(
+            **record, hash=hashlib.sha256(pickle.dumps(record)).digest().hex()
+        )
+        session.add(new_cache)
+        # TODO: do we want to commit here or somewhere else?
+        session.commit()
         return ext
 
-    def run_config(self, conn, t, o, pdf_name):
+    def run_config(self, session, t, o, pdf_name):
         """
         Run a single configuration.
 
         Parameters
         ----------
-            conn : sqlite3.Connection
-                db connection
-            t : dict
-                theory card
-            o : dict
-                o-card
-            pdf_name : str
-                applied PDF
+        session : sqlalchemy.orm.session.Session
+            DB ORM session
+        t : dict
+            theory card
+        o : dict
+            o-card
+        pdf_name : str
+            applied PDF
         """
         pdf = get_pdf(pdf_name)
         # get our result
         me = self.run_me(t, o, pdf)
         # get external from cache if possible
         try:
-            ext = self.load_external(conn, t, o, pdf)
+            ext = self.load_external(session, t, o, pdf)
             self.console.print("Cache contains the external result")
-        except CacheNotFound:
+        except sqlalchemy.orm.exc.NoResultFound:
             self.console.print("Compute external result")
-            ext = self.insert_external(conn, t, o, pdf)
+            ext = self.insert_external(session, t, o, pdf)
         # create log
-        log_record = self.insert_log(conn, t, o, pdf, me, ext)
-        print(log_record)  # TODO delegate to rich
+        log_record = self.insert_log(session, t, o, pdf, me, ext)
+        log_record.fancy()
 
-    def insert_log(self, conn, t, o, pdf, me, ext):
+    def insert_log(self, session, t, o, pdf, me, ext):
         """
         Obtain an external run.
 
         Parameters
         ----------
-            t : dict
-                theory card
-            o : dict
-                o-card
-            pdf_name : str
-                applied PDF
-            me : dict
-                our result
-            ext : str
-                external result
+        session : sqlalchemy.orm.session.Session
+            DB ORM session
+        t : dict
+            theory card
+        o : dict
+            o-card
+        pdf_name : str
+            applied PDF
+        me : dict
+            our result
+        ext : str
+            external result
 
         Returns
         -------
-            log_record : dict
-                result
+        log_record : dict
+            result
         """
         # obtain data
+        # TODO: quickfix for different eko/yadism format
         log_record = self.log(t, o, pdf, me, ext)
+        if isinstance(log_record, dfdict.DFdict):
+            log_document = log_record.to_document()
+        else:
+            log_document = dict(
+                map(lambda t: (t[0], t[1].to_document()), log_record.items())
+            )
+
         # create record
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
             "pdf": pdf.set().name,
             "external": self.external,
-            "log": log_record,
+            # TODO: pay attention, the hash will be computed on the binarized
+            "log": pickle.dumps(log_document),
         }
-        raw_records, rf = sql.prepare_records(default_log, [record])
-        with conn:
-            sql.insertnew(conn, "logs", rf)
-        return raw_records[0]
+        log_hash = hashlib.sha256(pickle.dumps(record)).digest().hex()
+        new_log = db.Log(
+            **record,
+            hash=log_hash,
+        )
+        try:
+            session.add(new_log)
+            session.commit()
+            print(f"\nLog added, hash={log_hash}\n")
+        except sqlalchemy.exc.IntegrityError:
+            session.rollback()
+            # TODO update atime
+            print(f"\nLog already present, hash={log_hash}\n")
+        return log_record
 
     def run(self, theory_updates, ocard_updates, pdfs):
         """
@@ -340,10 +349,10 @@ class BenchmarkRunner:
         """
         # open db
         db_path = self.banana_cfg["database_path"]
-        conn = self.db(db_path)
+        session = self.db(db_path)
         # init input
-        ts = theories.load(conn, theory_updates)
-        os = self.load_ocards(conn, ocard_updates)
+        ts = theories.load(session, theory_updates)
+        os = self.load_ocards(session, ocard_updates)
         # print some load informations
         self.console.print(
             rich.panel.Panel.fit(
@@ -359,7 +368,7 @@ class BenchmarkRunner:
         # TODO find a way to display 2 progress bars
         for t, o, pdf_name in full:
             self.console.print(
-                f"Computing for theory=[b]{t['hash'].hex()[:7]}[/b], "
-                + f"ocard=[b]{o['hash'].hex()[:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
+                f"Computing for theory=[b]{t['hash'][:7]}[/b], "
+                + f"ocard=[b]{o['hash'][:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
             )
-            self.run_config(conn, t, o, pdf_name)
+            self.run_config(session, t, o, pdf_name)

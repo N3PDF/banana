@@ -13,17 +13,27 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import pathlib
 
+import banana.version
+
+source_dir = pathlib.Path(__file__).parent
 
 # -- Project information -----------------------------------------------------
 
 project = "banana"
-copyright = "2020, N3PDF team"
+copyright = "2020-2021, N3PDF team" # pylint: disable=redefined-builtin
 author = "Felix Hekhorn, Alessandro Candido"
 
-# The full version, including alpha/beta/rc tags
-release = "0.1.0"
+# The short X.Y version
+version = banana.version.short_version
+if not banana.version.is_released:
+    version = "develop"
 
+# The full version, including alpha/beta/rc tags
+release = banana.version.full_version
+
+source_dir = pathlib.Path(__file__).parent
 
 # -- General configuration ---------------------------------------------------
 
@@ -45,8 +55,21 @@ extensions = [
     "sphinx.ext.extlinks",
 ]
 
+# The master toctree document.
+master_doc = "index"
+bibtex_bibfiles = [
+    str(p.relative_to(source_dir)) for p in (source_dir / "refs").glob("*.bib")
+]
+
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
+
+# The master toctree document.
+master_doc = "index"
+bibtex_bibfiles = [
+    str(p.relative_to(source_dir)) for p in (source_dir / "refs").glob("*.bib")
+]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -68,6 +91,8 @@ html_static_path = ["_static"]
 
 
 # -- Extension configuration -------------------------------------------------
+
+autosectionlabel_prefix_document = True
 
 # -- Options for intersphinx extension ---------------------------------------
 

@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 # write version on the fly - inspired by numpy
 MAJOR = 0
-MINOR = 2
+MINOR = 3
 MICRO = 0
 
 repo_path = pathlib.Path(__file__).absolute().parent
@@ -51,12 +51,12 @@ def setup_package():
         ],
         install_requires=[
             "ipython",
+            "SQLAlchemy",
             "numpy",
             "pandas",
             "jinja2",
             "rich",
             "pyyaml",
-            "tinydb~=4.1",
             "human_dates2",
         ],
         entry_points={

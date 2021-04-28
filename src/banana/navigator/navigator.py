@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 import abc
-import sqlite3
+import textwrap
+import sys
+import importlib
 
+import sqlalchemy.orm
+import numpy as np
 import pandas as pd
 from human_dates import human_dates
 
+from ..data import db, dfdict
 from . import table_manager as tm
 
 # define some shortcuts
@@ -13,6 +17,8 @@ t = "t"
 o = "o"
 c = "c"
 l = "l"
+
+table_objects = dict(t=db.Theory, c=db.Cache, l=db.Log)
 
 
 class NavigatorApp(abc.ABC):
@@ -27,19 +33,23 @@ class NavigatorApp(abc.ABC):
             mode identifier
     """
 
+    myname = "banana"
+    table_objects = table_objects
     hash_len = 6
 
     def __init__(self, banana_cfg, external=None):
         self.cfg = banana_cfg
         self.external = external
         db_path = self.cfg["database_path"]
-        self.conn = sqlite3.connect(db_path)
+        self.session = sqlalchemy.orm.sessionmaker(db.engine(db_path))()
         # read input
         self.input_tables = {}
         for table in self.cfg["input_tables"]:
-            self.input_tables[table] = tm.TableManager(self.conn, table)
+            self.input_tables[table] = tm.TableManager(
+                self.session, self.table_objects[table[0]]
+            )
         # load logs
-        self.logs = tm.TableManager(self.conn, "logs")
+        self.logs = tm.TableManager(self.session, db.Log)
 
     def change_external(self, external):
         """
@@ -111,10 +121,12 @@ class NavigatorApp(abc.ABC):
                 created frame
         """
         # list all
-        t_m = self.table_manager(table)
+        tab_m = self.table_manager(table)
+
         if doc_id is None:
-            return t_m.all()
-        return t_m.get(doc_id)
+            return tab_m.all()
+
+        return tab_m.get(doc_id)
 
     def list_all(self, table, input_data=None):
         """
@@ -137,15 +149,325 @@ class NavigatorApp(abc.ABC):
             input_data = self.get(table)
         data = []
         for el in input_data:
-            # obj = {"hash": el["hash"].hex()[:6]}
+            # obj = {"hash": el["hash"][:6]}
             obj = {"uid": el["uid"]}
-            for k, v in el.items():
-                if "hash" in k:
-                    obj[k] = v.hex()[:self.hash_len]
+            obj["hash"] = el["hash"][: self.hash_len]
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
-            # dt = datetime.fromisoformat(el["_created"])
-            # obj["created"] = human_dates(dt)
+            obj["ctime"] = human_dates(el["ctime"])
             data.append(obj)
         # output
         df = pd.DataFrame(data)
         return df
+
+    def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
+        if t_fields is None:
+            t_fields = []
+
+        if o_fields is None:
+            o_fields = []
+
+        theories = self.list_all(t)[t_fields]
+        theories["theory"] = self.list_all(t)["hash"]
+        ocards = self.list_all(o)[o_fields]
+        ocards["ocard"] = self.list_all(o)["hash"]
+        logs_df = (
+            self.list_all(l).merge(theories, on="theory").merge(ocards, on="ocard")
+        )
+        columns = logs_df.columns.tolist()
+        columns.remove("ctime")
+        logs_df = logs_df[columns + ["ctime"]]
+        if not keep_hashes:
+            logs_df = logs_df.drop(["theory", "ocard"], axis=1)
+        return logs_df
+
+    def cache_as_dfd(self, doc_hash):
+        """
+        Load all structure functions in log as DataFrame
+
+        Parameters
+        ----------
+            doc_hash : hash
+                document hash
+
+        Returns
+        -------
+            log : DFdict
+                DataFrames
+        """
+        cache = self.get(c, doc_hash)
+
+        res = cache["result"]
+
+        dfd = dfdict.DFdict()
+        for k, v in res.items():
+            dfd[k] = pd.DataFrame(v)
+
+        dfd.print(
+            textwrap.dedent(
+                f"""
+                - theory: `{cache['t_hash']}`
+                - obs: `{cache['o_hash']}`
+                - using PDF: *{cache['pdf']}*\n"""
+            ),
+            position=0,
+        )
+        dfd.external = cache["external"]
+
+        return dfd
+
+    def log_as_dfd(self, doc_hash):
+        """
+        Load all structure functions in log as DataFrame
+
+        Parameters
+        ----------
+            doc_hash : hash
+                document hash
+
+        Returns
+        -------
+            log : DFdict
+                DataFrames
+        """
+        log = self.get(l, doc_hash)
+
+        dfd = log["log"]
+        dfd.print(
+            textwrap.dedent(
+                f"""
+                - theory: `{log['t_hash']}`
+                - obs: `{log['o_hash']}`
+                - using PDF: *{log['pdf']}*\n"""
+            ),
+            position=0,
+        )
+
+        return dfd
+
+    @staticmethod
+    def load_dfd(dfd, retrieve_method):
+        if isinstance(dfd, dfdict.DFdict):
+            log = dfd
+            id_ = "not-an-id"
+        else:
+            log = retrieve_method(dfd)
+            id_ = dfd
+
+        if log is None:
+            raise ValueError(f"Log id: '{id_}' not found")
+
+        return id_, log
+
+    def list_all_similar_logs(self, ref_hash):
+        """
+        Search logs which are similar to the one given, i.e., same theory and,
+        same observable, and same pdfset.
+
+        Parameters
+        ----------
+            ref_hash : hash
+                partial hash of the reference log
+
+        Returns
+        -------
+            df : pandas.DataFrame
+                created frame
+
+        Note
+        ----
+        The external it's not used to discriminate logs: even different
+        externals should return the same numbers, so it's relevant to keep all
+        of them.
+        """
+        # obtain reference log
+        ref_log = self.get(l, ref_hash)
+
+        related_logs = []
+        all_logs = self.get(l)
+
+        for lg in all_logs:
+            if lg["t_hash"] != ref_log["t_hash"]:
+                continue
+            if lg["o_hash"] != ref_log["o_hash"]:
+                continue
+            if lg["pdf"] != ref_log["pdf"]:
+                continue
+            related_logs.append(lg)
+
+        return self.list_all(l, related_logs)
+
+    def subtract_tables(self, dfd1, dfd2):
+        """
+        Subtract results in the second table from the first one,
+        properly propagate the integration error and recompute the relative
+        error on the subtracted results.
+
+        Parameters
+        ----------
+            dfd1 : dict or hash
+                if hash the doc_hash of the log to be loaded
+            dfd2 : dict or hash
+                if hash the doc_hash of the log to be loaded
+
+        Returns
+        -------
+            diffout : DFdict
+                created frames
+        """
+        # load json documents
+        id1, log1 = self.load_dfd(dfd1, self.log_as_dfd)
+        id2, log2 = self.load_dfd(dfd2, self.log_as_dfd)
+
+        # print head
+        diffout = dfdict.DFdict()
+        msg = f"**Subtracting** id: `{id1}` - id: `{id2}`, in table *logs*"
+        diffout.print(msg, "-" * len(msg), sep="\n")
+        diffout.print()
+
+        # iterate observables
+        for obs in log1.keys():
+            if obs[0] == "_":
+                continue
+            if obs not in log2:
+                print(f"{obs}: not matching in log2")
+                continue
+
+            # load observable tables
+            table1 = pd.DataFrame(log1[obs])
+            table2 = pd.DataFrame(log2[obs])
+            table_out = table2.copy()
+
+            # check for compatible kinematics
+            if any([any(table1[y] != table2[y]) for y in ["x", "Q2"]]):
+                raise ValueError("Cannot compare tables with different (x, Q2)")
+
+            # subtract and propagate
+            known_col_set = set(
+                ["x", "Q2", self.myname, f"{self.myname}_error", "percent_error"]
+            )
+            t1_ext = list(set(table1.keys()) - known_col_set)[0]
+            t2_ext = list(set(table2.keys()) - known_col_set)[0]
+            if t1_ext == t2_ext:
+                tout_ext = t1_ext
+            else:
+                tout_ext = f"{t2_ext}-{t1_ext}"
+            table_out.rename(columns={t2_ext: tout_ext}, inplace=True)
+            table_out[tout_ext] = table2[t2_ext] - table1[t1_ext]
+            # subtract our values
+            table_out[self.myname] -= table1[self.myname]
+            table_out[f"{self.myname}_error"] += table1[f"{self.myname}_error"]
+
+            # compute relative error
+            def rel_err(row, tout_ext=tout_ext):
+                if row[tout_ext] == 0.0:
+                    if row[self.myname] == 0.0:
+                        return 0.0
+                    return np.nan
+                else:
+                    return (row[self.myname] / row[tout_ext] - 1.0) * 100
+
+            table_out["percent_error"] = table_out.apply(rel_err, axis=1)
+
+            # dump results' table
+            diffout[obs] = table_out
+
+        return diffout
+
+    def compare_external(self, dfd1, dfd2):
+        """
+        Compare two results in the cache.
+
+        It's taking two results from external benchmarks and compare them in a
+        single table.
+
+        Parameters
+        ----------
+        dfd1 : dict or hash
+            if hash the doc_hash of the cache to be loaded
+        dfd2 : dict or hash
+            if hash the doc_hash of the cache to be loaded
+        """
+        # load json documents
+        id1, cache1 = self.load_dfd(dfd1, self.cache_as_dfd)
+        id2, cache2 = self.load_dfd(dfd2, self.cache_as_dfd)
+
+        if cache1.external == cache2.external:
+            cache1.external = f"{cache1.external}1"
+            cache2.external = f"{cache2.external}2"
+
+        # print head
+        cache_diff = dfdict.DFdict()
+        msg = f"**Comparing** id: `{id1}` - id: `{id2}`, in table *cache*"
+        cache_diff.print(msg, "-" * len(msg), sep="\n")
+        cache_diff.print(f"- *{cache1.external}*: `{id1}`")
+        cache_diff.print(f"- *{cache2.external}*: `{id2}`")
+        cache_diff.print()
+
+        for obs in cache1.keys():
+            if obs not in cache2:
+                print(f"{obs}: not matching in log2")
+                continue
+
+            # load observable tables
+            table1 = pd.DataFrame(cache1[obs])
+            table2 = pd.DataFrame(cache2[obs])
+            table_out = table1.copy()
+
+            # check for compatible kinematics
+            if any([any(table1[y] != table2[y]) for y in ["x", "Q2"]]):
+                raise ValueError("Cannot compare tables with different (x, Q2)")
+
+            table_out.rename(columns={"result": cache1.external}, inplace=True)
+            table_out[cache2.external] = table2["result"]
+
+            # compute relative error
+            def rel_err(row, t1_ext=cache1.external, t2_ext=cache2.external):
+                if row[t2_ext] == 0.0:
+                    if row[t1_ext] == 0.0:
+                        return 0.0
+                    return np.nan
+                else:
+                    return (row[t1_ext] / row[t2_ext] - 1.0) * 100
+
+            table_out["percent_error"] = table_out.apply(rel_err, axis=1)
+
+            # dump results' table
+            cache_diff[obs] = table_out
+
+        return cache_diff
+
+    @abc.abstractstaticmethod
+    def is_valid_physical_object(name):
+        pass
+
+    def crashed_log(self, doc_hash):
+        """
+        Check if the log passed the default assertions
+
+        Parameters
+        ----------
+            doc_hash : hash
+                log hash
+
+        Returns
+        -------
+            cdfd : dict
+                log without kinematics
+        """
+        dfd = self.log_as_dfd(doc_hash)
+        if "_crash" not in dfd:
+            raise ValueError("log didn't crash!")
+        cdfd = {}
+        for name, df in dfd:
+            if self.is_valid_physical_object(name):
+                cdfd[name] = f"{len(df)} points"
+            else:
+                cdfd[name] = dfd[name]
+        return cdfd
+
+    def execute_runner(self, runner_name="sandbox"):
+        sys.path.insert(0, str(self.cfg["dir"] / "runners"))
+        runner = importlib.import_module(runner_name)
+        sys.path.pop(0)
+
+        runner.main()
