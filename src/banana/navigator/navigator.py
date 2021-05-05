@@ -157,28 +157,50 @@ class NavigatorApp(abc.ABC):
             data.append(obj)
         # output
         df = pd.DataFrame(data)
+        df.set_index("uid", inplace=True)
         return df
 
     def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
+        """
+        Show additional, associated fields in the logs (JOIN).
+
+        Parameters
+        ----------
+            t_fields : list
+                theory fields
+            o_fields : list
+                ocard fields
+            keep_hashes : boolean
+                display hashes?
+
+        Returns
+        -------
+            df : pandas.DataFrame
+                data frame
+        """
+        # apply some defaults
         if t_fields is None:
             t_fields = []
-
         if o_fields is None:
             o_fields = []
-
+        # collect external data
         theories = self.list_all(t)[t_fields]
         theories["theory"] = self.list_all(t)["hash"]
         ocards = self.list_all(o)[o_fields]
         ocards["ocard"] = self.list_all(o)["hash"]
-        logs_df = (
-            self.list_all(l).merge(theories, on="theory").merge(ocards, on="ocard")
-        )
-        columns = logs_df.columns.tolist()
+        # get my data and merge
+        logs = self.list_all(l)
+        logs.reset_index(inplace=True)
+        new_logs = logs.merge(theories, on="theory").merge(ocards, on="ocard")
+        new_logs.set_index("uid", inplace=True)
+        # adjust columns
+        columns = new_logs.columns.tolist()
         columns.remove("ctime")
-        logs_df = logs_df[columns + ["ctime"]]
+        new_logs = new_logs[columns + ["ctime"]]
         if not keep_hashes:
-            logs_df = logs_df.drop(["theory", "ocard"], axis=1)
-        return logs_df
+            new_logs = new_logs.drop(["theory", "ocard"], axis=1)
+        new_logs.sort_index(inplace=True)
+        return new_logs
 
     def cache_as_dfd(self, doc_hash):
         """
