@@ -1,7 +1,7 @@
 import apfel
 
 
-def load_apfel(theory, ocard, pdf):
+def load_apfel(theory, ocard, pdf, use_external_grid=True):
     """
     Set APFEL parameter from ``theory`` dictionary.
 
@@ -106,21 +106,44 @@ def load_apfel(theory, ocard, pdf):
     # Intrinsic charm
     apfel.EnableIntrinsicCharm(theory.get("IC"))
 
+    # Set APFEL interpolation grid
+    #
+    # apfel.SetNumberOfGrids(3)
+    # apfel.SetGridParameters(1, 50, 3, 1e-5)
+    # apfel.SetGridParameters(2, 50, 3, 2e-1)
+    # apfel.SetGridParameters(3, 50, 3, 8e-1)
+    
     # set APFEL grid to ours
-    apfel.SetNumberOfGrids(1)
-    # create a 'double *' using swig wrapper
-    yad_xgrid = ocard["interpolation_xgrid"]
-    xgrid = apfel.new_doubles(len(yad_xgrid))
+    if use_external_grid:
+        apfel.SetNumberOfGrids(1)
+        # create a 'double *' using swig wrapper
+        yad_xgrid = ocard["interpolation_xgrid"]
+        xgrid = apfel.new_doubles(len(yad_xgrid))
 
-    # fill the xgrid with
-    for j, x in enumerate(yad_xgrid):
-        apfel.doubles_setitem(xgrid, j, x)
+        # fill the xgrid with
+        for j, x in enumerate(yad_xgrid):
+            apfel.doubles_setitem(xgrid, j, x)
 
-    yad_deg = ocard["interpolation_polynomial_degree"]
-    # 1 = gridnumber
-    apfel.SetExternalGrid(1, len(yad_xgrid) - 1, yad_deg, xgrid)
+        yad_deg = ocard["interpolation_polynomial_degree"]
+        # 1 = gridnumber
+        apfel.SetExternalGrid(1, len(yad_xgrid) - 1, yad_deg, xgrid)
 
     # set pdf
     apfel.SetPDFSet(pdf)
+
+    # Not included in the map
+    #
+    # Truncated Epsilon
+    # APFEL::SetEpsilonTruncation(1E-1);
+    #
+    # Set maximum scale
+    # APFEL::SetQLimits(theory.Q0, theory.QM );
+    #
+    # if (theory.SIA)
+    # {
+    #   APFEL::SetPDFSet("kretzer");
+    #   APFEL::SetTimeLikeEvolution(true);
+    # }
+
 
     return apfel
