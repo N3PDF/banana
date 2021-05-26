@@ -357,7 +357,6 @@ class NavigatorApp(abc.ABC):
             # load observable tables
             table1 = pd.DataFrame(log1[obs])
             table2 = pd.DataFrame(log2[obs])
-            table_out = table2.copy()
 
             # check for compatible kinematics
             if any([any(table1[y] != table2[y]) for y in ["x", "Q2"]]):
@@ -373,11 +372,12 @@ class NavigatorApp(abc.ABC):
                 tout_ext = t1_ext
             else:
                 tout_ext = f"{t2_ext}-{t1_ext}"
-            table_out.rename(columns={t2_ext: tout_ext}, inplace=True)
-            table_out[tout_ext] = table2[t2_ext] - table1[t1_ext]
+            table_out = table1.copy()
+            table_out.rename(columns={t1_ext: tout_ext}, inplace=True)
+            table_out[tout_ext] = table1[t1_ext] - table2[t2_ext]
             # subtract our values
-            table_out[self.myname] -= table1[self.myname]
-            table_out[f"{self.myname}_error"] += table1[f"{self.myname}_error"]
+            table_out[self.myname] -= table2[self.myname]
+            table_out[f"{self.myname}_error"] += table2[f"{self.myname}_error"]
 
             # compute relative error
             def rel_err(row, tout_ext=tout_ext):
