@@ -42,6 +42,7 @@ class Theory(Base):
     GF = Column(Float)
     HQ = Column(Text)
     IC = Column(Integer)
+    IB = Column(Integer)
     MP = Column(Float)
     MW = Column(Float)
     MZ = Column(Float)
