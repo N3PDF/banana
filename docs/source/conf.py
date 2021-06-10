@@ -17,12 +17,12 @@ import pathlib
 
 import banana.version
 
-source_dir = pathlib.Path(__file__).parent
+here = pathlib.Path(__file__).parent
 
 # -- Project information -----------------------------------------------------
 
 project = "banana"
-copyright = "2020-2021, N3PDF team" # pylint: disable=redefined-builtin
+copyright = "2020-2021, N3PDF team"  # pylint: disable=redefined-builtin
 author = "Felix Hekhorn, Alessandro Candido"
 
 # The short X.Y version
@@ -33,7 +33,7 @@ if not banana.version.is_released:
 # The full version, including alpha/beta/rc tags
 release = banana.version.full_version
 
-source_dir = pathlib.Path(__file__).parent
+here = pathlib.Path(__file__).parent
 
 # -- General configuration ---------------------------------------------------
 
@@ -57,9 +57,7 @@ extensions = [
 
 # The master toctree document.
 master_doc = "index"
-bibtex_bibfiles = [
-    str(p.relative_to(source_dir)) for p in (source_dir / "refs").glob("*.bib")
-]
+bibtex_bibfiles = [str(p.relative_to(here)) for p in (here / "refs").glob("*.bib")]
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,9 +65,7 @@ templates_path = ["_templates"]
 
 # The master toctree document.
 master_doc = "index"
-bibtex_bibfiles = [
-    str(p.relative_to(source_dir)) for p in (source_dir / "refs").glob("*.bib")
-]
+bibtex_bibfiles = [str(p.relative_to(here)) for p in (here / "refs").glob("*.bib")]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -108,3 +104,19 @@ intersphinx_mapping = {
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+# https://github.com/readthedocs/readthedocs.org/issues/1139#issuecomment-312626491
+def run_apidoc(_):
+    from sphinx.ext.apidoc import main
+    import sys
+
+    sys.path.append(str(here.parent))
+    # 'banana'
+    docs_dest = here / "modules" / "banana"
+    package = here.parents[1] / "src" / "banana"
+    main(["--module-first", "-o", str(docs_dest), str(package)])
+    (docs_dest / "modules.rst").unlink()
+
+
+def setup(app):
+    app.connect("builder-inited", run_apidoc)
