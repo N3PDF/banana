@@ -15,6 +15,7 @@ MaxNfPdf: 6
 Q0: 1.0
 alphas: 0.11800000000000001
 Qref: 91.2
+nfref: null
 QED: 0
 alphaqed: 0.007496251999999999
 Qedref: 1.777

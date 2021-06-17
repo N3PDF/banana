@@ -356,7 +356,7 @@ class BenchmarkRunner:
         # print some load informations
         self.console.print(
             rich.panel.Panel.fit(
-                f"Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)}",
+                f"Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)} ext: {self.external}",
                 rich.box.HORIZONTALS,
             )
         )

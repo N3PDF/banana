@@ -112,7 +112,7 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
     # apfel.SetGridParameters(1, 50, 3, 1e-5)
     # apfel.SetGridParameters(2, 50, 3, 2e-1)
     # apfel.SetGridParameters(3, 50, 3, 8e-1)
-    
+
     # set APFEL grid to ours
     if use_external_grid:
         apfel.SetNumberOfGrids(1)
@@ -144,6 +144,5 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
     #   APFEL::SetPDFSet("kretzer");
     #   APFEL::SetTimeLikeEvolution(true);
     # }
-
 
     return apfel

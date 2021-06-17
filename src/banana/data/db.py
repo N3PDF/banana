@@ -53,6 +53,7 @@ class Theory(Base):
     Q0 = Column(Float)
     QED = Column(Integer)
     Qedref = Column(Float)
+    nfref = Column(Integer)
     Qmb = Column(Float)
     Qmc = Column(Float)
     Qmt = Column(Float)
