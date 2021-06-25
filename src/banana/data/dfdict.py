@@ -2,8 +2,10 @@
 
 import pandas as pd
 import rich
+import rich.box
+import rich.markdown
+import rich.panel
 from rich import style
-import rich.panel, rich.box, rich.markdown
 
 
 class DFdict(dict):

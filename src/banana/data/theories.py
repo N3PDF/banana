@@ -3,8 +3,7 @@ import pathlib
 
 import yaml
 
-from . import sql
-from . import db
+from . import db, sql
 
 _here = pathlib.Path(__file__).parent
 

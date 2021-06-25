@@ -45,7 +45,7 @@ Input database will consist of the tables:
   following entries are expected:
 
   - *PTO*: perturbative order
-  - *XIF*, *XIR*: 
+  - *XIF*, *XIR*:
   - *mc*. *Qmc*, *mb*, *Qmb*, *mt*, *Qmt*:
   - etc.
 
@@ -53,7 +53,7 @@ Input database will consist of the tables:
   observables*, and also some parameters involved in the computation of the
   observables themselves; the following entries are expected:
 
-  - *xgrid*: the grid on which the interpolation is evaluated 
+  - *xgrid*: the grid on which the interpolation is evaluated
   - etc.
 
 - **apfel_cache/qcdnum_cache/regression**: to keep a cache of the external output. Since it is stable

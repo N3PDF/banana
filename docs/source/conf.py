@@ -107,8 +107,9 @@ todo_include_todos = True
 
 # https://github.com/readthedocs/readthedocs.org/issues/1139#issuecomment-312626491
 def run_apidoc(_):
-    from sphinx.ext.apidoc import main
     import sys
+
+    from sphinx.ext.apidoc import main
 
     sys.path.append(str(here.parent))
     # 'banana'

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pathlib
 
-import pytest
 import numpy as np
+import pytest
 
 from banana import navigator
 

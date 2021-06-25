@@ -2,18 +2,17 @@
 """
 Auxilary module to generate some debug PDF which consist of selected pid of a parent set
 """
-import pathlib
 import argparse
-import shutil
+import pathlib
 import re
+import shutil
 
-import numpy as np
-
-from jinja2 import Environment, FileSystemLoader
 import lhapdf
+import numpy as np
+from jinja2 import Environment, FileSystemLoader
 
-from . import basis_rotation as br
 from .. import toy
+from . import basis_rotation as br
 
 # ==========
 # globals

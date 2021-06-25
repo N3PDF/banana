@@ -13,4 +13,3 @@ corresponding documentation.
 
 .. todo::
     link here the banana docs on GeneratePDF
-

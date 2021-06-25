@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from contextlib import contextmanager
 import os
 import subprocess
+from contextlib import contextmanager
 from unittest import mock
 
 import numpy as np
@@ -14,8 +14,8 @@ import pytest
 # TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
 
-from banana.data import generate_pdf
 from banana import toy
+from banana.data import generate_pdf
 
 
 # thanks https://stackoverflow.com/questions/431684/how-do-i-change-the-working-directory-in-python/24176022#24176022

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import pathlib
 import datetime
-
 import json
+import pathlib
+
 import pytest
 
 from banana import navigator
