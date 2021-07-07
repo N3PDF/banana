@@ -14,7 +14,7 @@ Welcome to banana!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+
    DB <db-suite>
    ORM <orm>
    API <modules/banana/banana>

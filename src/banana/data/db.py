@@ -12,7 +12,7 @@ import pathlib
 from datetime import datetime, timezone
 
 import sqlalchemy
-from sqlalchemy import Column, Integer, Float, String, Text, DateTime
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 # from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
@@ -42,6 +42,7 @@ class Theory(Base):
     GF = Column(Float)
     HQ = Column(Text)
     IC = Column(Integer)
+    IB = Column(Integer)
     MP = Column(Float)
     MW = Column(Float)
     MZ = Column(Float)
@@ -52,6 +53,7 @@ class Theory(Base):
     Q0 = Column(Float)
     QED = Column(Integer)
     Qedref = Column(Float)
+    nfref = Column(Integer)
     Qmb = Column(Float)
     Qmc = Column(Float)
     Qmt = Column(Float)

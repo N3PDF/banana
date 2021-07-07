@@ -2,18 +2,17 @@
 """
 Auxilary module to generate some debug PDF which consist of selected pid of a parent set
 """
-import pathlib
 import argparse
-import shutil
+import pathlib
 import re
+import shutil
 
-import numpy as np
-
-from jinja2 import Environment, FileSystemLoader
 import lhapdf
+import numpy as np
+from jinja2 import Environment, FileSystemLoader
 
-from . import basis_rotation as br
 from .. import toy
+from . import basis_rotation as br
 
 # ==========
 # globals
@@ -105,15 +104,49 @@ def dump_info(name, description, pids):
 # ==========
 # PDFs
 # ==========
+# fmt: off
+custom_distribution = np.array([
+    0, 0,0,0, 0,1,-4, 0, -4,1,0, 0,0,0
+])
+# fmt: on
 
 
 def project_evol_basis(elems, elems_pids, requested_labels):
+    """
+    Project over evolution basis elements.
+
+    Parameters
+    ----------
+        elems : list(float)
+            parent flavor space values
+        elems_pids : list(int)
+            sorting of the parent values
+        requested_labels : list(str)
+            evolution distributions requested by the user
+
+    Returns
+    -------
+        np.ndarray
+            projected flavor space values
+    """
+    # cast the input to numpy to allow @
     elems = np.array(elems, dtype=float)
     pids_indices = [br.flavor_basis_pids.index(pid) for pid in elems_pids]
+    # if custom is there, only return that one
+    if "custom" in requested_labels:
+        proj = (
+            custom_distribution[:, np.newaxis]
+            * custom_distribution
+            / (custom_distribution @ custom_distribution)
+        )
+        return (proj[:, pids_indices] @ elems)[pids_indices]
+    # map to evolution basis
     evol_elems = br.rotate_flavor_to_evolution[:, pids_indices] @ elems
-    labels_indices = [br.evol_basis.index(lab) for lab in requested_labels]
     filtered_evol_elems = np.zeros_like(evol_elems)
+    # keep only the elements requested by the user
+    labels_indices = [br.evol_basis.index(lab) for lab in requested_labels]
     filtered_evol_elems[labels_indices] = evol_elems[labels_indices]
+    # rotate back to flavor space
     flav_elems = np.linalg.inv(br.rotate_flavor_to_evolution) @ filtered_evol_elems
     return flav_elems[pids_indices]
 
@@ -155,7 +188,7 @@ def make_debug_pdf(name, active_labels, lhapdf_like=None):
     else:
         pdf_callable = lhapdf_like.xfxQ2
     # iterate partons
-    if not evol_basis:
+    if not evol_basis:  # only pids are requested
         for pid in pids_out:
             if pid in active_labels:
                 pdf_table.append(
@@ -258,6 +291,24 @@ def make_filter_pdf(name, active_labels, pdf_name):
 
 
 def pdf_label(arg):
+    """
+    Validate the input of argparse
+
+    Parameters
+    ----------
+        arg : any
+            input
+
+    Returns
+    -------
+        value : int|str
+            casted input
+
+    Raises
+    ------
+        argparse.ArgumentTypeError :
+            invalid argument
+    """
     try:
         value = int(arg)
         if value not in br.flavor_basis_pids:
@@ -266,23 +317,42 @@ def pdf_label(arg):
     except ValueError:
         if arg in br.flavor_basis_names:
             return br.flavor_basis_pids[br.flavor_basis_names.index(arg)]
-        elif arg in br.evol_basis:
+        elif arg in br.evol_basis or arg == "custom":
             return arg
         else:
-            raise argparse.ArgumentTypeError(f"'{arg}' is not a valid pdf label")
+            raise argparse.ArgumentTypeError(
+                f"'{arg}' is not a valid pdf label"
+            )  # pylint: disable=raise-missing-from
 
 
 def verify_labels(labels):
-    if all([isinstance(lab, int) for lab in labels]):
+    """
+    Check labels are consistent.
+
+    Parameters
+    ----------
+        labels : list(str)
+            input labels
+
+    Returns
+    -------
+        list(str)
+    """
+    # all pids - good!
+    if all(isinstance(lab, int) for lab in labels):
         return labels
     common_labels = {22: "ph", 21: "g"}
     try:
         labels = [common_labels[lab] if lab in common_labels else lab for lab in labels]
-        if all([isinstance(lab, str) for lab in labels]):
+        pure_custom = "custom" in labels and len(labels) == 1
+        pure_evol = (
+            all(isinstance(lab, str) for lab in labels) and "custom" not in labels
+        )
+        if pure_custom or pure_evol:
             return labels
         raise TypeError
     except (KeyError, TypeError):
-        raise SystemExit(
+        raise SystemExit(  # pylint: disable=raise-missing-from
             "All the pdf labels should belong to the same basis (flavor or evolution)"
         )
 

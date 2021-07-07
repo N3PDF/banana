@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import pathlib
 import abc
-import subprocess
-import itertools
-import pickle
 import hashlib
+import itertools
+import pathlib
+import pickle
+import subprocess
 
 import rich
 import rich.box
+import rich.markdown
 import rich.panel
 import rich.progress
-import rich.markdown
-import sqlalchemy.orm
 import sqlalchemy.ext
+import sqlalchemy.orm
 
 from .. import toy
-
-from ..data import theories, db, dfdict
+from ..data import db, dfdict, theories
 
 
 def get_pdf(pdf_name):
@@ -356,7 +355,7 @@ class BenchmarkRunner:
         # print some load informations
         self.console.print(
             rich.panel.Panel.fit(
-                f"Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)}",
+                f"Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)} ext: {self.external}",
                 rich.box.HORIZONTALS,
             )
         )

@@ -3,7 +3,7 @@ import inspect
 import IPython
 from traitlets.config.loader import Config
 
-from .navigator import NavigatorApp, t, o, c, l, table_objects
+from .navigator import NavigatorApp, c, l, o, t, table_objects
 from .utils import compare_dicts
 
 help_vars = f"""t = "{t}" -> query theories
@@ -34,6 +34,10 @@ def register_globals(mod, app):
         "cmpt": lambda id1, id2: compare_dicts(
             app.get(t, id1), app.get(t, id2), exclude_keys=["uid", "hash", "ctime"]
         ),
+        "cmpo": lambda id1, id2: compare_dicts(
+            app.get(o, id1), app.get(o, id2), exclude_keys=["uid", "hash", "ctime"]
+        ),
+        "compare_dicts": compare_dicts,
         "simlogs": app.list_all_similar_logs,
         "compare": app.compare_external,
         "crashed_log": app.crashed_log,

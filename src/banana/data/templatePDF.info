@@ -7,7 +7,7 @@ DataVersion: 1
 NumMembers: 1
 Particle: 2212
 Flavors: {{ pids }}
-ForcePositive: 1
+ForcePositive: 0
 OrderQCD: 0
 FlavorScheme: variable
 NumFlavors: 3

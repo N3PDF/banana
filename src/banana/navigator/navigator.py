@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import abc
-import textwrap
-import sys
 import importlib
+import sys
+import textwrap
 
-import sqlalchemy.orm
 import numpy as np
 import pandas as pd
+import sqlalchemy.orm
 from human_dates import human_dates
 
 from ..data import db, dfdict
@@ -157,28 +157,50 @@ class NavigatorApp(abc.ABC):
             data.append(obj)
         # output
         df = pd.DataFrame(data)
+        df.set_index("uid", inplace=True)
         return df
 
     def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
+        """
+        Show additional, associated fields in the logs (JOIN).
+
+        Parameters
+        ----------
+            t_fields : list
+                theory fields
+            o_fields : list
+                ocard fields
+            keep_hashes : boolean
+                display hashes?
+
+        Returns
+        -------
+            df : pandas.DataFrame
+                data frame
+        """
+        # apply some defaults
         if t_fields is None:
             t_fields = []
-
         if o_fields is None:
             o_fields = []
-
+        # collect external data
         theories = self.list_all(t)[t_fields]
         theories["theory"] = self.list_all(t)["hash"]
         ocards = self.list_all(o)[o_fields]
         ocards["ocard"] = self.list_all(o)["hash"]
-        logs_df = (
-            self.list_all(l).merge(theories, on="theory").merge(ocards, on="ocard")
-        )
-        columns = logs_df.columns.tolist()
+        # get my data and merge
+        logs = self.list_all(l)
+        logs.reset_index(inplace=True)
+        new_logs = logs.merge(theories, on="theory").merge(ocards, on="ocard")
+        new_logs.set_index("uid", inplace=True)
+        # adjust columns
+        columns = new_logs.columns.tolist()
         columns.remove("ctime")
-        logs_df = logs_df[columns + ["ctime"]]
+        new_logs = new_logs[columns + ["ctime"]]
         if not keep_hashes:
-            logs_df = logs_df.drop(["theory", "ocard"], axis=1)
-        return logs_df
+            new_logs = new_logs.drop(["theory", "ocard"], axis=1)
+        new_logs.sort_index(inplace=True)
+        return new_logs
 
     def cache_as_dfd(self, doc_hash):
         """
@@ -335,7 +357,6 @@ class NavigatorApp(abc.ABC):
             # load observable tables
             table1 = pd.DataFrame(log1[obs])
             table2 = pd.DataFrame(log2[obs])
-            table_out = table2.copy()
 
             # check for compatible kinematics
             if any([any(table1[y] != table2[y]) for y in ["x", "Q2"]]):
@@ -351,11 +372,12 @@ class NavigatorApp(abc.ABC):
                 tout_ext = t1_ext
             else:
                 tout_ext = f"{t2_ext}-{t1_ext}"
-            table_out.rename(columns={t2_ext: tout_ext}, inplace=True)
-            table_out[tout_ext] = table2[t2_ext] - table1[t1_ext]
+            table_out = table1.copy()
+            table_out.rename(columns={t1_ext: tout_ext}, inplace=True)
+            table_out[tout_ext] = table1[t1_ext] - table2[t2_ext]
             # subtract our values
-            table_out[self.myname] -= table1[self.myname]
-            table_out[f"{self.myname}_error"] += table1[f"{self.myname}_error"]
+            table_out[self.myname] -= table2[self.myname]
+            table_out[f"{self.myname}_error"] += table2[f"{self.myname}_error"]
 
             # compute relative error
             def rel_err(row, tout_ext=tout_ext):

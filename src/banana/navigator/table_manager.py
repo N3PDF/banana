@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..data import sql, db
+from ..data import db, sql
 
 
 class TableManager:
