@@ -17,6 +17,7 @@ Welcome to banana!
 
    DB <db-suite>
    ORM <orm>
+   Tools <tools>
    API <modules/banana/banana>
    TODOs <development/code_todos>
 

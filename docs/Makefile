@@ -3,8 +3,8 @@
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
+SPHINXOPTS    =
+SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build
 
@@ -35,9 +35,9 @@ help:
 view: html
 	$(BROWSER) $(BUILDDIR)/html/index.html
 
-# clean:
-# 	rm -rf build
-# 	rm -rf _build
+clean:
+	rm -rf build
+	rm -rf _build
 
 cleanall: clean clean-todos
 	rm -rf $(SOURCEDIR)/modules

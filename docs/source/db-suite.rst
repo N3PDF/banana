@@ -2,7 +2,7 @@ Database Test Suite
 ===================
 
 We developed a test suite to manage the several configuration to be tested
-through a proper database (currently implemented on `tinydb`).
+through a proper database.
 
 The suite currently consists of:
 
@@ -19,21 +19,11 @@ The suite currently consists of:
 
 Database infrastructure
 -----------------------
-In the current version databases are managed through `tinydb`, a DBMS
+In the current version databases are managed through `sqlite`, a DBMS
 implemented as a python package, that makes it easier to interface with
 python-based tests, and also gave us the chance to deploy the whole generation
 ecosystem and navigator in python itself.
 
-Since `tinydb` is used the databases are document-oriented_, that also makes
-them more flexible and easier to manage less homogeneous data.
-
-The databases themselves consist of a single json_ file per db, and this makes
-it very easy to store, transfer and manage. No system-wide installation is
-needed to interact with the db, and can be easily sent around since it is a
-bare text file, nothing more than formatted.
-
-.. _document-oriented: https://en.wikipedia.org/wiki/Document-oriented_database
-.. _json: https://en.wikipedia.org/wiki/JavaScript_Object_Notation
 
 I/O databases' structure
 """"""""""""""""""""""""
