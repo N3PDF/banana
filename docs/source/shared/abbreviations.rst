@@ -4,3 +4,11 @@
 
 .. |pid| replace::
     :abbr:`PID ((Monte Carlo) parton identifier)`
+
+.. external
+
+.. |yadism| replace::
+   :yadism:`\ `
+
+.. |eko| replace::
+   :eko:`\ `

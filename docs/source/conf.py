@@ -70,6 +70,13 @@ exclude_patterns = ["shared/*"]
 shared = pathlib.Path(__file__).absolute().parent / "shared"
 rst_prolog = "\n".join([open(x).read() for x in os.scandir(shared)])
 
+extlinks = {
+    "yadism": ("https://n3pdf.github.io/yadism/%s", "yadism"),
+    "eko": ("https://n3pdf.github.io/eko/%s", "eko"),
+    "pineappl": ("https://n3pdf.github.io/pineappl/%s", "pineappl"),
+    "pineko": ("https://github.com/N3PDF/pineko/%s", "pineko"),
+}
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
