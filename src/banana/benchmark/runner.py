@@ -6,6 +6,8 @@ import itertools
 import pathlib
 import pickle
 import subprocess
+from collections.abc import Iterable
+
 
 import rich
 import rich.box
@@ -19,7 +21,7 @@ from .. import toy
 from ..data import db, dfdict, theories
 
 
-def get_pdf(pdf_name):
+def get_pdf(pdf_name, full_set=False):
     """
     Load PDF object from either LHAPDF or :mod:`toyLH`
 
@@ -27,6 +29,8 @@ def get_pdf(pdf_name):
     ----------
         pdf_name : str
             pdf name
+        full_set: bool
+            if True, return the full PDFs set with all the replicas
 
     Returns
     -------
@@ -48,8 +52,31 @@ def get_pdf(pdf_name):
             if len(res.stdout) == 0:
                 raise ValueError("lhapdf could not install the set!")
             print(f"{pdf_name} installed.")
-        pdf = lhapdf.mkPDF(pdf_name, 0)
+        if full_set:
+            pdf = lhapdf.mkPDFs(pdf_name)
+        else:
+            pdf = lhapdf.mkPDF(pdf_name, 0)
     return pdf
+
+
+def get_pdf_name(pdf):
+    """
+    Get the PDF set name
+
+    Paramters
+    ---------
+        pdf: list(lhapdf_type), lhapdf_type
+            pdf object or list
+
+    Returns
+    -------
+        pdf_name: str
+            PDF set name
+
+    """
+    if isinstance(pdf, Iterable):
+        return pdf[0].set().name
+    return pdf.set().name
 
 
 default_cache = {"t_hash": b"", "o_hash": b"", "pdf": "", "external": "", "result": b""}
@@ -178,7 +205,7 @@ class BenchmarkRunner:
         session = sqlalchemy.orm.sessionmaker(bind=engine)()
         return session
 
-    def load_external(self, session, t, o, pdf):
+    def load_external(self, session, t, o, pdf_name):
         """
         Look into the DB.
 
@@ -190,7 +217,7 @@ class BenchmarkRunner:
                 theory card
             o : dict
                 o-card
-            pdf : lhapdf_like
+            pdf_name : str
                 applied PDF
 
         Returns
@@ -201,7 +228,7 @@ class BenchmarkRunner:
         ext = session.query(db.Cache).filter(
             db.Cache.t_hash == t["hash"],
             db.Cache.o_hash == o["hash"],
-            db.Cache.pdf == pdf.set().name,
+            db.Cache.pdf == pdf_name,
             db.Cache.external == self.external,
         )
         # if not found or multiple found, ext.one() will raise an Error
@@ -219,7 +246,7 @@ class BenchmarkRunner:
             theory card
         o : dict
             o-card
-        pdf_name : str
+        pdf : str
             applied PDF
 
         Returns
@@ -228,11 +255,16 @@ class BenchmarkRunner:
             result
         """
         # obtain data
-        ext = self.run_external(t, o, pdf)
+        if isinstance(pdf, Iterable):
+            ext = {}
+            for n_rep, replica in enumerate(pdf):
+                ext[n_rep] = self.run_external(t, o, replica)
+        else:
+            ext = self.run_external(t, o, pdf)
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
-            "pdf": pdf.set().name,
+            "pdf": get_pdf_name(pdf),
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
             "result": pickle.dumps(ext),
@@ -246,7 +278,7 @@ class BenchmarkRunner:
         session.commit()
         return ext
 
-    def run_config(self, session, t, o, pdf_name):
+    def run_config(self, session, t, o, pdf_name, use_replicas):
         """
         Run a single configuration.
 
@@ -260,13 +292,15 @@ class BenchmarkRunner:
             o-card
         pdf_name : str
             applied PDF
+        use_replicas: bool
+            if True use the full PDF set
         """
-        pdf = get_pdf(pdf_name)
+        pdf = get_pdf(pdf_name, full_set=use_replicas)
         # get our result
         me = self.run_me(t, o, pdf)
         # get external from cache if possible
         try:
-            ext = self.load_external(session, t, o, pdf)
+            ext = self.load_external(session, t, o, pdf_name)
             self.console.print("Cache contains the external result")
         except sqlalchemy.orm.exc.NoResultFound:
             self.console.print("Compute external result")
@@ -313,7 +347,7 @@ class BenchmarkRunner:
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
-            "pdf": pdf.set().name,
+            "pdf": get_pdf_name(pdf),
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
             "log": pickle.dumps(log_document),
@@ -333,7 +367,7 @@ class BenchmarkRunner:
             print(f"\nLog already present, hash={log_hash}\n")
         return log_record
 
-    def run(self, theory_updates, ocard_updates, pdfs):
+    def run(self, theory_updates, ocard_updates, pdfs, use_replicas=False):
         """
         Execute a (power) set of configuration and compare.
 
@@ -345,6 +379,9 @@ class BenchmarkRunner:
                 generated ocards
             pdfs : list(str)
                 applied PDFs
+            use_replicas : bool
+                if True use the full PDFs set
+
         """
         # open db
         db_path = self.banana_cfg["database_path"]
@@ -370,4 +407,4 @@ class BenchmarkRunner:
                 f"Computing for theory=[b]{t['hash'][:7]}[/b], "
                 + f"ocard=[b]{o['hash'][:7]}[/b] and pdf=[b]{pdf_name}[/b] ..."
             )
-            self.run_config(session, t, o, pdf_name)
+            self.run_config(session, t, o, pdf_name, use_replicas)
