@@ -52,7 +52,7 @@ def deserialize(data):
     for f, el in data.__dict__.items():
         if f[0] == "_":
             continue
-        elif isinstance(el, bytes):
+        if isinstance(el, bytes):
             obj[f] = pickle.loads(el)
             if isinstance(obj[f], dict) and "__msgs__" in obj[f]:
                 obj[f] = dfdict.DFdict.from_document(obj[f])
