@@ -58,6 +58,7 @@ def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
     xpdf[2] = xuv + xubar
     xpdf[1] = xdv + xdbar
     xpdf[21] = xpdf[0] = xg
+    xpdf[22] = 0.0
     xpdf[-1] = xdbar
     xpdf[-2] = xubar
     xpdf[-3] = xsbar
@@ -131,7 +132,7 @@ class toyPDF:
 
     def hasFlavor(self, pid):
         """Contains a pdf for pid?"""
-        return pid in [21] + list(range(-6, 6 + 1))
+        return pid in [21, 22] + list(range(-6, 6 + 1))
 
 
 def mkPDF(_setname, _member):

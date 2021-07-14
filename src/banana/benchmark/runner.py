@@ -40,6 +40,8 @@ def get_pdf(pdf_name, full_set=False):
     # setup PDFset
     if pdf_name == "ToyLH":
         pdf = toy.mkPDF("ToyLH", 0)
+        if full_set:
+            pdf = [pdf]
     else:
         import lhapdf  # pylint:disable=import-outside-toplevel
 
