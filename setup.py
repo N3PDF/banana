@@ -54,6 +54,7 @@ def setup_package():
             "SQLAlchemy",
             "numpy",
             "pandas",
+            "matplotlib",
             "jinja2",
             "rich",
             "pyyaml",
