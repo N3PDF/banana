@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import pickle
+import numpy as np
 
 import pandas as pd
 import sqlalchemy.sql
@@ -23,7 +24,7 @@ def serialize(data):
     ndata : list
         improved data
     """
-    blobbed_types = [list, dict, dfdict.DFdict]
+    blobbed_types = [list, dict, dfdict.DFdict, np.ndarray]
     sorted_data = dict(sorted(data.items()))
     ndata = []
     for d in sorted_data.values():
