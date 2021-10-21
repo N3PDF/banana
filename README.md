@@ -6,6 +6,8 @@
   <a href="https://github.com/N3PDF/banana/actions?query=workflow%3A%22unit+tests%22">
     <img alt="Tests" src="https://github.com/N3PDF/banana/workflows/unit%20tests/badge.svg">
   </a>
+  <a href='https://banana-hep.readthedocs.io/en/latest/?badge=latest'><img src='https://readthedocs.org/projects/banana-hep/badge/?version=latest' alt='Documentation Status' /></a>
+  <a href="https://pypi.org/project/banana-hep/"><img alt="PyPI" src="https://img.shields.io/pypi/v/banana-hep"/></a>
   <a href="https://doi.org/10.5281/zenodo.4247164"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4247164.svg" alt="DOI"></a>
   <a href="https://codecov.io/gh/N3PDF/banana">
     <img src="https://codecov.io/gh/N3PDF/banana/branch/main/graph/badge.svg?token=L9XIAXV77R"/>
