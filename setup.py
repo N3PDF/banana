@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 # write version on the fly - inspired by numpy
 MAJOR = 0
 MINOR = 4
-MICRO = 2
+MICRO = 3
 
 repo_path = pathlib.Path(__file__).absolute().parent
 
@@ -27,7 +27,7 @@ def setup_package():
     # do it
     setup(
         name="banana-hep",
-        author="Felix Hekhorn, Alessandro Candido",
+        author="Felix Hekhorn, Alessandro Candido, Giacomo Magni",
         version=pack.versions.mkversion(MAJOR, MINOR, MICRO),
         long_description=long_description,
         long_description_content_type="text/markdown",
