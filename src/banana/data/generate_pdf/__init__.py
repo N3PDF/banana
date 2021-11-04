@@ -11,8 +11,8 @@ import lhapdf
 import numpy as np
 from jinja2 import Environment, FileSystemLoader
 
-from .. import toy
-from . import basis_rotation as br
+from ... import toy
+from .. import basis_rotation as br
 
 # ==========
 # globals
