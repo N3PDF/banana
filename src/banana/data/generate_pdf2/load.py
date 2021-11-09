@@ -1,11 +1,13 @@
-import lhapdf
 import pathlib
 import re
+
+import lhapdf
 import numpy as np
 
-def load_from_file(pdfset_name,member):
+
+def load_blocks_from_file(pdfset_name, member):
     """
-    Load a pdf from a parent pdf 
+    Load a pdf from a parent pdf.
 
     Parameters
     ----------
@@ -16,11 +18,11 @@ def load_from_file(pdfset_name,member):
 
     Returns
     -------
-        list(dict) : 
-            pdf blocks of data 
+        list(dict) :
+            pdf blocks of data
 
     """
-    pdf = lhapdf.mkPDF(pdfset_name,member)
+    pdf = lhapdf.mkPDF(pdfset_name, member)
     pdf_set = pdf.set().name
     src = pathlib.Path(lhapdf.paths()[0]) / pdf_set
     # read actual file
@@ -41,7 +43,7 @@ def load_from_file(pdfset_name,member):
         data = []
         for l in cnt[head_section + 4 : next_head_section]:
             elems = re.split(r"\s+", l.strip())
-            elems = np.array(elems,dtype=np.float_)
+            elems = np.array(elems, dtype=np.float_)
             data.append(elems)
         blocks.append(dict(xgrid=xgrid, Q2grid=Q2grid, pids=pids, data=data))
         # iterate
