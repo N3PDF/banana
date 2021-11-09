@@ -83,3 +83,22 @@ def dump_info(name, info):
     target.parent.mkdir(exist_ok=True)
     with open(target, "w") as o:
         yaml.safe_dump(info, o, default_flow_style=True, width=100000, line_break="\n")
+    # TODO this creates at the moment an ugly 1 line file, which is working but unreadable ...
+
+
+def dump_set(name, info, member_blocks):
+    """
+    Dump a whole set.
+
+    Parameters
+    ----------
+        name : str
+            target name
+        info : dict
+            info dictionary
+        member_blocks : list(list(dict))
+            blocks for all members
+    """
+    dump_info(name, info)
+    for mem, blocks in enumerate(member_blocks):
+        dump_blocks(name, mem, blocks)

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import os
-import pathlib
-from contextlib import contextmanager
 
 import numpy as np
 import pytest
+from utils import lhapdf_path, test_pdf
 
 from banana.data import generate_pdf2
 
@@ -15,29 +13,6 @@ from banana.data import generate_pdf2
 # TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
 
-test_pdf = pathlib.Path(__file__).parent / "generate_pdf"
-
-# thanks https://stackoverflow.com/questions/431684/how-do-i-change-the-working-directory-in-python/24176022#24176022
-@contextmanager
-def cd(newdir):
-    prevdir = os.getcwd()
-    os.chdir(os.path.expanduser(newdir))
-    try:
-        yield
-    finally:
-        os.chdir(prevdir)
-
-
-# lets follow the same spirit
-@contextmanager
-def lhapdf_path(newdir):
-    path = lhapdf.paths()
-    lhapdf.pathsPrepend(str(newdir))
-    try:
-        yield
-    finally:
-        lhapdf.setPaths(path)
-
 
 def test_load_data_ct14():
     with lhapdf_path(test_pdf):
@@ -47,6 +22,7 @@ def test_load_data_ct14():
         assert isinstance(b0, dict)
         assert sorted(b0.keys()) == sorted(["pids", "xgrid", "Q2grid", "data"])
         assert sorted(b0["pids"]) == sorted([-3, -2, -1, 21, 1, 2, 3])
+        assert len(b0["data"].T) == 7
         np.testing.assert_allclose(b0["xgrid"][0], 1e-9)
 
 
