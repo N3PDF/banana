@@ -27,7 +27,7 @@ def setup_package():
     # do it
     setup(
         name="banana-hep",
-        author="Felix Hekhorn, Alessandro Candido, Giacomo Magni",
+        author="Felix Hekhorn, Alessandro Candido, Giacomo Magni, Andrea Barontini",
         version=pack.versions.mkversion(MAJOR, MINOR, MICRO),
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -59,11 +59,13 @@ def setup_package():
             "rich",
             "pyyaml",
             "human_dates2",
+            "click",
         ],
         entry_points={
             "console_scripts": [
                 "generate_pdf=banana.data.generate_pdf:generate_pdf",
                 "install_pdf=banana.data.generate_pdf:install_pdf",
+                "genpdf=banana.data.generate_pdf2:cli",
             ],
         },
         python_requires=">=3.7",
