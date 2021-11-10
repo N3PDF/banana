@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 This module contains the definitions of the
-Flavor Basis and Evolution Basis.
+:doc:`Flavor Basis and Evolution Basis </theory/FlavorSpace>`.
 """
 
 import numpy as np
@@ -53,11 +53,19 @@ evol_basis = (
 r"""
 Sorted elements in Evolution Basis as :obj:`str`.
 
-Definition: here.
+Definition: :ref:`here <theory/FlavorSpace:flavor basis>`.
 
 corresponding |PDF| : :math:`\gamma, \Sigma, g, V, V_{3}, V_{8}, V_{15}, V_{24},
 V_{35}, T_{3}, T_{8}, T_{15}, T_{24}, T_{35}`
 """
+
+evol_basis_pids = tuple(
+    [22, 100, 21, 200]
+    + [200 + n ** 2 - 1 for n in range(2, 6 + 1)]
+    + [100 + n ** 2 - 1 for n in range(2, 6 + 1)]
+)
+"""|pid| representation of :data:`evol_basis`."""
+
 
 # Tranformation from physical basis to QCD evolution basis
 rotate_flavor_to_evolution = np.array(
@@ -79,5 +87,5 @@ rotate_flavor_to_evolution = np.array(
     ]
 )
 """
-Basis rotation matrix between Flavor Basis and Evolution Basis.
+Basis rotation matrix between :doc:`Flavor Basis and Evolution Basis </theory/FlavorSpace>`.
 """

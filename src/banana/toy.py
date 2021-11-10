@@ -61,7 +61,8 @@ def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
     xpdf[-1] = xdbar
     xpdf[-2] = xubar
     xpdf[-3] = xsbar
-
+    if pid not in xpdf:
+        return 0.0
     return xpdf[pid]
 
 

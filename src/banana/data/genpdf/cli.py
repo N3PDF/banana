@@ -10,7 +10,7 @@ def cli():
 
 @cli.command("generate")
 @click.argument("name")
-@click.argument("labels", nargs=-1, type=int)
+@click.argument("labels", nargs=-1)
 @click.option("-p", "--parent-pdf-set", default=None, help="parent pdf set")
 @click.option("-a", "--all", is_flag=True, help="generate all the members")
 @click.option("-i", "--install", is_flag=True, help="install into LHAPDF")

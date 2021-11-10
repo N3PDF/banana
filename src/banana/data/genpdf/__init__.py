@@ -6,6 +6,7 @@ import lhapdf
 import numpy as np
 
 from ... import toy
+from .. import basis_rotation as br
 from . import export, filter, load
 
 
@@ -29,7 +30,17 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)
     pathlib.Path(name).mkdir(exist_ok=True)
-    labels = np.array(labels, dtype=np.int_)
+    # Checking label basis
+    is_evol = False
+    if is_evolution_labels(labels):
+        is_evol = True
+        generated_flavors = br.flavor_basis_pids
+    else:
+        if not is_pid_labels(labels):
+            raise ValueError("Labels are neither in evolution basis or in pid basis")
+        labels = np.array(labels, dtype=np.int_)
+        generated_flavors = labels
+
     # labels = verify_labels(args.labels)
     # collect blocks
     all_blocks = []
@@ -42,14 +53,16 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
                     lambda _pid, x, _Q2: x * (1 - x),
                     xgrid,
                     Q2grid,
-                    labels,
+                    generated_flavors,
                 )
             ]
         )
     elif parent_pdf_set in ["toylh", "toy"]:
         info = copy.deepcopy(load.template_info)
         toylh = toy.mkPDF("", 0)
-        all_blocks.append([generate_block(toylh.xfxQ2, xgrid, Q2grid, labels)])
+        all_blocks.append(
+            [generate_block(toylh.xfxQ2, xgrid, Q2grid, generated_flavors)]
+        )
     else:
         info = load.load_info_from_file(parent_pdf_set)
         # iterate on members
@@ -60,9 +73,10 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
                 break
     # filter the PDF
     new_all_blocks = []
+    filter_fnc = filter.filter_evol if is_evol else filter.filter_pids
     for b in all_blocks:
-        # new_blocks = filter.filter_pids(b, labels)
-        new_all_blocks.append(filter.filter_pids(b, labels))
+        new_all_blocks.append(filter_fnc(b, labels))
+
     # write
     export.dump_set(name, info, new_all_blocks)
 
@@ -104,6 +118,11 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
             Flavours list
         xgrid : list(float)
             x grid
+
+    Returns:
+    --------
+        dict :
+            PDF block
     """
     block = dict(Q2grid=Q2grid, pids=pids, xgrid=xgrid)
     data = []
@@ -112,3 +131,43 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
             data.append(np.array([xfxQ2(pid, x, Q2) for pid in pids]))
     block["data"] = np.array(data)
     return block
+
+
+def is_evolution_labels(labels):
+    """
+    Check whether the labels are provided in evolution basis
+
+    Parameters:
+    -----------
+        labels : list()
+            list of labels
+
+    Returns:
+    --------
+        bool :
+            is evolution basis
+    """
+    for label in labels:
+        if label not in br.evol_basis:
+            return False
+    return True
+
+
+def is_pid_labels(labels):
+    """
+    Check whether the labels are provided in flavour basis
+
+    Parameters:
+    -----------
+        labels : list()
+            list of labels
+
+    Returns:
+    --------
+        bool :
+            is flavour basis
+    """
+    for label in labels:
+        if label not in br.flavor_basis_pids:
+            return False
+    return True
