@@ -102,7 +102,7 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
 
     # install
     if install:
-        run_install_pdf(name)
+        install_pdf(name)
 
 
 def install_pdf(name):
@@ -187,6 +187,7 @@ def is_pid_labels(labels):
         bool :
             is flavour basis
     """
+    # TODO Allow this function to work also if labels are strings (related also to CLI test)
     for label in labels:
         if label not in br.flavor_basis_pids:
             return False
