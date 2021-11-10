@@ -5,6 +5,11 @@ import lhapdf
 import numpy as np
 import yaml
 
+here = pathlib.Path(__file__).parent
+# Expose the default template
+with open(here / "templatePDF.info", "r") as o:
+    template_info = yaml.safe_load(o)
+
 
 def load_info_from_file(pdfset_name):
     """

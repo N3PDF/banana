@@ -65,7 +65,7 @@ def setup_package():
             "console_scripts": [
                 "generate_pdf=banana.data.generate_pdf:generate_pdf",
                 "install_pdf=banana.data.generate_pdf:install_pdf",
-                "genpdf=banana.data.generate_pdf2:cli",
+                "genpdf=banana.data.genpdf.cli:cli",
             ],
         },
         python_requires=">=3.7",

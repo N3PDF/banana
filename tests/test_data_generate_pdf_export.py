@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from utils import cd, lhapdf_path, test_pdf
 
-from banana.data import generate_pdf2
+from banana.data import genpdf
 
 # try:
 #     import lhapdf
@@ -18,11 +18,11 @@ lhapdf = pytest.importorskip("lhapdf")
 def test_dump_info(tmp_path):
     with cd(tmp_path):
         with lhapdf_path(test_pdf):
-            info = generate_pdf2.load.load_info_from_file("myCT14llo_NF3")
+            info = genpdf.load.load_info_from_file("myCT14llo_NF3")
         info["SetDesc"] = "What ever I like"
-        generate_pdf2.export.dump_info("new_pdf", info)
+        genpdf.export.dump_info("new_pdf", info)
         with lhapdf_path(tmp_path):
-            info2 = generate_pdf2.load.load_info_from_file("new_pdf")
+            info2 = genpdf.load.load_info_from_file("new_pdf")
             # my field is new
             assert info2["SetDesc"] == "What ever I like"
             # all the others are as before
@@ -35,13 +35,13 @@ def test_dump_info(tmp_path):
 def test_dump_blocks(tmp_path):
     with cd(tmp_path):
         with lhapdf_path(test_pdf):
-            info = generate_pdf2.load.load_info_from_file("myCT14llo_NF3")
-            blocks = generate_pdf2.load.load_blocks_from_file("myCT14llo_NF3", 0)
+            info = genpdf.load.load_info_from_file("myCT14llo_NF3")
+            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
         new_blocks = copy.deepcopy(blocks)
         new_blocks[0]["xgrid"][0] = 1e-10
-        generate_pdf2.export.dump_set("new_pdf", info, [new_blocks])
+        genpdf.export.dump_set("new_pdf", info, [new_blocks])
         with lhapdf_path(tmp_path):
-            blocks2 = generate_pdf2.load.load_blocks_from_file("new_pdf", 0)
+            blocks2 = genpdf.load.load_blocks_from_file("new_pdf", 0)
             assert len(blocks) == len(blocks2)
             # my field is new
             np.testing.assert_allclose(blocks2[0]["xgrid"][0], 1e-10)

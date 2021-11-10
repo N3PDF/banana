@@ -5,7 +5,7 @@ import pytest
 from click.testing import CliRunner
 from utils import lhapdf_path, test_pdf
 
-from banana.data.generate_pdf2 import cli
+from banana.data.genpdf.cli import cli
 
 # try:
 #     import lhapdf

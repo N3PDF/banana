@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from utils import cd, lhapdf_path, test_pdf
 
-from banana.data import generate_pdf2
+from banana.data import genpdf
 
 lhapdf = pytest.importorskip("lhapdf")
 
@@ -17,13 +17,13 @@ def test_filter_pids_raw():
             "data": np.array([[0.1, 0.2, 0.3]] * 4),
         }
     ]
-    gonly = generate_pdf2.filter.filter_pids(blocks, [21])
+    gonly = genpdf.filter.filter_pids(blocks, [21])
     assert len(gonly) == 1
     np.testing.assert_allclose(gonly[0]["data"], np.array([[0.0, 0.2, 0.0]] * 4))
-    gdonly = generate_pdf2.filter.filter_pids(blocks, [21, 1])
+    gdonly = genpdf.filter.filter_pids(blocks, [21, 1])
     assert len(gdonly) == 1
     np.testing.assert_allclose(gdonly[0]["data"], np.array([[0.0, 0.2, 0.3]] * 4))
-    uonly = generate_pdf2.filter.filter_pids(blocks, [2])
+    uonly = genpdf.filter.filter_pids(blocks, [2])
     assert len(uonly) == 1
     np.testing.assert_allclose(uonly[0]["data"], np.array([[0.0, 0.0, 0.0]] * 4))
 
@@ -32,12 +32,12 @@ def test_filter_pids_ct14(tmp_path):
     with cd(tmp_path):
         # read the debug PDFs
         with lhapdf_path(test_pdf):
-            info = generate_pdf2.load.load_info_from_file("myCT14llo_NF3")
-            blocks = generate_pdf2.load.load_blocks_from_file("myCT14llo_NF3", 0)
+            info = genpdf.load.load_info_from_file("myCT14llo_NF3")
+            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
             pdf = lhapdf.mkPDF("myCT14llo_NF3", 0)
         # now extract the gluon
-        new_blocks = generate_pdf2.filter.filter_pids(blocks, [21])
-        generate_pdf2.export.dump_set("gonly", info, [new_blocks])
+        new_blocks = genpdf.filter.filter_pids(blocks, [21])
+        genpdf.export.dump_set("gonly", info, [new_blocks])
         with lhapdf_path(tmp_path):
             gonly = lhapdf.mkPDF("gonly", 0)
             # all quarks are 0
