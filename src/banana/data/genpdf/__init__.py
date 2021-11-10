@@ -20,7 +20,7 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
             target name
         labels : list(int)
             list of flavours
-        parent_pdf_set : str
+        parent_pdf_set :
             parent PDF name
         all : bool
             iterate on members
@@ -44,6 +44,7 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
     # labels = verify_labels(args.labels)
     # collect blocks
     all_blocks = []
+    set_flavors = True
     info = None
     if parent_pdf_set is None:
         info = copy.deepcopy(load.template_info)
@@ -57,20 +58,37 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
                 )
             ]
         )
-    elif parent_pdf_set in ["toylh", "toy"]:
+    elif isinstance(parent_pdf_set, str):
+        if parent_pdf_set in ["toylh", "toy"]:
+            info = copy.deepcopy(load.template_info)
+            toylh = toy.mkPDF("", 0)
+            all_blocks.append(
+                [generate_block(toylh.xfxQ2, xgrid, Q2grid, generated_flavors)]
+            )
+        else:
+            set_flavors = False
+            info = load.load_info_from_file(parent_pdf_set)
+            # iterate on members
+            for m in range(int(info["NumMembers"])):
+                all_blocks.append(load.load_blocks_from_file(parent_pdf_set, m))
+                if not all:
+                    break
+    elif isinstance(parent_pdf_set, dict):
         info = copy.deepcopy(load.template_info)
-        toylh = toy.mkPDF("", 0)
         all_blocks.append(
-            [generate_block(toylh.xfxQ2, xgrid, Q2grid, generated_flavors)]
+            [
+                generate_block(
+                    lambda pid, x, Q2: 0.0
+                    if pid not in parent_pdf_set
+                    else parent_pdf_set[pid](x, Q2),
+                    xgrid,
+                    Q2grid,
+                    generated_flavors,
+                )
+            ]
         )
     else:
-        info = load.load_info_from_file(parent_pdf_set)
-        # iterate on members
-        for m in range(int(info["NumMembers"])):
-            # blocks = load.load_blocks_from_file(parent_pdf_set, 0)
-            all_blocks.append(load.load_blocks_from_file(parent_pdf_set, m))
-            if not all:
-                break
+        raise ValueError("Unknown parent pdf type")
     # filter the PDF
     new_all_blocks = []
     filter_fnc = filter.filter_evol if is_evol else filter.filter_pids
@@ -78,6 +96,8 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
         new_all_blocks.append(filter_fnc(b, labels))
 
     # write
+    if set_flavors:
+        info["Flavors"] = [int(pid) for pid in generated_flavors]
     export.dump_set(name, info, new_all_blocks)
 
     # install
