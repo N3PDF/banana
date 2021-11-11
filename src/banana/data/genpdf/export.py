@@ -1,4 +1,6 @@
+import io
 import pathlib
+import re
 
 import yaml
 
@@ -81,9 +83,14 @@ def dump_info(name, info):
     """
     target = pathlib.Path(name) / ("%s.info" % (name))
     target.parent.mkdir(exist_ok=True)
+    # write on string stream to capture output
+    stream = io.StringIO()
+    yaml.safe_dump(info, stream, default_flow_style=True, width=100000, line_break="\n")
+    cnt = stream.getvalue()
+    # now insert some newlines for each key
+    new_cnt = re.sub(r", ([A-Za-z_]+):", r"\n\1:", cnt.strip()[1:-1])
     with open(target, "w") as o:
-        yaml.safe_dump(info, o, default_flow_style=True, width=100000, line_break="\n")
-    # TODO this creates at the moment an ugly 1 line file, which is working but unreadable ...
+        o.write(new_cnt)
 
 
 def dump_set(name, info, member_blocks):

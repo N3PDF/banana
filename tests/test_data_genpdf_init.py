@@ -17,17 +17,14 @@ lhapdf = pytest.importorskip("lhapdf")
 
 
 def test_is_evolution():
-    labels = ["V", "T3"]
-    assert genpdf.is_evolution_labels(labels) == True
-    labels2 = ["21", "2"]
-    assert genpdf.is_evolution_labels(labels2) == False
+    assert genpdf.is_evolution_labels(["V", "T3"])
+    assert not genpdf.is_evolution_labels(["21", "2"])
 
 
 def test_is_pids():
-    labels = ["V", "T3"]
-    assert genpdf.is_pid_labels(labels) == False
-    labels2 = [21, 2]
-    assert genpdf.is_pid_labels(labels2) == True
+    assert not genpdf.is_pid_labels(["V", "T3"])
+    assert not genpdf.is_pid_labels({})
+    assert genpdf.is_pid_labels([21, 2])
 
 
 def test_genpdf_exceptions(tmp_path):
@@ -80,24 +77,19 @@ def test_genpdf_toy(tmp_path):
 
 
 # TODO: fix the problem of flavour metadata (affecting also filter testing)
-# def test_genpdf_parent_evolution_basis(tmp_path):
-#     with cd(tmp_path):
-#         with lhapdf_path(test_pdf):
-#             CT14 = lhapdf.mkPDF("myCT14llo_NF3", 0)
-
-#         genpdf.generate_pdf(
-#             "debug",
-#             ["g"],
-#             "myCT14llo_NF3"
-#         )
-#         with lhapdf_path(tmp_path):
-#             pdf = lhapdf.mkPDF("debug", 0)
-#             for x in [0.1, 0.2, 0.5]:
-#                 for Q2 in [10, 20, 100]:
-#                     np.testing.assert_allclose(
-#                         pdf.xfxQ2(21, x, Q2), CT14.xfxQ2(21, x, Q2), rtol=3e-5
-#                     )
-#                     np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
+def test_genpdf_parent_evolution_basis(tmp_path):
+    with cd(tmp_path):
+        with lhapdf_path(test_pdf):
+            CT14 = lhapdf.mkPDF("myCT14llo_NF3", 0)
+            genpdf.generate_pdf("debug2", ["g"], "myCT14llo_NF3")
+        with lhapdf_path(tmp_path):
+            pdf = lhapdf.mkPDF("debug2", 0)
+            for x in [0.1, 0.2, 0.5]:
+                for Q2 in [10, 20, 100]:
+                    np.testing.assert_allclose(
+                        pdf.xfxQ2(21, x, Q2), CT14.xfxQ2(21, x, Q2), rtol=3e-5
+                    )
+                    np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
 
 
 def test_genpdf_dict(tmp_path):

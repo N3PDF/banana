@@ -53,6 +53,32 @@ def test_filter_pids_ct14(tmp_path):
                     )
 
 
+def test_filter_evol_ct14(tmp_path):
+    with cd(tmp_path):
+        # read the debug PDFs
+        with lhapdf_path(test_pdf):
+            info = genpdf.load.load_info_from_file("myCT14llo_NF3")
+            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
+            pdf = lhapdf.mkPDF("myCT14llo_NF3", 0)
+        # now extract the gluon
+        new_blocks = genpdf.filter.filter_evol(blocks, ["g"])
+        info["Flavors"] = [22, -6, -5, -4, -3, -2, -1, 21, 1, 2, 3, 4, 5, 6]
+        genpdf.export.dump_set("gonly2", info, [new_blocks])
+        with lhapdf_path(tmp_path):
+            gonly = lhapdf.mkPDF("gonly2", 0)
+            # all quarks are 0
+            for pid in [1, 2, -3]:
+                for x in [1e-2, 0.1, 0.9]:
+                    for Q2 in [10, 100]:
+                        np.testing.assert_allclose(gonly.xfxQ2(pid, x, Q2), 0.0)
+            # and the gluon in as before
+            for x in [1e-2, 0.1, 0.9]:
+                for Q2 in [10, 100]:
+                    np.testing.assert_allclose(
+                        pdf.xfxQ2(21, x, Q2), gonly.xfxQ2(21, x, Q2)
+                    )
+
+
 def test_filter_evol_raw():
     blocks = [
         {
