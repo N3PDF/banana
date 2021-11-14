@@ -66,8 +66,15 @@ def test_genpdf_no_parent_and_install(tmp_path):
 def test_genpdf_toy(tmp_path):
     with cd(tmp_path):
         toylh = toy.mkPDF("", 0)
-        genpdf.generate_pdf("debug", [21], "toy")
+        genpdf.generate_pdf(
+            "debug", [21], "toy", info_update={"NumFlavors": 25, "Debug": "Working"}
+        )
         with lhapdf_path(tmp_path):
+            # testing info updating
+            info = genpdf.load.load_info_from_file("debug")
+            assert info["NumFlavors"] == 25
+            assert info["Debug"] == "Working"
+
             pdf = lhapdf.mkPDF("debug", 0)
             for x in [0.1, 0.2, 0.5]:
                 for Q2 in [10, 20, 100]:

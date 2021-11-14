@@ -10,7 +10,9 @@ from .. import basis_rotation as br
 from . import export, filter, load
 
 
-def generate_pdf(name, labels, parent_pdf_set=None, members=False, install=False):
+def generate_pdf(
+    name, labels, parent_pdf_set=None, members=False, info_update=None, install=False
+):
     """
     Generate a new PDF from a parent PDF with a set of flavors
 
@@ -101,6 +103,14 @@ def generate_pdf(name, labels, parent_pdf_set=None, members=False, install=False
         info["NumFlavors"] = len(generated_flavors)
     if is_evol:
         info["ForcePositive"] = 0
+    # changing info file according to user choice
+    if info_update != None:
+        if isinstance(info_update, dict):
+            info.update(info_update)
+        else:
+            raise TypeError("Info to update are not in a dictionary format")
+
+    # exporting
     export.dump_set(name, info, new_all_blocks)
 
     # install

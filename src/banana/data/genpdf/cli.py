@@ -16,7 +16,7 @@ def cli():
 @click.option("-i", "--install", is_flag=True, help="install into LHAPDF")
 def cli_generate_pdf(name, labels, parent_pdf_set, members, install):
     """Generate a new PDF from a parent set with given flavors"""
-    return generate_pdf(name, labels, parent_pdf_set, members, install)
+    return generate_pdf(name, labels, parent_pdf_set, members, None, install)
 
 
 @cli.command("install")
