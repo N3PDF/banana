@@ -16,8 +16,8 @@ def generate_pdf(
     """
     Generate a new PDF from a parent PDF with a set of flavors
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
         name : str
             target name
         labels : list(int)
@@ -170,13 +170,13 @@ def is_evolution_labels(labels):
     """
     Check whether the labels are provided in evolution basis
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
         labels : list()
             list of labels
 
-    Returns:
-    --------
+    Returns
+    -------
         bool :
             is evolution basis
     """
@@ -190,13 +190,13 @@ def is_pid_labels(labels):
     """
     Check whether the labels are provided in flavor basis
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
         labels : list()
             list of labels
 
-    Returns:
-    --------
+    Returns
+    -------
         bool :
             is flavor basis
     """

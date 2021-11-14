@@ -46,6 +46,9 @@ def test_genpdf_exceptions(tmp_path):
         with pytest.raises(FileExistsError):
             genpdf.install_pdf("foo")
 
+        with pytest.raises(TypeError):
+            genpdf.generate_pdf("debug", [21], info_update=(10, 15, 20))
+
 
 def test_genpdf_no_parent_and_install(tmp_path):
     with cd(tmp_path):
