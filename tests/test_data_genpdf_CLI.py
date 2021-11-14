@@ -32,14 +32,12 @@ def test_genpdf_CLI(tmp_path):
     with runner.isolated_filesystem(temp_dir=tmp_path):
         result = runner.invoke(cli, ["generate", "debug", "g"])
         assert result.exit_code == 0
-        result = runner.invoke(cli, ["generate", "debug1", "21", "-p toy"])
-        assert result.exit_code == 0
-        result = runner.invoke(cli, ["generate", "debug2", "21", "-p CT10", "-a"])
-        assert result.exit_code == 0
+        result1 = runner.invoke(cli, ["generate", "debug1", "21", "-p", "toy"])
+        assert result1.exit_code == 0
+        result2 = runner.invoke(cli, ["generate", "debug2", "21", "-p", "CT10", "-m"])
+        assert result2.exit_code == 0
         d = tmp_path / "sub"
         d.mkdir()
         with lhapdf_path(d):
-            result = runner.invoke(
-                cli, ["generate", "debug", "21", "-p CT10", "-a", "-i"]
-            )
-            assert result.exit_code == 0
+            result3 = runner.invoke(cli, ["generate", "debug3", "21", "-i"])
+            assert result3.exit_code == 0
