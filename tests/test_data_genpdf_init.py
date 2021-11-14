@@ -23,6 +23,7 @@ def test_is_evolution():
 
 def test_is_pids():
     assert not genpdf.is_pid_labels(["V", "T3"])
+    assert not genpdf.is_pid_labels(["35", "9"])
     assert not genpdf.is_pid_labels({})
     assert genpdf.is_pid_labels([21, 2])
 
@@ -76,7 +77,6 @@ def test_genpdf_toy(tmp_path):
                     np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
 
 
-# TODO: fix the problem of flavour metadata (affecting also filter testing)
 def test_genpdf_parent_evolution_basis(tmp_path):
     with cd(tmp_path):
         with lhapdf_path(test_pdf):
@@ -107,3 +107,23 @@ def test_genpdf_dict(tmp_path):
                         pdf.xfxQ2(21, x, Q2), 3 * x * (1 - x), rtol=3e-5
                     )
                     np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
+
+
+def test_genpdf_MSTW_allflavors(tmp_path):
+    with cd(tmp_path):
+        MSTW = lhapdf.mkPDF("MSTW2008nnlo90cl_nf4as5", 0)
+        # filtering on all flavors
+        genpdf.generate_pdf(
+            "My_MSTW",
+            [21, 1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6],
+            "MSTW2008nnlo90cl_nf4as5",
+        )
+    with lhapdf_path(tmp_path):
+        pdf = lhapdf.mkPDF("My_MSTW", 0)
+        # testing for some pids, x and Q2 values
+        for x in [0.1, 0.2, 0.8]:
+            for Q2 in [10, 20, 100]:
+                for pid in [21, 1, 4, 6, -2, -3, -5]:
+                    np.testing.assert_allclose(
+                        pdf.xfxQ2(pid, x, Q2), MSTW.xfxQ2(pid, x, Q2), rtol=3e-8
+                    )
