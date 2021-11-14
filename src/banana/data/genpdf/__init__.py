@@ -10,16 +10,16 @@ from .. import basis_rotation as br
 from . import export, filter, load
 
 
-def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
+def generate_pdf(name, labels, parent_pdf_set=None, members=False, install=False):
     """
-    Generate a new PDF from a parent PDF with a set of flavours
+    Generate a new PDF from a parent PDF with a set of flavors
 
     Parameters:
     -----------
         name : str
             target name
         labels : list(int)
-            list of flavours
+            list of flavors
         parent_pdf_set :
             parent PDF name
         all : bool
@@ -71,7 +71,7 @@ def generate_pdf(name, labels, parent_pdf_set=None, all=False, install=False):
             # iterate on members
             for m in range(int(info["NumMembers"])):
                 all_blocks.append(load.load_blocks_from_file(parent_pdf_set, m))
-                if not all:
+                if not members:
                     break
     elif isinstance(parent_pdf_set, dict):
         info = copy.deepcopy(load.template_info)
@@ -135,7 +135,7 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
         Q2grid : list(float)
             Q2 grid
         pids : list(int)
-            Flavours list
+            Flavors list
         xgrid : list(float)
             x grid
 
@@ -175,7 +175,7 @@ def is_evolution_labels(labels):
 
 def is_pid_labels(labels):
     """
-    Check whether the labels are provided in flavour basis
+    Check whether the labels are provided in flavor basis
 
     Parameters:
     -----------
@@ -185,7 +185,7 @@ def is_pid_labels(labels):
     Returns:
     --------
         bool :
-            is flavour basis
+            is flavor basis
     """
     # TODO Allow this function to work also if labels are strings (related also to CLI test)
     for label in labels:

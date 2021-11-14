@@ -12,11 +12,11 @@ def cli():
 @click.argument("name")
 @click.argument("labels", nargs=-1)
 @click.option("-p", "--parent-pdf-set", default=None, help="parent pdf set")
-@click.option("-a", "--all", is_flag=True, help="generate all the members")
+@click.option("-m", "--members", is_flag=True, help="generate all the members")
 @click.option("-i", "--install", is_flag=True, help="install into LHAPDF")
-def cli_generate_pdf(name, labels, parent_pdf_set, all, install):
-    """Generate a new PDF from a parent set with given flavours"""
-    return generate_pdf(name, labels, parent_pdf_set, all, install)
+def cli_generate_pdf(name, labels, parent_pdf_set, members, install):
+    """Generate a new PDF from a parent set with given flavors"""
+    return generate_pdf(name, labels, parent_pdf_set, members, install)
 
 
 @cli.command("install")

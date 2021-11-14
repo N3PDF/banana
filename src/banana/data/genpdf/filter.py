@@ -59,12 +59,12 @@ def filter_evol(blocks, labels):
             continue
         zeros = np.zeros_like(current_data[0])
         # load all flavors
-        flavour_data = [zeros.copy() for pid in br.flavor_basis_pids]
+        flavor_data = [zeros.copy() for pid in br.flavor_basis_pids]
         for pid, pdf in zip(current_pids, current_data):
             idx = br.flavor_basis_pids.index(pid)
-            flavour_data[idx] = pdf
+            flavor_data[idx] = pdf
         # Rotate to evolution basis
-        evol_data = br.rotate_flavor_to_evolution @ np.array(flavour_data)
+        evol_data = br.rotate_flavor_to_evolution @ np.array(flavor_data)
         # Filter in evolution basis
         for pos, label in enumerate(br.evol_basis):
             if label not in labels:
