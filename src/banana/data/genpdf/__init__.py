@@ -66,7 +66,7 @@ def generate_pdf(name, labels, parent_pdf_set=None, members=False, install=False
                 [generate_block(toylh.xfxQ2, xgrid, Q2grid, generated_flavors)]
             )
         else:
-            set_flavors = False
+            set_flavors = is_evol
             info = load.load_info_from_file(parent_pdf_set)
             # iterate on members
             for m in range(int(info["NumMembers"])):
@@ -98,6 +98,9 @@ def generate_pdf(name, labels, parent_pdf_set=None, members=False, install=False
     # write
     if set_flavors:
         info["Flavors"] = [int(pid) for pid in generated_flavors]
+        info["NumFlavors"] = len(generated_flavors)
+    if is_evol:
+        info["ForcePositive"] = 0
     export.dump_set(name, info, new_all_blocks)
 
     # install
@@ -128,8 +131,8 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
     """
     Generate an LHAPDF data block from a callable
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
         xfxQ2 : callable
             LHAPDF like callable
         Q2grid : list(float)
@@ -139,8 +142,8 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
         xgrid : list(float)
             x grid
 
-    Returns:
-    --------
+    Returns
+    -------
         dict :
             PDF block
     """
@@ -187,7 +190,10 @@ def is_pid_labels(labels):
         bool :
             is flavor basis
     """
-    # TODO Allow this function to work also if labels are strings (related also to CLI test)
+    try:
+        labels = np.array(labels, dtype=np.int_)
+    except (ValueError, TypeError):
+        return False
     for label in labels:
         if label not in br.flavor_basis_pids:
             return False

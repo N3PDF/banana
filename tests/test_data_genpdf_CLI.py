@@ -29,12 +29,17 @@ def test_genpdf_CLI_messages():
 
 def test_genpdf_CLI(tmp_path):
     runner = CliRunner()
-    with runner.isolated_filesystem(temp_dir=tmp_path) as td:
+    with runner.isolated_filesystem(temp_dir=tmp_path):
         result = runner.invoke(cli, ["generate", "debug", "g"])
         assert result.exit_code == 0
-        # result = runner.invoke(cli, ["generate", "debug1" "21" "-p toy"])
-        # result = runner.invoke(cli, ["generate", "debug2" "21" "-p CT10" "-a"])
-        # d = tmp_path / "sub"
-        # d.mkdir()
-        # with lhapdf_path(d):
-        #    result = runner.invoke(cli, ["generate", "debug" "21" "-p CT10" "-a" "-i"])
+        result = runner.invoke(cli, ["generate", "debug1", "21", "-p toy"])
+        assert result.exit_code == 0
+        result = runner.invoke(cli, ["generate", "debug2", "21", "-p CT10", "-a"])
+        assert result.exit_code == 0
+        d = tmp_path / "sub"
+        d.mkdir()
+        with lhapdf_path(d):
+            result = runner.invoke(
+                cli, ["generate", "debug", "21", "-p CT10", "-a", "-i"]
+            )
+            assert result.exit_code == 0
