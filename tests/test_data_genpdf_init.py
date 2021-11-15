@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
+from re import M
 
 import numpy as np
 import pytest
@@ -35,7 +36,10 @@ def test_genpdf_exceptions(tmp_path):
             genpdf.generate_pdf(
                 "debug",
                 ["f"],
-                {21: lambda x, Q2: 3 * x * (1 - x), 2: lambda x, Q2: 4 * x * (1 - x)},
+                {
+                    21: lambda x, Q2: 3.0 * x * (1.0 - x),
+                    2: lambda x, Q2: 4.0 * x * (1.0 - x),
+                },
             )
         with pytest.raises(ValueError):
             genpdf.generate_pdf(
@@ -59,9 +63,9 @@ def test_genpdf_no_parent_and_install(tmp_path):
         with lhapdf_path(d):
             pdf = lhapdf.mkPDF("debug", 0)
             for x in [0.1, 0.2, 0.8]:
-                for Q2 in [10, 20, 100]:
+                for Q2 in [10.0, 20.0, 100.0]:
                     np.testing.assert_allclose(
-                        pdf.xfxQ2(21, x, Q2), x * (1 - x), rtol=3e-5
+                        pdf.xfxQ2(21, x, Q2), x * (1.0 - x), rtol=3e-5
                     )
                     np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
 
@@ -80,7 +84,7 @@ def test_genpdf_toy(tmp_path):
 
             pdf = lhapdf.mkPDF("debug", 0)
             for x in [0.1, 0.2, 0.5]:
-                for Q2 in [10, 20, 100]:
+                for Q2 in [10.0, 20.0, 100.0]:
                     np.testing.assert_allclose(
                         pdf.xfxQ2(21, x, Q2), toylh.xfxQ2(21, x, Q2), rtol=3e-5
                     )
@@ -95,7 +99,7 @@ def test_genpdf_parent_evolution_basis(tmp_path):
         with lhapdf_path(tmp_path):
             pdf = lhapdf.mkPDF("debug2", 0)
             for x in [0.1, 0.2, 0.5]:
-                for Q2 in [10, 20, 100]:
+                for Q2 in [10.0, 20.0, 100.0]:
                     np.testing.assert_allclose(
                         pdf.xfxQ2(21, x, Q2), CT14.xfxQ2(21, x, Q2), rtol=3e-5
                     )
@@ -107,33 +111,45 @@ def test_genpdf_dict(tmp_path):
         genpdf.generate_pdf(
             "debug",
             [21],
-            {21: lambda x, Q2: 3 * x * (1 - x), 2: lambda x, Q2: 4 * x * (1 - x)},
+            {
+                21: lambda x, Q2: 3.0 * x * (1.0 - x),
+                2: lambda x, Q2: 4.0 * x * (1.0 - x),
+            },
         )
         with lhapdf_path(tmp_path):
             pdf = lhapdf.mkPDF("debug", 0)
             for x in [0.1, 0.2, 0.8]:
-                for Q2 in [10, 20, 100]:
+                for Q2 in [10.0, 20.0, 100.0]:
                     np.testing.assert_allclose(
-                        pdf.xfxQ2(21, x, Q2), 3 * x * (1 - x), rtol=3e-5
+                        pdf.xfxQ2(21, x, Q2), 3.0 * x * (1.0 - x), rtol=3e-5
                     )
+                    # 2 is available, but not active
                     np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
 
 
 def test_genpdf_MSTW_allflavors(tmp_path):
     with cd(tmp_path):
-        MSTW = lhapdf.mkPDF("MSTW2008nnlo90cl_nf4as5", 0)
-        # filtering on all flavors
-        genpdf.generate_pdf(
-            "My_MSTW",
-            [21, 1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6],
-            "MSTW2008nnlo90cl_nf4as5",
-        )
-    with lhapdf_path(tmp_path):
-        pdf = lhapdf.mkPDF("My_MSTW", 0)
-        # testing for some pids, x and Q2 values
-        for x in [0.1, 0.2, 0.8]:
-            for Q2 in [10, 20, 100]:
+        with lhapdf_path(test_pdf):
+            # load reference PDFs
+            ref = {}
+            for mem in range(1 + 1):
+                ref[mem] = lhapdf.mkPDF("myMSTW2008nlo90cl", mem)
+            # filtering on all flavors
+            genpdf.generate_pdf(
+                "My_MSTW",
+                [21, 1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6],
+                "myMSTW2008nlo90cl",
+                members=True,
+            )
+        with lhapdf_path(tmp_path):
+            for mem in range(1 + 1):
+                pdf = lhapdf.mkPDF("My_MSTW", mem)
+                # testing for some pids, x and Q2 values
                 for pid in [21, 1, 4, 6, -2, -3, -5]:
-                    np.testing.assert_allclose(
-                        pdf.xfxQ2(pid, x, Q2), MSTW.xfxQ2(pid, x, Q2), rtol=3e-8
-                    )
+                    for x in [0.1, 0.2, 0.8]:
+                        for Q2 in [10.0, 20.0, 100.0]:
+                            np.testing.assert_allclose(
+                                pdf.xfxQ2(pid, x, Q2),
+                                ref[mem].xfxQ2(pid, x, Q2),
+                                err_msg=f"mem={mem}, pid={pid}, x={x}, Q2={Q2}",
+                            )

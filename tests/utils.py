@@ -25,9 +25,7 @@ def cd(newdir):
 def lhapdf_path(newdir):
     paths = lhapdf.paths()
     lhapdf.pathsPrepend(str(newdir))
-    print("intermediate paths are:", lhapdf.paths())
     try:
         yield
     finally:
-        print("resetting paths to ", paths)
         lhapdf.setPaths(paths)
