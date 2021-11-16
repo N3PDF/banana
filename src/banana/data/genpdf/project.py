@@ -77,8 +77,6 @@ def project(blocks, reprs):
             idx = br.flavor_basis_pids.index(pid)
             flavor_data[idx] = pdf
         flavor_data = np.array(flavor_data)
-        # import pdb; pdb.set_trace();
-
         new_data = np.zeros_like(flavor_data)
         for elem in reprs:
             proj = elem[:, np.newaxis] * elem
@@ -86,3 +84,51 @@ def project(blocks, reprs):
         block["pids"] = br.flavor_basis_pids
         block["data"] = np.array(new_data).T
     return new_blocks
+
+
+def is_evolution_labels(labels):
+    """
+    Check whether the labels are provided in evolution basis
+
+    Parameters
+    ----------
+        labels : list()
+            list of labels
+
+    Returns
+    -------
+        bool :
+            is evolution basis
+    """
+    for label in labels:
+        if not isinstance(label, str):
+            return False
+        if label not in br.evol_basis:
+            return False
+    return True
+
+
+def is_pid_labels(labels):
+    """
+    Check whether the labels are provided in flavor basis
+
+    Parameters
+    ----------
+        labels : list()
+            list of labels
+
+    Returns
+    -------
+        bool :
+            is flavor basis
+    """
+    try:
+        labels = np.array(labels, dtype=np.int_)
+    except (ValueError, TypeError):
+        return False
+    for label in labels:
+        if not isinstance(label, np.int_):
+            return False
+        if label not in br.flavor_basis_pids:
+            return False
+    return True

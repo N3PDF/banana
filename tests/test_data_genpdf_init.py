@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pytest
+from eko import basis_rotation as br
 from utils import cd, lhapdf_path, test_pdf
 
 from banana import toy
@@ -12,18 +13,6 @@ from banana.data import genpdf
 #     pytest.skip("No LHAPDF interface around", allow_module_level=True)
 # TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
-
-
-def test_is_evolution():
-    assert genpdf.is_evolution_labels(["V", "T3"])
-    assert not genpdf.is_evolution_labels(["21", "2"])
-
-
-def test_is_pids():
-    assert not genpdf.is_pid_labels(["V", "T3"])
-    assert not genpdf.is_pid_labels(["35", "9"])
-    assert not genpdf.is_pid_labels({})
-    assert genpdf.is_pid_labels([21, 2])
 
 
 def test_genpdf_exceptions(tmp_path):
@@ -126,6 +115,33 @@ def test_genpdf_dict(tmp_path):
                     )
                     # 2 is available, but not active
                     np.testing.assert_allclose(pdf.xfxQ2(2, x, Q2), 0.0)
+
+
+def test_genpdf_custom(tmp_path):
+    with cd(tmp_path):
+        c = np.zeros_like(br.flavor_basis_pids, dtype=np.float_)
+        c[br.flavor_basis_pids.index(1)] = 1.0
+        c[br.flavor_basis_pids.index(2)] = 0.5
+        genpdf.generate_pdf(
+            "test_genpdf_custom",
+            [c],
+            {
+                1: lambda x, Q2: 2.0 * x * (1.0 - x),
+                2: lambda x, Q2: -4.0 * x * (1.0 - x),
+            },
+            info_update={"ForcePositive": 0},
+        )
+        with lhapdf_path(tmp_path):
+            pdf = lhapdf.mkPDF("test_genpdf_custom", 0)
+            for x in [0.1, 0.2, 0.8]:
+                for Q2 in [10.0, 20.0, 100.0]:
+                    # np.testing.assert_allclose(
+                    #     pdf.xfxQ2(1, x, Q2),
+                    #     0.0,err_msg=f"pid=1,x={x},Q2={Q2}"
+                    # )
+                    np.testing.assert_allclose(
+                        pdf.xfxQ2(2, x, Q2), 0.0, err_msg=f"pid=2,x={x},Q2={Q2}"
+                    )
 
 
 def test_genpdf_MSTW_allflavors(tmp_path):

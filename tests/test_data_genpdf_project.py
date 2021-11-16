@@ -9,24 +9,16 @@ from banana.data import genpdf
 lhapdf = pytest.importorskip("lhapdf")
 
 
-# def test_project_pids_raw():
-#     blocks = [
-#         {
-#             "Q2grid": np.array([1, 2]),
-#             "xgrid": np.array([0.1, 1.0]),
-#             "pids": np.array([-1, 21, 1]),
-#             "data": np.array([[0.1, 0.2, 0.3]] * 4),
-#         }
-#     ]
-#     gonly = genpdf.filter.filter_pids(blocks, [21])
-#     assert len(gonly) == 1
-#     np.testing.assert_allclose(gonly[0]["data"], np.array([[0.0, 0.2, 0.0]] * 4))
-#     gdonly = genpdf.filter.filter_pids(blocks, [21, 1])
-#     assert len(gdonly) == 1
-#     np.testing.assert_allclose(gdonly[0]["data"], np.array([[0.0, 0.2, 0.3]] * 4))
-#     uonly = genpdf.filter.filter_pids(blocks, [2])
-#     assert len(uonly) == 1
-#     np.testing.assert_allclose(uonly[0]["data"], np.array([[0.0, 0.0, 0.0]] * 4))
+def test_is_evolution():
+    assert genpdf.project.is_evolution_labels(["V", "T3"])
+    assert not genpdf.project.is_evolution_labels(["21", "2"])
+
+
+def test_is_pids():
+    assert not genpdf.project.is_pid_labels(["V", "T3"])
+    assert not genpdf.project.is_pid_labels(["35", "9"])
+    assert not genpdf.project.is_pid_labels({})
+    assert genpdf.project.is_pid_labels([21, 2])
 
 
 def test_project_pid_to_flavor():

@@ -14,7 +14,7 @@ def generate_pdf(
     name, labels, parent_pdf_set=None, members=False, info_update=None, install=False
 ):
     """
-    Generate a new PDF from a parent PDF with a set of flavors
+    Generate a new PDF from a parent PDF with a set of flavors.
 
     Parameters
     ----------
@@ -35,10 +35,10 @@ def generate_pdf(
     # Checking label basis
     is_evol = False
     flavor_combinations = labels
-    if is_evolution_labels(labels):
+    if project.is_evolution_labels(labels):
         is_evol = True
         flavor_combinations = project.evol_to_flavor(labels)
-    elif is_pid_labels(labels):
+    elif project.is_pid_labels(labels):
         labels = np.array(labels, dtype=np.int_)
         flavor_combinations = project.pid_to_flavor(labels)
 
@@ -160,47 +160,3 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
             data.append(np.array([xfxQ2(pid, x, Q2) for pid in pids]))
     block["data"] = np.array(data)
     return block
-
-
-def is_evolution_labels(labels):
-    """
-    Check whether the labels are provided in evolution basis
-
-    Parameters
-    ----------
-        labels : list()
-            list of labels
-
-    Returns
-    -------
-        bool :
-            is evolution basis
-    """
-    for label in labels:
-        if label not in br.evol_basis:
-            return False
-    return True
-
-
-def is_pid_labels(labels):
-    """
-    Check whether the labels are provided in flavor basis
-
-    Parameters
-    ----------
-        labels : list()
-            list of labels
-
-    Returns
-    -------
-        bool :
-            is flavor basis
-    """
-    try:
-        labels = np.array(labels, dtype=np.int_)
-    except (ValueError, TypeError):
-        return False
-    for label in labels:
-        if label not in br.flavor_basis_pids:
-            return False
-    return True
