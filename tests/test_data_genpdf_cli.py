@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import pytest
 from click.testing import CliRunner
-from utils import cd, lhapdf_path, test_pdf
+from utils import lhapdf_path, test_pdf
 
 from banana.data.genpdf.cli import cli
 
@@ -34,10 +33,17 @@ def test_genpdf_CLI(tmp_path):
         assert result.exit_code == 0
         result1 = runner.invoke(cli, ["generate", "debug1", "21", "-p", "toy"])
         assert result1.exit_code == 0
-        result2 = runner.invoke(cli, ["generate", "debug2", "21", "-p", "CT10", "-m"])
-        assert result2.exit_code == 0
+        with lhapdf_path(test_pdf):
+            result2 = runner.invoke(
+                cli, ["generate", "debug2", "21", "-p", "myCT14llo_NF3", "-m"]
+            )
+            assert result2.exit_code == 0
         d = tmp_path / "sub"
         d.mkdir()
         with lhapdf_path(d):
             result3 = runner.invoke(cli, ["generate", "debug3", "21", "-i"])
             assert result3.exit_code == 0
+            _pdf3 = lhapdf.mkPDF("debug3", 0)
+            result4 = runner.invoke(cli, ["install", "debug"])
+            assert result4.exit_code == 0
+            _pdf = lhapdf.mkPDF("debug", 0)

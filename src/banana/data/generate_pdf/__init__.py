@@ -9,10 +9,10 @@ import shutil
 
 import lhapdf
 import numpy as np
+from eko import basis_rotation as br
 from jinja2 import Environment, FileSystemLoader
 
 from ... import toy
-from .. import basis_rotation as br
 
 # ==========
 # globals

@@ -24,7 +24,3 @@ def cli_generate_pdf(name, labels, parent_pdf_set, members, install):
 def cli_install_pdf(name):
     """Install the PDF on LHAPDF directory"""
     return install_pdf(name)
-
-
-if __name__ == "__main__":
-    cli()

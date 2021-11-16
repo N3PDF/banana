@@ -4,10 +4,10 @@ import shutil
 
 import lhapdf
 import numpy as np
+from eko import basis_rotation as br
 
 from ... import toy
-from .. import basis_rotation as br
-from . import export, filter, load
+from . import export, load, project
 
 
 def generate_pdf(
@@ -34,19 +34,17 @@ def generate_pdf(
     pathlib.Path(name).mkdir(exist_ok=True)
     # Checking label basis
     is_evol = False
+    flavor_combinations = labels
     if is_evolution_labels(labels):
         is_evol = True
-        generated_flavors = br.flavor_basis_pids
-    else:
-        if not is_pid_labels(labels):
-            raise ValueError("Labels are neither in evolution basis or in pid basis")
+        flavor_combinations = project.evol_to_flavor(labels)
+    elif is_pid_labels(labels):
         labels = np.array(labels, dtype=np.int_)
-        generated_flavors = labels
+        flavor_combinations = project.pid_to_flavor(labels)
 
     # labels = verify_labels(args.labels)
     # collect blocks
     all_blocks = []
-    set_flavors = True
     info = None
     if parent_pdf_set is None:
         info = copy.deepcopy(load.template_info)
@@ -56,7 +54,7 @@ def generate_pdf(
                     lambda _pid, x, _Q2: x * (1 - x),
                     xgrid,
                     Q2grid,
-                    generated_flavors,
+                    br.flavor_basis_pids,
                 )
             ]
         )
@@ -65,10 +63,9 @@ def generate_pdf(
             info = copy.deepcopy(load.template_info)
             toylh = toy.mkPDF("", 0)
             all_blocks.append(
-                [generate_block(toylh.xfxQ2, xgrid, Q2grid, generated_flavors)]
+                [generate_block(toylh.xfxQ2, xgrid, Q2grid, br.flavor_basis_pids)]
             )
         else:
-            set_flavors = is_evol
             info = load.load_info_from_file(parent_pdf_set)
             # iterate on members
             for m in range(int(info["NumMembers"])):
@@ -85,7 +82,7 @@ def generate_pdf(
                     else parent_pdf_set[pid](x, Q2),
                     xgrid,
                     Q2grid,
-                    generated_flavors,
+                    br.flavor_basis_pids,
                 )
             ]
         )
@@ -93,22 +90,21 @@ def generate_pdf(
         raise ValueError("Unknown parent pdf type")
     # filter the PDF
     new_all_blocks = []
-    filter_fnc = filter.filter_evol if is_evol else filter.filter_pids
     for b in all_blocks:
-        new_all_blocks.append(filter_fnc(b, labels))
+        new_all_blocks.append(project.project(b, flavor_combinations))
 
-    # write
-    if set_flavors:
-        info["Flavors"] = [int(pid) for pid in generated_flavors]
-        info["NumFlavors"] = len(generated_flavors)
-    if is_evol:
-        info["ForcePositive"] = 0
     # changing info file according to user choice
-    if info_update != None:
+    if info_update is not None:
         if isinstance(info_update, dict):
             info.update(info_update)
         else:
             raise TypeError("Info to update are not in a dictionary format")
+    # write
+    info["Flavors"] = [int(pid) for pid in br.flavor_basis_pids]
+    info["NumFlavors"] = len(br.flavor_basis_pids)
+    if is_evol:
+        info["ForcePositive"] = 0
+    info["NumMembers"] = len(new_all_blocks)
 
     # exporting
     export.dump_set(name, info, new_all_blocks)

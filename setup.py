@@ -60,6 +60,7 @@ def setup_package():
             "pyyaml",
             "human_dates2",
             "click",
+            "eko",
         ],
         entry_points={
             "console_scripts": [
