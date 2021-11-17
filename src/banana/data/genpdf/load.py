@@ -9,6 +9,8 @@ here = pathlib.Path(__file__).parent
 # Expose the default template
 with open(here / "templatePDF.info", "r") as o:
     template_info = yaml.safe_load(o)
+with open(here / "Toy.info", "r") as t:
+    Toy_info = yaml.safe_load(t)
 
 
 def load_info_from_file(pdfset_name):

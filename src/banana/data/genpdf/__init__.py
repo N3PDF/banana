@@ -28,6 +28,10 @@ def generate_pdf(
             iterate on members
         install : bool
             install on LHAPDF path
+    Examples
+    --------
+        >>> generate_pdf(name, labels, {pid: f(x,Q2) for pid in mask})
+            this will generate a PDF with a fixed function f(x,Q2) for every active flavor in mask
     """
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)
@@ -60,7 +64,7 @@ def generate_pdf(
         )
     elif isinstance(parent_pdf_set, str):
         if parent_pdf_set in ["toylh", "toy"]:
-            info = copy.deepcopy(load.template_info)
+            info = copy.deepcopy(load.Toy_info)
             toylh = toy.mkPDF("", 0)
             all_blocks.append(
                 [generate_block(toylh.xfxQ2, xgrid, Q2grid, br.flavor_basis_pids)]
