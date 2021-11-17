@@ -1,13 +1,13 @@
-SetDesc: {{ description }}
+SetDesc: 'fake CT14llo, 1-loop PDF evolution with HOPPET and HOPPET alphas_s running solution. This set has 1 member PDFs. mem=0 --> max NF=3'
 SetIndex: 13206
-Authors: F. Hekhorn, A. Candido
-Reference:
+Authors: S. Dulat, T.-J. Hou, J. Gao, M. Guzzi, J. Huston, P. Nadolsky, J. Pumplin, C. Schmidt, D. Stump, C.-P.Yuan
+Reference: arXiv:1506.07443
 Format: lhagrid1
 DataVersion: 1
 NumMembers: 1
 Particle: 2212
-Flavors: {{ pids }}
-ForcePositive: 0
+Flavors: [-3, -2, -1, 1, 2, 3, 21]
+ForcePositive: 1
 OrderQCD: 0
 FlavorScheme: variable
 NumFlavors: 3

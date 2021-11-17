@@ -8,6 +8,9 @@
 .. |CLI| replace::
     :abbr:`CLI (Command Line Interface)`
 
+.. |API| replace::
+    :abbr:`API (Application Programming Interface)`
+
 .. external
 
 .. |yadism| replace::
