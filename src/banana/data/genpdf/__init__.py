@@ -53,7 +53,19 @@ def generate_pdf(
         >>> # f = lambda x,Q2 ... put the desired function here
         >>> # mask = [list of active PIDs]
         >>> generate_pdf(name, labels, parent_pdf_set={pid: f for pid in mask})
-            this will generate a PDF with the fixed function f(x,Q2) for every active flavor in mask
+        this will generate a PDF with the fixed function f(x,Q2) for every active flavor in mask
+
+        >>> from banana.data import basis_rotation as br
+        >>> from banana.data import genpdf
+        >>> import numpy as np
+        >>> anti_charge_singlet = np.zeros_like(br.flavor_basis_pids, dtype=np.float_)
+        >>> anti_charge_singlet[br.flavor_basis_pids.index(1)] = -4
+        >>> anti_charge_singlet[br.flavor_basis_pids.index(-1)] = -4
+        >>> anti_charge_singlet[br.flavor_basis_pids.index(2)] = 1
+        >>> anti_charge_singlet[br.flavor_basis_pids.index(-2)] = 1
+        >>> genpdf.generate_pdf("acs", [anti_charge_singlet])
+        this will generate a PDF using the debug x(1-x) PDF as parent and keeping only the
+        'anti-charge-singlet' combination 
     """
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)
