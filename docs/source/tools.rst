@@ -15,13 +15,13 @@ The custom |PDF| can be generated in three different ways which are accessible t
 (the complete spelling is ``genpdf generate [NAME] -p [PARENT]``):
 
   1. If [PARENT] is the name of an available |PDF|, it is used as parent |PDF| and thus copied to generate the new custom PDF.
-  2. If [PARENT] is "toylh" or "toy", the **toy** |PDF| is used as parent
-  3. If the option ``-p [PARENT]`` is not used, the |PDF| is generated using **x(1-x)** for all the flavors
+  2. If [PARENT] is "toylh" or "toy", the **toy** |PDF| is used as parent.
+  3. If the option ``-p [PARENT]`` is not used, the |PDF| is generated using **x(1-x)** for all the flavors.
 
 Trough the use of the argument [LABEL] (``genpdf generate [NAME] [LABEL] [OPTIONS]``) it is also possible to specify a set of flavors
 (expressed in |pid| basis) or a set of
-**evolution** basis components on which filtering the custom |PDF|. In this way the specified set is kept in the final |PDF|,
-while the rest is discarded. Leaving the argument [LABEL] empty discards all the flavors.
+**evolution basis components** on which filtering the custom |PDF|. In this way the specified set is kept in the final |PDF|,
+while the rest is discarded. Leaving empty the argument [LABEL] discards all the flavors.
 
 In the case of custom |PDF| generated starting from a parent |PDF|, it is possible to generate all the members trough the
 flag ``-m``. If this flag is not used, only the *zero* member is generated (together with the *info* file of course). Using

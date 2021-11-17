@@ -57,7 +57,7 @@ def dump_blocks(name, member, blocks, inherit=None):
         blocks : list(dict)
             pdf blocks of data
         inherit : str
-            str to be copied in the head of member files 
+            str to be copied in the head of member files
     """
 
     target = pathlib.Path(name) / ("%s_%04d.dat" % (name, member))
