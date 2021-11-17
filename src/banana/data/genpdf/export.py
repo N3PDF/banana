@@ -44,7 +44,7 @@ def array_to_str(ar):
     return table
 
 
-def dump_blocks(name, member, blocks):
+def dump_blocks(name, member, blocks, inherit=None):
     """
     Write LHAPDF data file.
 

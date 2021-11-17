@@ -9,63 +9,6 @@ which is supposed to be Q = sqrt(2) GeV.
 import atexit
 
 
-def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
-    """
-    Functional implementation
-
-    Parameters
-    ----------
-        pid : int
-            pid
-        x : float
-            momentum fraction
-
-    Returns
-        xpdf : float
-            momentum density :math:`xf_j(x)`
-    """
-    N_uv = 5.107200e0
-    auv = 0.8e0
-    buv = 3e0
-    N_dv = 3.064320e0
-    adv = 0.8e0
-    bdv = 4e0
-    N_g = 1.7e0
-    ag = -0.1e0
-    bg = 5e0
-    N_db = 0.1939875e0
-    adb = -0.1e0
-    bdb = 6e0
-    fs = 0.2e0
-
-    xuv = N_uv * x ** auv * (1e0 - x) ** buv
-    xdv = N_dv * x ** adv * (1e0 - x) ** bdv
-    xg = N_g * x ** ag * (1e0 - x) ** bg
-    xdbar = N_db * x ** adb * (1e0 - x) ** bdb
-    xubar = xdbar * (1e0 - x)
-    xs = fs * (xdbar + xubar)
-    xsbar = xs
-
-    # Initialize PDFs to zero
-
-    xpdf = {i: 0 for i in range(-6, 7)}
-
-    if x > 1e0:
-        return 0.0
-
-    # assign
-    xpdf[3] = xs
-    xpdf[2] = xuv + xubar
-    xpdf[1] = xdv + xdbar
-    xpdf[21] = xpdf[0] = xg
-    xpdf[-1] = xdbar
-    xpdf[-2] = xubar
-    xpdf[-3] = xsbar
-    if pid not in xpdf:
-        return 0.0
-    return xpdf[pid]
-
-
 class toyPDFSet:
     """Fake PDF set"""
 
@@ -74,6 +17,21 @@ class toyPDFSet:
 
 class toyPDF:
     """Imitates lhapdf"""
+
+    def __init__(self):
+        self.N_uv = 5.107200e0
+        self.auv = 0.8e0
+        self.buv = 3e0
+        self.N_dv = 3.064320e0
+        self.adv = 0.8e0
+        self.bdv = 4e0
+        self.N_g = 1.7e0
+        self.ag = -0.1e0
+        self.bg = 5e0
+        self.N_db = 0.1939875e0
+        self.adb = -0.1e0
+        self.bdb = 6e0
+        self.fs = 0.2e0
 
     def xfxQ2(self, pid, x, _Q2):
         """Get the PDF xf(x) value at (x,q2) for the given PID.
@@ -95,8 +53,33 @@ class toyPDF:
         float
             The value of xf(x,q2).
         """
+        xuv = self.N_uv * x ** self.auv * (1e0 - x) ** self.buv
+        xdv = self.N_dv * x ** self.adv * (1e0 - x) ** self.bdv
+        xg = self.N_g * x ** self.ag * (1e0 - x) ** self.bg
+        xdbar = self.N_db * x ** self.adb * (1e0 - x) ** self.bdb
+        xubar = xdbar * (1e0 - x)
+        xs = self.fs * (xdbar + xubar)
+        xsbar = xs
 
-        return toyLHPDFs(pid, x)
+        # Initialize PDFs to zero
+
+        xpdf = {i: 0 for i in range(-6, 7)}
+
+        if x > 1e0:
+            return 0.0
+
+        # assign
+        xpdf[3] = xs
+        xpdf[2] = xuv + xubar
+        xpdf[1] = xdv + xdbar
+        xpdf[21] = xpdf[0] = xg
+        xpdf[-1] = xdbar
+        xpdf[-2] = xubar
+        xpdf[-3] = xsbar
+
+        if pid not in xpdf:
+            return 0.0
+        return xpdf[pid]
 
     def xfxQ(self, pid, x, _Q):
         """Get the PDF xf(x) value at (x,q) for the given PID.
@@ -116,7 +99,7 @@ class toyPDF:
             The value of xf(x,q).
         """
 
-        return toyLHPDFs(pid, x)
+        return self.xfxQ2(pid, x, _Q * _Q)
 
     def alphasQ(self, q):
         "Return alpha_s at q"

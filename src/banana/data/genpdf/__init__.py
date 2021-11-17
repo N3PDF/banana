@@ -35,22 +35,25 @@ def generate_pdf(
 
     Turning True the value of the install flag, it is possible to autmatically install the generated PDF to
     the lhapdf directory. By default install is False.
+
     Parameters
     ----------
         name : str
             target name
-        labels : list(str)
+        labels :
             list of flavors
         parent_pdf_set :
-            parent PDF name
+            parent PDF
         all : bool
             iterate on members
         install : bool
             install on LHAPDF path
     Examples
     --------
-        >>> generate_pdf(name, labels, parent_pdf_set={pid: lambda x,Q2: <f(x,Q2)> for pid in <mask>})
-            this will generate a PDF with the fixed function <f(x,Q2)> for every active flavor in <mask>
+        >>> # f = lambda x,Q2 ... put the desired function here
+        >>> # mask = [list of active PIDs]
+        >>> generate_pdf(name, labels, parent_pdf_set={pid: f for pid in mask})
+            this will generate a PDF with the fixed function f(x,Q2) for every active flavor in mask
     """
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)

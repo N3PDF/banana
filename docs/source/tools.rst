@@ -30,10 +30,27 @@ the flag ``-m`` when the custom |PDF| is generated either using the **toy** |PDF
 In order to automatically install the custom |PDF| in the lhapdf folder at generation time (so without using ``genpdf install [NAME]``
 after the generation), it is possible to use the ``-i`` flag.
 
-Examples
-""""""""
-
 
 We also provide an API with some additional features and possibilities such as generating a |PDF| with a custom function
 for every |pid| (trough a ``dict`` structure) and filtering custom combination of flavors. Some details on how this |API|
 works can be found :mod:`here <banana.data.genpdf>`
+
+Examples
+""""""""
+>>> ``genpdf generate gonly 21``
+
+This will generate the custom PDF using the debug x(1-x) PDF as parent and then it will keep only the gluon.
+
+>>> ``genpdf install gonly``
+
+This will install the previous PDF in the lhapdf folder.
+
+>>> ``genpdf generate Sonly S -p toy -i``
+
+This will generate the custom PDF using the toy PDF as parent and then it will keep only the singlet combination.
+The generated PDF is also automatically installed in the lhapdf folder.
+
+>>> ``genpdf generate Vonly V -p CT10 -m``
+
+This will generate the custom PDF using the CT10 PDF set as parent (if available) and it will keep only
+the valence combination. Moreover it will generate all the members of the parent PDF.
