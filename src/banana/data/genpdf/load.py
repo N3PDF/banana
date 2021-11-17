@@ -80,7 +80,7 @@ def load_blocks_from_file(pdfset_name, member):
 
 def load_head_from_file(pdfset_name, member):
     """
-    Load a pdf from a parent pdf.
+    Load the head of a pdf member file.
 
     Parameters
     ----------

@@ -51,7 +51,7 @@ def evol_to_flavor(labels):
 
 def project(blocks, reprs):
     """
-    Filter in evolution basis from the blocks.
+    Project some combination of flavors defined by reprs from the blocks.
 
     Parameters
     ----------

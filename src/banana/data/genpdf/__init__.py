@@ -65,7 +65,7 @@ def generate_pdf(
         >>> anti_charge_singlet[br.flavor_basis_pids.index(-2)] = 1
         >>> genpdf.generate_pdf("acs", [anti_charge_singlet])
         this will generate a PDF using the debug x(1-x) PDF as parent and keeping only the
-        'anti-charge-singlet' combination 
+        'anti-charge-singlet' combination
     """
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)

@@ -56,6 +56,8 @@ def dump_blocks(name, member, blocks, inherit=None):
             PDF member
         blocks : list(dict)
             pdf blocks of data
+        inherit : str
+            str to be copied in the head of member files 
     """
 
     target = pathlib.Path(name) / ("%s_%04d.dat" % (name, member))
@@ -111,6 +113,8 @@ def dump_set(name, info, member_blocks, inherit=None):
             info dictionary
         member_blocks : list(list(dict))
             blocks for all members
+        inherit : str
+            string to be copied in the head of member files
     """
     dump_info(name, info)
     for mem, blocks in enumerate(member_blocks):
