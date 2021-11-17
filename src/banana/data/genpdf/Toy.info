@@ -1,7 +1,7 @@
 SetDesc: 'Toy PDF from arXiv:hep-ph/0204316v1'
 SetIndex: 0
 Authors: S. Alekhin, C. Balazs, R. Ball, T. Binoth, E. Boos, M. Botje, M. Cacciari, S. Catani, V. Del Duca, M. Dobbs, S.D. Ellis, R. Field, D. de Florian, S. Forte, E. Gardi, T. Gehrmann, A. Gehrmann-De Ridder, W. Giele, E.W.N. Glover, M. Grazzini, J.-Ph. Guillet, G. Heinrich, J. Huston, I. Hinchliffe, V. Ilyin, J. Kanzaki, K. Kato, B. Kersevan, N. Kidonakis, A. Kulesza, Y. Kurihara, E. Laenen, K. Lassila-Perini, L. Lonnblad, L. Magnea, M. Mangano, K. Mazumudar, S. Moch, S. Mrenna, P. Nadolsky, P. Nason, F. Olness, F. Paige, E. Pilon, I. Puljak, J. Pumplin, E. Richter-Was, G. Salam, R. Scalise, M. Seymour, T. Sjostrand, G. Sterman, M. Tonnesmann, E. Tournefier, W. Vogelsang, A. Vogt, R. Vogt, B. Webber, C.-P. Yuan, D. Zeppenfeld
-Reference:
+Reference: arXiv:hep-ph/0204316v1
 Format: lhagrid1
 DataVersion: 1
 NumMembers: 1

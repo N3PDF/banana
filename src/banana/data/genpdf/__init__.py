@@ -16,11 +16,30 @@ def generate_pdf(
     """
     Generate a new PDF from a parent PDF with a set of flavors.
 
+    If parent_pdf_set is the name of an available PDF set, it will be used as parent. In order to use
+    the toy PDF as parent, it is enough to set parent_pdf_set = "toy" or "toylh".
+    If parent_pdf_set is not specified, a debug PDF constructed as x * (1-x) for every flavor will be used
+    as parent.
+    It is also possible to provide custom functions for each flavor in the form of a dictionary: {pid: f(x,Q2)}.
+
+    In labels it is possible to pass a list of PIDs or evolution basis combinations to keep in the generated PDF.
+    In order to project on custom combinations of PIDs, it is also possible to pass a list containing the desired
+    factors for each flavor.
+
+    The default behaviour is to generate only one member for a PDF set (the zero member) but it can be changed setting
+    to True the member flag.
+
+    The info_update argument is a dictionary and provide to the user a way to change the info file of the
+    generated PDF set. If a key of info_update matches with one key of the standard info file, the information
+    are updated, otherwise they are simply added.
+
+    Turning True the value of the install flag, it is possible to autmatically install the generated PDF to
+    the lhapdf directory. By default install is False.
     Parameters
     ----------
         name : str
             target name
-        labels : list(int)
+        labels : list(str)
             list of flavors
         parent_pdf_set :
             parent PDF name
@@ -30,8 +49,8 @@ def generate_pdf(
             install on LHAPDF path
     Examples
     --------
-        >>> generate_pdf(name, labels, {pid: f(x,Q2) for pid in mask})
-            this will generate a PDF with a fixed function f(x,Q2) for every active flavor in mask
+        >>> generate_pdf(name, labels, parent_pdf_set={pid: lambda x,Q2: <f(x,Q2)> for pid in <mask>})
+            this will generate a PDF with the fixed function <f(x,Q2)> for every active flavor in <mask>
     """
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)
@@ -51,18 +70,10 @@ def generate_pdf(
     all_blocks = []
     info = None
     if parent_pdf_set is None:
-        info = copy.deepcopy(load.template_info)
-        all_blocks.append(
-            [
-                generate_block(
-                    lambda _pid, x, _Q2: x * (1 - x),
-                    xgrid,
-                    Q2grid,
-                    br.flavor_basis_pids,
-                )
-            ]
-        )
-    elif isinstance(parent_pdf_set, str):
+        parent_pdf_set = {
+            pid: lambda x, _Q2: x * (1 - x) for pid in br.flavor_basis_pids
+        }
+    if isinstance(parent_pdf_set, str):
         if parent_pdf_set in ["toylh", "toy"]:
             info = copy.deepcopy(load.Toy_info)
             toylh = toy.mkPDF("", 0)
