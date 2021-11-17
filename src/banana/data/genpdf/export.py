@@ -64,7 +64,10 @@ def dump_blocks(name, member, blocks, inherit=None):
         if member == 0:
             o.write("PdfType: central\nFormat: lhagrid1\n---\n")
         else:
-            o.write("PdfType: replica\nFormat: lhagrid1\n---\n")
+            if inherit == None:
+                o.write("PdfType: replica\nFormat: lhagrid1\n---\n")
+            else:
+                o.write(inherit + "Format: lhagrid1\n---\n")
         for b in blocks:
             o.write(list_to_str(b["xgrid"]) + "\n")
             o.write(list_to_str(b["Q2grid"]) + "\n")
@@ -96,7 +99,7 @@ def dump_info(name, info):
         o.write(new_cnt)
 
 
-def dump_set(name, info, member_blocks):
+def dump_set(name, info, member_blocks, inherit=None):
     """
     Dump a whole set.
 
@@ -111,4 +114,4 @@ def dump_set(name, info, member_blocks):
     """
     dump_info(name, info)
     for mem, blocks in enumerate(member_blocks):
-        dump_blocks(name, mem, blocks)
+        dump_blocks(name, mem, blocks, inherit=inherit)

@@ -76,3 +76,31 @@ def load_blocks_from_file(pdfset_name, member):
         # iterate
         head_section = next_head_section
     return blocks
+
+
+def load_head_from_file(pdfset_name, member):
+    """
+    Load a pdf from a parent pdf.
+
+    Parameters
+    ----------
+        pdfset_name : str
+            parent pdf name
+        member : int
+            pdf member
+
+    Returns
+    -------
+        list(dict) :
+            pdf blocks of data
+
+    """
+    pdf = lhapdf.mkPDF(pdfset_name, member)
+    src = pathlib.Path(lhapdf.paths()[0]) / pdfset_name
+    # read actual file
+    cnt = []
+    with open(src / ("%s_%04d.dat" % (pdfset_name, pdf.memberID)), "r") as o:
+        cnt = o.readlines()
+    # file head
+    head_section = cnt[0]
+    return head_section

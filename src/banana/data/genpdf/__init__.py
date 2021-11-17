@@ -72,6 +72,7 @@ def generate_pdf(
     # collect blocks
     all_blocks = []
     info = None
+    head = None
     if parent_pdf_set is None:
         parent_pdf_set = {
             pid: lambda x, _Q2: x * (1 - x) for pid in br.flavor_basis_pids
@@ -87,6 +88,8 @@ def generate_pdf(
             info = load.load_info_from_file(parent_pdf_set)
             # iterate on members
             for m in range(int(info["NumMembers"])):
+                if m == 1:
+                    head = load.load_head_from_file(parent_pdf_set, m)
                 all_blocks.append(load.load_blocks_from_file(parent_pdf_set, m))
                 if not members:
                     break
@@ -123,9 +126,8 @@ def generate_pdf(
     if is_evol:
         info["ForcePositive"] = 0
     info["NumMembers"] = len(new_all_blocks)
-
     # exporting
-    export.dump_set(name, info, new_all_blocks)
+    export.dump_set(name, info, new_all_blocks, inherit=head)
 
     # install
     if install:
