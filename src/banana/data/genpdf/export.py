@@ -63,13 +63,14 @@ def dump_blocks(name, member, blocks, pdf_type=None):
     target = pathlib.Path(name) / ("%s_%04d.dat" % (name, member))
     target.parent.mkdir(exist_ok=True)
     with open(target, "w") as o:
-        if member == 0:
-            o.write("PdfType: central\nFormat: lhagrid1\n---\n")
-        else:
-            if pdf_type == None:
-                o.write("PdfType: replica\nFormat: lhagrid1\n---\n")
+        if pdf_type == None:
+            if member == 0:
+                o.write("PdfType: central\n")
             else:
-                o.write(pdf_type + "Format: lhagrid1\n---\n")
+                o.write("PdfType: replica\n")
+        else:
+            o.write(pdf_type)
+        o.write("Format: lhagrid1\n---\n")
         for b in blocks:
             o.write(list_to_str(b["xgrid"]) + "\n")
             o.write(list_to_str(b["Q2grid"]) + "\n")

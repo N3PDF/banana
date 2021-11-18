@@ -39,13 +39,12 @@ def test_dump_blocks(tmp_path):
             blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
         new_blocks = copy.deepcopy(blocks)
         new_blocks[0]["xgrid"][0] = 1e-10
-        heads = ["Debug\n"]
+        heads = ["PdfType: debug\n"]
         genpdf.export.dump_set("new_pdf", info, [new_blocks], pdf_type_list=heads)
         with lhapdf_path(tmp_path):
             dat = genpdf.load.load_blocks_from_file("new_pdf", 0)
             head = dat[0]
-            # testing overwriting of central member head
-            assert head == "PdfType: central\n"
+            assert head == "PdfType: debug\n"
             blocks2 = dat[1]
             assert len(blocks) == len(blocks2)
             # my field is new

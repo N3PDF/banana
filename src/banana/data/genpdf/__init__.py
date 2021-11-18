@@ -10,10 +10,20 @@ from ... import toy
 from . import export, load, project
 
 
-def take_data(name, parent_pdf_set=None, members=False):
+def take_data(parent_pdf_set=None, members=False):
+    """
+    Auxiliary function for generate_pdf. It provides the info, the heads
+    of the member files and the blocks to be generated to generate_pdf.
+
+    Parameters
+    ----------
+        parent_pdf_set :
+            the PDF set to be used as parent
+        members : bool
+            if true every member of the parent are loaded
+    """
     xgrid = np.geomspace(1e-9, 1, 240)
     Q2grid = np.geomspace(1.3, 1e5, 35)
-    pathlib.Path(name).mkdir(exist_ok=True)
     # collect blocks
     all_blocks = []
     info = None
@@ -124,6 +134,7 @@ def generate_pdf(
         >>> anti_qed_singlet[br.flavor_basis_pids.index(-2)] = 1
         >>> genpdf.generate_pdf("anti_qed_singlet", [anti_qed_singlet])
     """
+    pathlib.Path(name).mkdir(exist_ok=True)
     # Checking label basis
     is_evol = False
     flavor_combinations = labels
@@ -135,7 +146,7 @@ def generate_pdf(
         flavor_combinations = project.pid_to_flavor(labels)
 
     # labels = verify_labels(args.labels)
-    data = take_data(name=name, parent_pdf_set=parent_pdf_set, members=members)
+    data = take_data(parent_pdf_set=parent_pdf_set, members=members)
     heads = data[0]
     info = data[1]
     all_blocks = data[2]
