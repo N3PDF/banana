@@ -64,7 +64,6 @@ def setup_package():
         ],
         entry_points={
             "console_scripts": [
-                "generate_pdf=banana.data.generate_pdf:generate_pdf",
                 "install_pdf=banana.data.generate_pdf:install_pdf",
                 "genpdf=banana.data.genpdf.cli:cli",
             ],

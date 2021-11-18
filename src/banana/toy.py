@@ -6,8 +6,6 @@ This routine returns the toyLH PDFs at the intitial scale
 which is supposed to be Q = sqrt(2) GeV.
 """
 
-import atexit
-
 
 class toyPDFSet:
     """Fake PDF set"""
@@ -19,19 +17,37 @@ class toyPDF:
     """Imitates lhapdf"""
 
     def __init__(self):
-        self.N_uv = 5.107200e0
-        self.auv = 0.8e0
-        self.buv = 3e0
-        self.N_dv = 3.064320e0
-        self.adv = 0.8e0
-        self.bdv = 4e0
-        self.N_g = 1.7e0
-        self.ag = -0.1e0
-        self.bg = 5e0
-        self.N_db = 0.1939875e0
-        self.adb = -0.1e0
-        self.bdb = 6e0
-        self.fs = 0.2e0
+        N_uv = 5.107200e0
+        auv = 0.8e0
+        buv = 3e0
+        N_dv = 3.064320e0
+        adv = 0.8e0
+        bdv = 4e0
+        N_g = 1.7e0
+        ag = -0.1e0
+        bg = 5e0
+        N_db = 0.1939875e0
+        adb = -0.1e0
+        bdb = 6e0
+        fs = 0.2e0
+
+        xuv = lambda x: N_uv * x ** auv * (1e0 - x) ** buv
+        xdv = lambda x: N_dv * x ** adv * (1e0 - x) ** bdv
+        xg = lambda x: N_g * x ** ag * (1e0 - x) ** bg
+        xdbar = lambda x: N_db * x ** adb * (1e0 - x) ** bdb
+        xubar = lambda x: xdbar(x) * (1e0 - x)
+        xs = lambda x: fs * (xdbar(x) + xubar(x))
+        xsbar = lambda x: xs(x)
+
+        self.xpdf = {}
+
+        self.xpdf[3] = lambda x: xs(x)
+        self.xpdf[2] = lambda x: xuv(x) + xubar(x)
+        self.xpdf[1] = lambda x: xdv(x) + xdbar(x)
+        self.xpdf[21] = self.xpdf[0] = lambda x: xg(x)
+        self.xpdf[-1] = lambda x: xdbar(x)
+        self.xpdf[-2] = lambda x: xubar(x)
+        self.xpdf[-3] = lambda x: xsbar(x)
 
     def xfxQ2(self, pid, x, _Q2):
         """Get the PDF xf(x) value at (x,q2) for the given PID.
@@ -53,33 +69,15 @@ class toyPDF:
         float
             The value of xf(x,q2).
         """
-        xuv = self.N_uv * x ** self.auv * (1e0 - x) ** self.buv
-        xdv = self.N_dv * x ** self.adv * (1e0 - x) ** self.bdv
-        xg = self.N_g * x ** self.ag * (1e0 - x) ** self.bg
-        xdbar = self.N_db * x ** self.adb * (1e0 - x) ** self.bdb
-        xubar = xdbar * (1e0 - x)
-        xs = self.fs * (xdbar + xubar)
-        xsbar = xs
 
         # Initialize PDFs to zero
-
-        xpdf = {i: 0 for i in range(-6, 7)}
 
         if x > 1e0:
             return 0.0
 
-        # assign
-        xpdf[3] = xs
-        xpdf[2] = xuv + xubar
-        xpdf[1] = xdv + xdbar
-        xpdf[21] = xpdf[0] = xg
-        xpdf[-1] = xdbar
-        xpdf[-2] = xubar
-        xpdf[-3] = xsbar
-
-        if pid not in xpdf:
+        if pid not in self.xpdf:
             return 0.0
-        return xpdf[pid]
+        return self.xpdf[pid](x)
 
     def xfxQ(self, pid, x, _Q):
         """Get the PDF xf(x) value at (x,q) for the given PID.
@@ -138,15 +136,3 @@ def mkPDF(_setname, _member):
     """
 
     return toyPDF()
-
-
-def ciao():
-    """Print at exit."""
-    print(
-        """\nThanks for using toyPDF. Please make sure to close the door.\n"""
-        + "\t" * 7
-        + "__Alessandro"
-    )
-
-
-atexit.register(ciao)

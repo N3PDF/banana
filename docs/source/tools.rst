@@ -9,23 +9,23 @@ genpdf
 We provide also a console script called ``genpdf`` that is able
 to generate and install a custom |PDF| set in the `lhapdf` format.
 In particular, the command ``genpdf install [NAME]`` simply
-install the |PDF| called [NAME] in the lhapdf folder and
+install the |PDF| called ``[NAME]`` in the lhapdf folder and
 the ``genpdf generate [NAME]`` command generates the custom |PDF|
-and saves it as [NAME] in the current directory.
-Notice that the argument [NAME] is the only mandatory one.
+and saves it as ``[NAME]`` in the current directory.
+Notice that the argument ``[NAME]`` is the only mandatory one.
 
 The custom |PDF| can be generated in three different ways which
 are accessible trough the option ``-p [PARENT]`` (the complete spelling
 is ``genpdf generate [NAME] -p [PARENT]``):
 
-  1. If [PARENT] is the name of an available |PDF|, it is used as parent
+  1. If ``[PARENT]`` is the name of an available |PDF|, it is used as parent
   |PDF| and thus copied to generate the new custom PDF.
-  2. If [PARENT] is "toylh" or "toy", the **toy** |PDF| is used as parent.
+  2. If ``[PARENT]`` is "toylh" or "toy", the **toy** |PDF| is used as parent.
   3. If the option ``-p [PARENT]`` is not used, the |PDF| is
   generated using **x(1-x)** for all the flavors.
 
 Trough the use of the argument
-[LABEL] (``genpdf generate [NAME] [LABEL] [OPTIONS]``) it is also possible
+``[LABEL]`` (``genpdf generate [NAME] [LABEL] [OPTIONS]``) it is also possible
 to specify a set of flavors (expressed in |pid| basis) or a set of
 **evolution basis components** on which filtering the custom |PDF|.
 In this way the specified set is kept in the final |PDF|, while the rest
@@ -57,17 +57,23 @@ Examples
 This will generate the custom PDF using the debug x(1-x) PDF as parent
 and then it will keep only the gluon.
 
->>> ``genpdf install gonly``
+.. code-block:: bash
+
+  $ genpdf install gonly
 
 This will install the previous PDF in the lhapdf folder.
 
->>> ``genpdf generate Sonly S -p toy -i``
+.. code-block:: bash
+
+  $ genpdf generate Sonly S -p toy -i
 
 This will generate the custom PDF using the toy PDF as parent and then
 it will keep only the singlet combination. The generated PDF is also
 automatically installed in the lhapdf folder.
 
->>> ``genpdf generate Vonly V -p CT10 -m``
+.. code-block:: bash
+
+  $ genpdf generate Vonly V -p CT10 -m
 
 This will generate the custom PDF using the CT10 PDF set as parent
 (if available) and it will keep only the valence combination. Moreover
