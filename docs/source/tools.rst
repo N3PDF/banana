@@ -4,7 +4,7 @@ Tools
 Extra tools shipped as |CLI| with banana.
 
 genpdf
------------
+------
 
 We provide also a console script called ``genpdf`` that is able to generate and install a custom |PDF|
 set in the `lhapdf` format. In particular, the command ``genpdf install [NAME]`` simply install the |PDF| called [NAME]
@@ -32,12 +32,15 @@ after the generation), it is possible to use the ``-i`` flag.
 
 
 We also provide an API with some additional features and possibilities such as generating a |PDF| with a custom function
-for every |pid| (trough a ``dict`` structure) and filtering custom combination of flavors. Some details on how this |API|
-works can be found :mod:`here <banana.data.genpdf>`
+for every |pid| (through a ``dict`` structure) and filtering custom combination of flavors - see :mod:`here <banana.data.genpdf>`
+for details.
 
 Examples
 """"""""
->>> ``genpdf generate gonly 21``
+
+.. code-block:: bash
+
+  $ genpdf generate gonly 21
 
 This will generate the custom PDF using the debug x(1-x) PDF as parent and then it will keep only the gluon.
 
