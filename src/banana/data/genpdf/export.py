@@ -63,7 +63,7 @@ def dump_blocks(name, member, blocks, pdf_type=None):
     target = pathlib.Path(name) / ("%s_%04d.dat" % (name, member))
     target.parent.mkdir(exist_ok=True)
     with open(target, "w") as o:
-        if pdf_type == None:
+        if pdf_type is None:
             if member == 0:
                 o.write("PdfType: central\n")
             else:

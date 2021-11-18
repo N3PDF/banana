@@ -1,5 +1,5 @@
 """
-This module defines the CLI - see here :ref:`tools<tools>`
+This module defines the CLI - see :doc:`here</tools>`
 """
 
 import click
