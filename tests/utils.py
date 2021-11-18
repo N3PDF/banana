@@ -2,10 +2,10 @@ import os
 import pathlib
 from contextlib import contextmanager
 
-import pytest
+import lhapdf
 
 # TODO mark file skipped in coverage.py
-lhapdf = pytest.importorskip("lhapdf")
+
 
 test_pdf = pathlib.Path(__file__).parent / "genpdf"
 
@@ -18,14 +18,3 @@ def cd(newdir):
         yield
     finally:
         os.chdir(prevdir)
-
-
-# lets follow the same spirit
-@contextmanager
-def lhapdf_path(newdir):
-    paths = lhapdf.paths()
-    lhapdf.pathsPrepend(str(newdir))
-    try:
-        yield
-    finally:
-        lhapdf.setPaths(paths)
