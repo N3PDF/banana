@@ -92,7 +92,7 @@ def load_head_from_file(pdfset_name, member):
     Returns
     -------
         list(dict) :
-            pdf blocks of data
+            head of pdf member file
 
     """
     pdf = lhapdf.mkPDF(pdfset_name, member)

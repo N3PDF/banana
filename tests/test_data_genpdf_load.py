@@ -43,3 +43,11 @@ def test_load_info():
         assert "SetDesc" in info
         assert "fake" in info["SetDesc"]
         assert sorted(info["Flavors"]) == sorted([-3, -2, -1, 21, 1, 2, 3])
+
+
+def test_load_head():
+    with lhapdf_path(test_pdf):
+        head_zero = genpdf.load.load_head_from_file("myMSTW2008nlo90cl", 0)
+        head_one = genpdf.load.load_head_from_file("myMSTW2008nlo90cl", 1)
+        assert head_zero == "PdfType: central\n"
+        assert head_one == "PdfType: error\n"
