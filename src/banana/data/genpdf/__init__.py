@@ -146,10 +146,8 @@ def generate_pdf(
         flavor_combinations = flavors.pid_to_flavor(labels)
 
     # labels = verify_labels(args.labels)
-    data = take_data(parent_pdf_set=parent_pdf_set, members=members)
-    heads = data[0]
-    info = data[1]
-    all_blocks = data[2]
+    heads, info, all_blocks = take_data(parent_pdf_set=parent_pdf_set, members=members)
+
     # filter the PDF
     new_all_blocks = []
     for b in all_blocks:
