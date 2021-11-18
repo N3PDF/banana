@@ -2,42 +2,42 @@
 import numpy as np
 import pytest
 from eko import basis_rotation as br
-from utils import cd, lhapdf_path, test_pdf
 
 from banana.data import genpdf
+from banana.utils import cd, lhapdf_path, test_pdf
 
 lhapdf = pytest.importorskip("lhapdf")
 
 
 def test_is_evolution():
-    assert genpdf.project.is_evolution_labels(["V", "T3"])
-    assert not genpdf.project.is_evolution_labels(["21", "2"])
+    assert genpdf.flavors.is_evolution_labels(["V", "T3"])
+    assert not genpdf.flavors.is_evolution_labels(["21", "2"])
 
 
 def test_is_pids():
-    assert not genpdf.project.is_pid_labels(["V", "T3"])
-    assert not genpdf.project.is_pid_labels(["35", "9"])
-    assert not genpdf.project.is_pid_labels({})
-    assert genpdf.project.is_pid_labels([21, 2])
+    assert not genpdf.flavors.is_pid_labels(["V", "T3"])
+    assert not genpdf.flavors.is_pid_labels(["35", "9"])
+    assert not genpdf.flavors.is_pid_labels({})
+    assert genpdf.flavors.is_pid_labels([21, 2])
 
 
-def test_project_pid_to_flavor():
-    flavs = genpdf.project.pid_to_flavor([1, 2, 21, -3])
+def test_flavors_pid_to_flavor():
+    flavs = genpdf.flavors.pid_to_flavor([1, 2, 21, -3])
     for f in flavs:
         for g in flavs:
             if not np.allclose(f, g):
                 assert f @ g == 0
 
 
-def test_project_evol_to_flavor():
-    flavs = genpdf.project.evol_to_flavor(["S", "g", "T3", "V8"])
+def test_flavors_evol_to_flavor():
+    flavs = genpdf.flavors.evol_to_flavor(["S", "g", "T3", "V8"])
     for f in flavs:
         for g in flavs:
             if not np.allclose(f, g):
                 assert f @ g == 0
 
 
-def test_project_pids_ct14(tmp_path):
+def test_flavors_pids_ct14(tmp_path):
     with cd(tmp_path):
         # read the debug PDFs
         with lhapdf_path(test_pdf):
@@ -45,12 +45,12 @@ def test_project_pids_ct14(tmp_path):
             blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
             pdf = lhapdf.mkPDF("myCT14llo_NF3", 0)
         # now extract the gluon
-        new_blocks = genpdf.project.project(blocks, genpdf.project.pid_to_flavor([21]))
+        new_blocks = genpdf.flavors.project(blocks, genpdf.flavors.pid_to_flavor([21]))
         info["Flavors"] = br.flavor_basis_pids
         info["NumFlavors"] = len(br.flavor_basis_pids)
-        genpdf.export.dump_set("test_project_pids_ct14", info, [new_blocks])
+        genpdf.export.dump_set("test_flavors_pids_ct14", info, [new_blocks])
         with lhapdf_path(tmp_path):
-            gonly = lhapdf.mkPDF("test_project_pids_ct14", 0)
+            gonly = lhapdf.mkPDF("test_flavors_pids_ct14", 0)
             # all quarks are 0
             for pid in [1, 2, -3]:
                 for x in [1e-2, 0.1, 0.9]:
@@ -64,7 +64,7 @@ def test_project_pids_ct14(tmp_path):
                     )
 
 
-def test_project_evol_ct14(tmp_path):
+def test_flavors_evol_ct14(tmp_path):
     with cd(tmp_path):
         # read the debug PDFs
         with lhapdf_path(test_pdf):
@@ -72,14 +72,14 @@ def test_project_evol_ct14(tmp_path):
             blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
             pdf = lhapdf.mkPDF("myCT14llo_NF3", 0)
         # now extract the gluon
-        new_blocks = genpdf.project.project(
-            blocks, genpdf.project.evol_to_flavor(["g"])
+        new_blocks = genpdf.flavors.project(
+            blocks, genpdf.flavors.evol_to_flavor(["g"])
         )
         info["Flavors"] = br.flavor_basis_pids
         info["NumFlavors"] = len(br.flavor_basis_pids)
-        genpdf.export.dump_set("test_project_evol_ct14", info, [new_blocks])
+        genpdf.export.dump_set("test_flavors_evol_ct14", info, [new_blocks])
         with lhapdf_path(tmp_path):
-            gonly = lhapdf.mkPDF("test_project_evol_ct14", 0)
+            gonly = lhapdf.mkPDF("test_flavors_evol_ct14", 0)
             # all quarks are 0
             for pid in [1, 2, -3]:
                 for x in [1e-2, 0.1, 0.9]:
@@ -93,7 +93,7 @@ def test_project_evol_ct14(tmp_path):
                     )
 
 
-def test_project_evol_raw():
+def test_flavors_evol_raw():
     blocks = [
         {
             "Q2grid": np.array([1, 2]),
@@ -102,7 +102,7 @@ def test_project_evol_raw():
             "data": np.array([[0.1, 0.2, 0.1]] * 4),
         }
     ]
-    gonly = genpdf.project.project(blocks, genpdf.project.evol_to_flavor(["g"]))
+    gonly = genpdf.flavors.project(blocks, genpdf.flavors.evol_to_flavor(["g"]))
     assert len(gonly) == 1
     np.testing.assert_allclose(
         gonly[0]["data"],
@@ -110,7 +110,7 @@ def test_project_evol_raw():
             [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]] * 4
         ),
     )
-    Sonly = genpdf.project.project(blocks, genpdf.project.evol_to_flavor(["S"]))
+    Sonly = genpdf.flavors.project(blocks, genpdf.flavors.evol_to_flavor(["S"]))
     assert len(Sonly) == 1
     for i in [0, 1, 2, 3]:
         # g and gamma are zero
@@ -121,7 +121,7 @@ def test_project_evol_raw():
             np.testing.assert_allclose(Sonly[0]["data"][i][pid], Sonly[0]["data"][i][1])
 
 
-def test_project_evol_nodata():
+def test_flavors_evol_nodata():
     # try with a block without data
     blocks = [
         {
@@ -137,7 +137,7 @@ def test_project_evol_nodata():
             "data": np.array([[0.1, 0.2, 0.1]] * 4),
         },
     ]
-    gonly = genpdf.project.project(blocks, genpdf.project.evol_to_flavor(["g"]))
+    gonly = genpdf.flavors.project(blocks, genpdf.flavors.evol_to_flavor(["g"]))
     assert len(gonly) == 2
     np.testing.assert_allclose(
         gonly[1]["data"],

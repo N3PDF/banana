@@ -3,9 +3,9 @@ import copy
 
 import numpy as np
 import pytest
-from utils import cd, lhapdf_path, test_pdf
 
 from banana.data import genpdf
+from banana.utils import cd, lhapdf_path, test_pdf
 
 # try:
 #     import lhapdf

@@ -2,10 +2,10 @@
 import numpy as np
 import pytest
 from eko import basis_rotation as br
-from utils import cd, lhapdf_path, test_pdf
 
 from banana import toy
 from banana.data import genpdf
+from banana.utils import cd, lhapdf_path, test_pdf
 
 # try:
 #     import lhapdf
@@ -144,37 +144,37 @@ def test_genpdf_custom(tmp_path):
                     )
 
 
-def test_genpdf_MSTW_allflavors(tmp_path):
+def test_genpdf_allflavors(tmp_path):
     with cd(tmp_path):
-        with lhapdf_path(test_pdf):
-            # load reference PDFs
-            ref = {}
-            ref_head = {}
-            for mem in range(1 + 1):
-                ref[mem] = lhapdf.mkPDF("myMSTW2008nlo90cl", mem)
-                ref_head[mem] = genpdf.load.load_blocks_from_file(
-                    "myMSTW2008nlo90cl", mem
-                )[0]
-            # filtering on all flavors
-            genpdf.generate_pdf(
-                "test_genpdf_MSTW_allflavors",
-                [21, 1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6],
-                "myMSTW2008nlo90cl",
-                members=True,
-            )
-        with lhapdf_path(tmp_path):
-            for mem in range(1 + 1):
-                pdf = lhapdf.mkPDF("test_genpdf_MSTW_allflavors", mem)
-                head = genpdf.load.load_blocks_from_file(
-                    "test_genpdf_MSTW_allflavors", mem
-                )[0]
-                assert head == ref_head[mem]
-                # testing for some pids, x and Q2 values
-                for pid in [21, 1, 4, 6, -2, -3, -5]:
-                    for x in [0.1, 0.2, 0.8]:
-                        for Q2 in [10.0, 20.0, 100.0]:
-                            np.testing.assert_allclose(
-                                pdf.xfxQ2(pid, x, Q2),
-                                ref[mem].xfxQ2(pid, x, Q2),
-                                err_msg=f"mem={mem}, pid={pid}, x={x}, Q2={Q2}",
-                            )
+        for setname in ("myMSTW2008nlo90cl", "myNNPDF31_nlo_as_0118"):
+            with lhapdf_path(test_pdf):
+                # load reference PDFs
+                ref = {}
+                ref_head = {}
+                for mem in range(1 + 1):
+                    ref[mem] = lhapdf.mkPDF(setname, mem)
+                    ref_head[mem] = genpdf.load.load_blocks_from_file(setname, mem)[0]
+                # filtering on all flavors
+                genpdf.generate_pdf(
+                    "test_genpdf_" + setname,
+                    [21, 1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6],
+                    setname,
+                    members=True,
+                )
+            with lhapdf_path(tmp_path):
+                for mem in range(1 + 1):
+                    pdf = lhapdf.mkPDF("test_genpdf_" + setname, mem)
+                    head = genpdf.load.load_blocks_from_file(
+                        "test_genpdf_" + setname, mem
+                    )[0]
+                    assert head == ref_head[mem]
+                    # testing for some pids, x and Q2 values
+                    for pid in [21, 1, 2, -3, -5]:
+                        for x in [0.1, 0.2, 0.8]:
+                            for Q2 in [10.0, 20.0, 100.0]:
+                                np.testing.assert_allclose(
+                                    pdf.xfxQ2(pid, x, Q2),
+                                    ref[mem].xfxQ2(pid, x, Q2),
+                                    err_msg=f"mem={mem}, pid={pid}, x={x}, Q2={Q2}",
+                                    rtol=1e6,
+                                )

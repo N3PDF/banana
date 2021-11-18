@@ -7,7 +7,7 @@ import numpy as np
 from eko import basis_rotation as br
 
 from ... import toy
-from . import export, load, project
+from . import export, flavors, load
 
 
 def take_data(parent_pdf_set=None, members=False):
@@ -138,12 +138,12 @@ def generate_pdf(
     # Checking label basis
     is_evol = False
     flavor_combinations = labels
-    if project.is_evolution_labels(labels):
+    if flavors.is_evolution_labels(labels):
         is_evol = True
-        flavor_combinations = project.evol_to_flavor(labels)
-    elif project.is_pid_labels(labels):
+        flavor_combinations = flavors.evol_to_flavor(labels)
+    elif flavors.is_pid_labels(labels):
         labels = np.array(labels, dtype=np.int_)
-        flavor_combinations = project.pid_to_flavor(labels)
+        flavor_combinations = flavors.pid_to_flavor(labels)
 
     # labels = verify_labels(args.labels)
     heads, info, all_blocks = take_data(parent_pdf_set=parent_pdf_set, members=members)
@@ -151,7 +151,7 @@ def generate_pdf(
     # filter the PDF
     new_all_blocks = []
     for b in all_blocks:
-        new_all_blocks.append(project.project(b, flavor_combinations))
+        new_all_blocks.append(flavors.project(b, flavor_combinations))
 
     # changing info file according to user choice
     if info_update is not None:
