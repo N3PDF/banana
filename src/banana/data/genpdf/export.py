@@ -44,7 +44,7 @@ def array_to_str(ar):
     return table
 
 
-def dump_blocks(name, member, blocks, inherit=None):
+def dump_blocks(name, member, blocks, pdf_type=None):
     """
     Write LHAPDF data file.
 
@@ -66,10 +66,10 @@ def dump_blocks(name, member, blocks, inherit=None):
         if member == 0:
             o.write("PdfType: central\nFormat: lhagrid1\n---\n")
         else:
-            if inherit == None:
+            if pdf_type == None:
                 o.write("PdfType: replica\nFormat: lhagrid1\n---\n")
             else:
-                o.write(inherit + "Format: lhagrid1\n---\n")
+                o.write(pdf_type + "Format: lhagrid1\n---\n")
         for b in blocks:
             o.write(list_to_str(b["xgrid"]) + "\n")
             o.write(list_to_str(b["Q2grid"]) + "\n")
@@ -81,6 +81,10 @@ def dump_blocks(name, member, blocks, inherit=None):
 def dump_info(name, info):
     """
     Write LHAPDF info file.
+
+    NOTE: Since LHAPDF info files are not truely yaml files,
+    we have to use a slightly more complicated function to
+    dump the info file.
 
     Parameters
     ----------
@@ -101,7 +105,7 @@ def dump_info(name, info):
         o.write(new_cnt)
 
 
-def dump_set(name, info, member_blocks, inherit=None):
+def dump_set(name, info, member_blocks, pdf_type_list=None):
     """
     Dump a whole set.
 
@@ -113,9 +117,14 @@ def dump_set(name, info, member_blocks, inherit=None):
             info dictionary
         member_blocks : list(list(dict))
             blocks for all members
-        inherit : str
-            string to be copied in the head of member files
+        pdf_type : list(str)
+            list of strings to be copied in the head of member files
     """
     dump_info(name, info)
     for mem, blocks in enumerate(member_blocks):
-        dump_blocks(name, mem, blocks, inherit=inherit)
+        if pdf_type_list == None or not isinstance(pdf_type_list, list):
+            dump_blocks(name, mem, blocks)
+        elif len(pdf_type_list) == 0:
+            dump_blocks(name, mem, blocks)
+        else:
+            dump_blocks(name, mem, blocks, pdf_type=pdf_type_list[mem])

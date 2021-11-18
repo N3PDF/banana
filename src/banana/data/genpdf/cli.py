@@ -1,3 +1,7 @@
+"""
+This module defines the CLI - see here :ref:`tools<tools>`
+"""
+
 import click
 
 from . import generate_pdf, install_pdf

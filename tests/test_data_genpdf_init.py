@@ -152,9 +152,9 @@ def test_genpdf_MSTW_allflavors(tmp_path):
             ref_head = {}
             for mem in range(1 + 1):
                 ref[mem] = lhapdf.mkPDF("myMSTW2008nlo90cl", mem)
-                ref_head[mem] = genpdf.load.load_head_from_file(
+                ref_head[mem] = genpdf.load.load_blocks_from_file(
                     "myMSTW2008nlo90cl", mem
-                )
+                )[0]
             # filtering on all flavors
             genpdf.generate_pdf(
                 "test_genpdf_MSTW_allflavors",
@@ -165,9 +165,9 @@ def test_genpdf_MSTW_allflavors(tmp_path):
         with lhapdf_path(tmp_path):
             for mem in range(1 + 1):
                 pdf = lhapdf.mkPDF("test_genpdf_MSTW_allflavors", mem)
-                head = genpdf.load.load_head_from_file(
+                head = genpdf.load.load_blocks_from_file(
                     "test_genpdf_MSTW_allflavors", mem
-                )
+                )[0]
                 assert head == ref_head[mem]
                 # testing for some pids, x and Q2 values
                 for pid in [21, 1, 4, 6, -2, -3, -5]:

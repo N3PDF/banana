@@ -16,7 +16,7 @@ lhapdf = pytest.importorskip("lhapdf")
 
 def test_load_data_ct14():
     with lhapdf_path(test_pdf):
-        blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
+        blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
         assert len(blocks) == 1
         b0 = blocks[0]
         assert isinstance(b0, dict)
@@ -28,7 +28,7 @@ def test_load_data_ct14():
 
 def test_load_data_mstw():
     with lhapdf_path(test_pdf):
-        blocks = genpdf.load.load_blocks_from_file("myMSTW2008nlo90cl", 0)
+        blocks = genpdf.load.load_blocks_from_file("myMSTW2008nlo90cl", 0)[1]
         assert len(blocks) == 3
         b0 = blocks[0]
         assert isinstance(b0, dict)
@@ -47,7 +47,7 @@ def test_load_info():
 
 def test_load_head():
     with lhapdf_path(test_pdf):
-        head_zero = genpdf.load.load_head_from_file("myMSTW2008nlo90cl", 0)
-        head_one = genpdf.load.load_head_from_file("myMSTW2008nlo90cl", 1)
+        head_zero = genpdf.load.load_blocks_from_file("myMSTW2008nlo90cl", 0)[0]
+        head_one = genpdf.load.load_blocks_from_file("myMSTW2008nlo90cl", 1)[0]
         assert head_zero == "PdfType: central\n"
         assert head_one == "PdfType: error\n"

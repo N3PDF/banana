@@ -10,31 +10,82 @@ from ... import toy
 from . import export, load, project
 
 
+def take_data(name, parent_pdf_set=None, members=False):
+    xgrid = np.geomspace(1e-9, 1, 240)
+    Q2grid = np.geomspace(1.3, 1e5, 35)
+    pathlib.Path(name).mkdir(exist_ok=True)
+    # collect blocks
+    all_blocks = []
+    info = None
+    heads = []
+    if parent_pdf_set is None:
+        parent_pdf_set = {
+            pid: lambda x, _Q2: x * (1 - x) for pid in br.flavor_basis_pids
+        }
+    if isinstance(parent_pdf_set, str):
+        if parent_pdf_set in ["toylh", "toy"]:
+            info = copy.deepcopy(load.Toy_info)
+            toylh = toy.mkPDF("", 0)
+            all_blocks.append(
+                [generate_block(toylh.xfxQ2, xgrid, Q2grid, br.flavor_basis_pids)]
+            )
+        else:
+            info = load.load_info_from_file(parent_pdf_set)
+            # iterate on members
+            for m in range(int(info["NumMembers"])):
+                dat = load.load_blocks_from_file(parent_pdf_set, m)
+                heads.append(dat[0])
+                all_blocks.append(dat[1])
+                if not members:
+                    break
+    elif isinstance(parent_pdf_set, dict):
+        info = copy.deepcopy(load.template_info)
+        all_blocks.append(
+            [
+                generate_block(
+                    lambda pid, x, Q2: 0.0
+                    if pid not in parent_pdf_set
+                    else parent_pdf_set[pid](x, Q2),
+                    xgrid,
+                    Q2grid,
+                    br.flavor_basis_pids,
+                )
+            ]
+        )
+    else:
+        raise ValueError("Unknown parent pdf type")
+    return heads, info, all_blocks
+
+
 def generate_pdf(
     name, labels, parent_pdf_set=None, members=False, info_update=None, install=False
 ):
     """
     Generate a new PDF from a parent PDF with a set of flavors.
 
-    If parent_pdf_set is the name of an available PDF set, it will be used as parent. In order to use
-    the toy PDF as parent, it is enough to set parent_pdf_set = "toy" or "toylh".
-    If parent_pdf_set is not specified, a debug PDF constructed as x * (1-x) for every flavor will be used
-    as parent.
-    It is also possible to provide custom functions for each flavor in the form of a dictionary: {pid: f(x,Q2)}.
+    If parent_pdf_set is the name of an available PDF set,
+    it will be used as parent. In order to use the toy PDF
+    as parent, it is enough to set parent_pdf_set = "toy" or "toylh".
+    If parent_pdf_set is not specified, a debug PDF constructed as
+    x * (1-x) for every flavor will be usedas parent.
+    It is also possible to provide custom functions for each flavor
+    in the form of a dictionary: {pid: f(x,Q2)}.
 
-    In labels it is possible to pass a list of PIDs or evolution basis combinations to keep in the generated PDF.
-    In order to project on custom combinations of PIDs, it is also possible to pass a list containing the desired
-    factors for each flavor.
+    In labels it is possible to pass a list of PIDs or evolution basis
+    combinations to keep in the generated PDF. In order to project
+    on custom combinations of PIDs, it is also possible to pass a list
+    containing the desired factors for each flavor.
 
-    The default behaviour is to generate only one member for a PDF set (the zero member) but it can be changed setting
-    to True the member flag.
+    The default behaviour is to generate only one member for a PDF set
+    (the zero member) but it can be changed setting to True the member flag.
 
-    The info_update argument is a dictionary and provide to the user a way to change the info file of the
-    generated PDF set. If a key of info_update matches with one key of the standard info file, the information
+    The info_update argument is a dictionary and provide to the user a way
+    to change the info file of the generated PDF set. If a key of info_update
+    matches with one key of the standard info file, the information
     are updated, otherwise they are simply added.
 
-    Turning True the value of the install flag, it is possible to autmatically install the generated PDF to
-    the lhapdf directory. By default install is False.
+    Turning True the value of the install flag, it is possible to autmatically
+    install the generated PDF to the lhapdf directory. By default install is False.
 
     Parameters
     ----------
@@ -51,8 +102,8 @@ def generate_pdf(
 
     Examples
     --------
-        To generate a PDF with a fixed function `f(x,Q2)` for some flavors you can use the
-        following snippet:
+        To generate a PDF with a fixed function `f(x,Q2)` for some flavors
+        you can use the following snippet:
 
         >>> # f = lambda x,Q2 ... put the desired function here
         >>> # mask = [list of active PIDs]
@@ -73,9 +124,6 @@ def generate_pdf(
         >>> anti_qed_singlet[br.flavor_basis_pids.index(-2)] = 1
         >>> genpdf.generate_pdf("anti_qed_singlet", [anti_qed_singlet])
     """
-    xgrid = np.geomspace(1e-9, 1, 240)
-    Q2grid = np.geomspace(1.3, 1e5, 35)
-    pathlib.Path(name).mkdir(exist_ok=True)
     # Checking label basis
     is_evol = False
     flavor_combinations = labels
@@ -87,46 +135,10 @@ def generate_pdf(
         flavor_combinations = project.pid_to_flavor(labels)
 
     # labels = verify_labels(args.labels)
-    # collect blocks
-    all_blocks = []
-    info = None
-    head = None
-    if parent_pdf_set is None:
-        parent_pdf_set = {
-            pid: lambda x, _Q2: x * (1 - x) for pid in br.flavor_basis_pids
-        }
-    if isinstance(parent_pdf_set, str):
-        if parent_pdf_set in ["toylh", "toy"]:
-            info = copy.deepcopy(load.Toy_info)
-            toylh = toy.mkPDF("", 0)
-            all_blocks.append(
-                [generate_block(toylh.xfxQ2, xgrid, Q2grid, br.flavor_basis_pids)]
-            )
-        else:
-            info = load.load_info_from_file(parent_pdf_set)
-            # iterate on members
-            for m in range(int(info["NumMembers"])):
-                if m == 1:
-                    head = load.load_head_from_file(parent_pdf_set, m)
-                all_blocks.append(load.load_blocks_from_file(parent_pdf_set, m))
-                if not members:
-                    break
-    elif isinstance(parent_pdf_set, dict):
-        info = copy.deepcopy(load.template_info)
-        all_blocks.append(
-            [
-                generate_block(
-                    lambda pid, x, Q2: 0.0
-                    if pid not in parent_pdf_set
-                    else parent_pdf_set[pid](x, Q2),
-                    xgrid,
-                    Q2grid,
-                    br.flavor_basis_pids,
-                )
-            ]
-        )
-    else:
-        raise ValueError("Unknown parent pdf type")
+    data = take_data(name=name, parent_pdf_set=parent_pdf_set, members=members)
+    heads = data[0]
+    info = data[1]
+    all_blocks = data[2]
     # filter the PDF
     new_all_blocks = []
     for b in all_blocks:
@@ -145,7 +157,7 @@ def generate_pdf(
         info["ForcePositive"] = 0
     info["NumMembers"] = len(new_all_blocks)
     # exporting
-    export.dump_set(name, info, new_all_blocks, inherit=head)
+    export.dump_set(name, info, new_all_blocks, pdf_type_list=heads)
 
     # install
     if install:

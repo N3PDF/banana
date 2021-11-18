@@ -36,15 +36,17 @@ def test_dump_blocks(tmp_path):
     with cd(tmp_path):
         with lhapdf_path(test_pdf):
             info = genpdf.load.load_info_from_file("myCT14llo_NF3")
-            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
+            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
         new_blocks = copy.deepcopy(blocks)
         new_blocks[0]["xgrid"][0] = 1e-10
-        genpdf.export.dump_set("new_pdf", info, [new_blocks], inherit="Debug\n")
+        heads = ["Debug\n"]
+        genpdf.export.dump_set("new_pdf", info, [new_blocks], pdf_type_list=heads)
         with lhapdf_path(tmp_path):
-            head = genpdf.load.load_head_from_file("new_pdf", 0)
+            dat = genpdf.load.load_blocks_from_file("new_pdf", 0)
+            head = dat[0]
             # testing overwriting of central member head
             assert head == "PdfType: central\n"
-            blocks2 = genpdf.load.load_blocks_from_file("new_pdf", 0)
+            blocks2 = dat[1]
             assert len(blocks) == len(blocks2)
             # my field is new
             np.testing.assert_allclose(blocks2[0]["xgrid"][0], 1e-10)

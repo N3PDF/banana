@@ -46,6 +46,8 @@ def load_blocks_from_file(pdfset_name, member):
 
     Returns
     -------
+        str :
+            head of member file
         list(dict) :
             pdf blocks of data
 
@@ -57,6 +59,7 @@ def load_blocks_from_file(pdfset_name, member):
     with open(src / ("%s_%04d.dat" % (pdfset_name, pdf.memberID)), "r") as o:
         cnt = o.readlines()
     # file head
+    head = cnt[0]
     head_section = cnt.index("---\n")
     blocks = []
     while head_section < len(cnt) - 1:
@@ -75,32 +78,4 @@ def load_blocks_from_file(pdfset_name, member):
         blocks.append(dict(xgrid=xgrid, Q2grid=Q2grid, pids=pids, data=np.array(data)))
         # iterate
         head_section = next_head_section
-    return blocks
-
-
-def load_head_from_file(pdfset_name, member):
-    """
-    Load the head of a pdf member file.
-
-    Parameters
-    ----------
-        pdfset_name : str
-            parent pdf name
-        member : int
-            pdf member
-
-    Returns
-    -------
-        list(dict) :
-            head of pdf member file
-
-    """
-    pdf = lhapdf.mkPDF(pdfset_name, member)
-    src = pathlib.Path(lhapdf.paths()[0]) / pdfset_name
-    # read actual file
-    cnt = []
-    with open(src / ("%s_%04d.dat" % (pdfset_name, pdf.memberID)), "r") as o:
-        cnt = o.readlines()
-    # file head
-    head_section = cnt[0]
-    return head_section
+    return head, blocks

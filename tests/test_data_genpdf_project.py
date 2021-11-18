@@ -42,7 +42,7 @@ def test_project_pids_ct14(tmp_path):
         # read the debug PDFs
         with lhapdf_path(test_pdf):
             info = genpdf.load.load_info_from_file("myCT14llo_NF3")
-            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
+            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
             pdf = lhapdf.mkPDF("myCT14llo_NF3", 0)
         # now extract the gluon
         new_blocks = genpdf.project.project(blocks, genpdf.project.pid_to_flavor([21]))
@@ -69,7 +69,7 @@ def test_project_evol_ct14(tmp_path):
         # read the debug PDFs
         with lhapdf_path(test_pdf):
             info = genpdf.load.load_info_from_file("myCT14llo_NF3")
-            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)
+            blocks = genpdf.load.load_blocks_from_file("myCT14llo_NF3", 0)[1]
             pdf = lhapdf.mkPDF("myCT14llo_NF3", 0)
         # now extract the gluon
         new_blocks = genpdf.project.project(
