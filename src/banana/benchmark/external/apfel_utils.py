@@ -1,6 +1,3 @@
-import apfel
-
-
 def load_apfel(theory, ocard, pdf, use_external_grid=True):
     """
     Set APFEL parameter from ``theory`` dictionary.
@@ -19,6 +16,7 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
     module
         loaded apfel wrapper
     """
+    import apfel  # pylint: disable=import-error, import-outside-toplevel
 
     # Cleanup APFEL common blocks
     apfel.CleanUp()

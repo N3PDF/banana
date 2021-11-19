@@ -155,6 +155,7 @@ class HashError(KeyError):
         if hashes is not None:
             msg = "the following hashes have been found:"
             msg += "\n- " + "\n- ".join(hashes) + "\n"
+            print(msg)
         super().__init__(descr)
 
 
@@ -186,7 +187,7 @@ def select_hash(session, table_object, hash_partial):
     )
     # too much?
     if len(available) > 1:
-        raise HashError("hash is not unique", available)
+        raise HashError("hash is not unique", [a.hash for a in available])
     elif len(available) < 1:
         raise HashError("hash not found")
     # deserialize the thing
