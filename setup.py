@@ -27,7 +27,7 @@ def setup_package():
     # do it
     setup(
         name="banana-hep",
-        author="Felix Hekhorn, Alessandro Candido, Giacomo Magni, Andrea Barontini",
+        author="Andrea Barontini, Alessandro Candido, Felix Hekhorn, Giacomo Magni",
         version=pack.versions.mkversion(MAJOR, MINOR, MICRO),
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -38,8 +38,8 @@ def setup_package():
         packages=find_packages("src"),
         package_data={
             "banana": [
-                "data/templatePDF.dat",
-                "data/templatePDF.info",
+                "data/genpdf/templatePDF.info",
+                "data/genpdf/Toy.info",
                 "data/theory_template.yaml",
             ]
         },
