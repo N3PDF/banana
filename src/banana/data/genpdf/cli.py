@@ -20,7 +20,7 @@ def cli():
 @click.option("-i", "--install", is_flag=True, help="install into LHAPDF")
 def cli_generate_pdf(name, labels, parent_pdf_set, members, install):
     """Generate a new PDF from a parent set with given flavors"""
-    if not len(labels):
+    if len(labels) == 0:
         raise ValueError("Labels must contain at least one element")
     return generate_pdf(name, labels, parent_pdf_set, members, None, install)
 

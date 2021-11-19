@@ -1,5 +1,4 @@
 import pathlib
-import re
 
 import numpy as np
 import yaml
