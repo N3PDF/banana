@@ -26,9 +26,3 @@ def test_xf():
             for x in [0.1, 0.2]:
                 assert pdf.xfxQ2(pid, x, Q2) == pdf.xfxQ(pid, x, Q2)
             assert pdf.xfxQ2(pid, 2, Q2) == 0
-
-
-def test_ciao(capsys):
-    toy.ciao()
-    captured = capsys.readouterr()
-    assert captured.out.index("toyPDF") > 0

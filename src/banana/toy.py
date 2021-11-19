@@ -1,68 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-toyLH pdf
----------
-This routine returns the toyLH PDFs at the intitial scale
-which is supposed to be Q = sqrt(2) GeV.
+This module contains the Toy PDF.
+
+It is defined at the intitial scale :math:`Q = sqrt(2) GeV`.
 """
-
-import atexit
-
-
-def toyLHPDFs(pid, x):  # pylint: disable=too-many-locals
-    """
-    Functional implementation
-
-    Parameters
-    ----------
-        pid : int
-            pid
-        x : float
-            momentum fraction
-
-    Returns
-        xpdf : float
-            momentum density :math:`xf_j(x)`
-    """
-    N_uv = 5.107200e0
-    auv = 0.8e0
-    buv = 3e0
-    N_dv = 3.064320e0
-    adv = 0.8e0
-    bdv = 4e0
-    N_g = 1.7e0
-    ag = -0.1e0
-    bg = 5e0
-    N_db = 0.1939875e0
-    adb = -0.1e0
-    bdb = 6e0
-    fs = 0.2e0
-
-    xuv = N_uv * x ** auv * (1e0 - x) ** buv
-    xdv = N_dv * x ** adv * (1e0 - x) ** bdv
-    xg = N_g * x ** ag * (1e0 - x) ** bg
-    xdbar = N_db * x ** adb * (1e0 - x) ** bdb
-    xubar = xdbar * (1e0 - x)
-    xs = fs * (xdbar + xubar)
-    xsbar = xs
-
-    # Initialize PDFs to zero
-
-    xpdf = {i: 0 for i in range(-6, 7)}
-
-    if x > 1e0:
-        return 0.0
-
-    # assign
-    xpdf[3] = xs
-    xpdf[2] = xuv + xubar
-    xpdf[1] = xdv + xdbar
-    xpdf[21] = xpdf[0] = xg
-    xpdf[-1] = xdbar
-    xpdf[-2] = xubar
-    xpdf[-3] = xsbar
-
-    return xpdf[pid]
 
 
 class toyPDFSet:
@@ -72,7 +13,40 @@ class toyPDFSet:
 
 
 class toyPDF:
-    """Imitates lhapdf"""
+    """Imitates a lhapdf.PDF"""
+
+    def __init__(self):
+        N_uv = 5.107200e0
+        auv = 0.8e0
+        buv = 3e0
+        N_dv = 3.064320e0
+        adv = 0.8e0
+        bdv = 4e0
+        N_g = 1.7e0
+        ag = -0.1e0
+        bg = 5e0
+        N_db = 0.1939875e0
+        adb = -0.1e0
+        bdb = 6e0
+        fs = 0.2e0
+
+        xuv = lambda x: N_uv * x ** auv * (1e0 - x) ** buv
+        xdv = lambda x: N_dv * x ** adv * (1e0 - x) ** bdv
+        xg = lambda x: N_g * x ** ag * (1e0 - x) ** bg
+        xdbar = lambda x: N_db * x ** adb * (1e0 - x) ** bdb
+        xubar = lambda x: xdbar(x) * (1e0 - x)
+        xs = lambda x: fs * (xdbar(x) + xubar(x))
+        xsbar = xs
+
+        self.xpdf = {}
+
+        self.xpdf[3] = xs
+        self.xpdf[2] = lambda x: xuv(x) + xubar(x)
+        self.xpdf[1] = lambda x: xdv(x) + xdbar(x)
+        self.xpdf[21] = self.xpdf[0] = xg
+        self.xpdf[-1] = xdbar
+        self.xpdf[-2] = xubar
+        self.xpdf[-3] = xsbar
 
     def xfxQ2(self, pid, x, _Q2):
         """Get the PDF xf(x) value at (x,q2) for the given PID.
@@ -86,7 +60,7 @@ class toyPDF:
             PDG parton ID.
         x : float
             Momentum fraction.
-        Q : float
+        Q2 : float
             Squared energy (renormalization) scale.
 
         Returns
@@ -95,9 +69,16 @@ class toyPDF:
             The value of xf(x,q2).
         """
 
-        return toyLHPDFs(pid, x)
+        # Initialize PDFs to zero
 
-    def xfxQ(self, pid, x, _Q):
+        if x > 1e0:
+            return 0.0
+
+        if pid not in self.xpdf:
+            return 0.0
+        return self.xpdf[pid](x)
+
+    def xfxQ(self, pid, x, Q):
         """Get the PDF xf(x) value at (x,q) for the given PID.
 
         Parameters
@@ -115,7 +96,7 @@ class toyPDF:
             The value of xf(x,q).
         """
 
-        return toyLHPDFs(pid, x)
+        return self.xfxQ2(pid, x, Q * Q)
 
     def alphasQ(self, q):
         "Return alpha_s at q"
@@ -154,15 +135,3 @@ def mkPDF(_setname, _member):
     """
 
     return toyPDF()
-
-
-def ciao():
-    """Print at exit."""
-    print(
-        """\nThanks for using toyPDF. Please make sure to close the door.\n"""
-        + "\t" * 7
-        + "__Alessandro"
-    )
-
-
-atexit.register(ciao)

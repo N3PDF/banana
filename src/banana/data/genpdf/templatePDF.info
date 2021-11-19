@@ -1,12 +1,12 @@
-SetDesc: {{ description }}
-SetIndex: 13206
-Authors: F. Hekhorn, A. Candido
+SetDesc: 'Debug PDF'
+SetIndex: 0
+Authors: F. Hekhorn, A. Candido, A. Barontini
 Reference:
 Format: lhagrid1
 DataVersion: 1
 NumMembers: 1
 Particle: 2212
-Flavors: {{ pids }}
+Flavors: []
 ForcePositive: 0
 OrderQCD: 0
 FlavorScheme: variable
