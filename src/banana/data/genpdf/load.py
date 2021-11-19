@@ -75,8 +75,6 @@ def load_blocks_from_file(pdfset_name, member):
         # data
         data = []
         for l in cnt[head_section + 4 : next_head_section]:
-            # elems = re.split(r"\s+", l.strip())
-            # elems = np.array(elems, dtype=np.float_)
             elems = np.fromstring(l.strip(), sep=" ")
             data.append(elems)
         blocks.append(dict(xgrid=xgrid, Q2grid=Q2grid, pids=pids, data=np.array(data)))
