@@ -1,6 +1,10 @@
 {
     "creators": [
         {
+            "affiliation": "Nikhef",
+            "name": "Barontini, Andrea"
+        },
+        {
             "orcid": "0000-0002-1405-3205",
             "affiliation": "Università degli Studi di Milano",
             "name": "Candido, Alessandro"

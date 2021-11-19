@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-toyLH pdf
----------
-This routine returns the toyLH PDFs at the intitial scale
-which is supposed to be Q = sqrt(2) GeV.
+This module contains the Toy PDF.
+
+It is defined at the intitial scale :math:`Q = sqrt(2) GeV`.
 """
 
 
@@ -14,7 +13,7 @@ class toyPDFSet:
 
 
 class toyPDF:
-    """Imitates lhapdf"""
+    """Imitates a lhapdf.PDF"""
 
     def __init__(self):
         N_uv = 5.107200e0
@@ -37,17 +36,17 @@ class toyPDF:
         xdbar = lambda x: N_db * x ** adb * (1e0 - x) ** bdb
         xubar = lambda x: xdbar(x) * (1e0 - x)
         xs = lambda x: fs * (xdbar(x) + xubar(x))
-        xsbar = lambda x: xs(x)
+        xsbar = xs
 
         self.xpdf = {}
 
-        self.xpdf[3] = lambda x: xs(x)
+        self.xpdf[3] = xs
         self.xpdf[2] = lambda x: xuv(x) + xubar(x)
         self.xpdf[1] = lambda x: xdv(x) + xdbar(x)
-        self.xpdf[21] = self.xpdf[0] = lambda x: xg(x)
-        self.xpdf[-1] = lambda x: xdbar(x)
-        self.xpdf[-2] = lambda x: xubar(x)
-        self.xpdf[-3] = lambda x: xsbar(x)
+        self.xpdf[21] = self.xpdf[0] = xg
+        self.xpdf[-1] = xdbar
+        self.xpdf[-2] = xubar
+        self.xpdf[-3] = xsbar
 
     def xfxQ2(self, pid, x, _Q2):
         """Get the PDF xf(x) value at (x,q2) for the given PID.
@@ -61,7 +60,7 @@ class toyPDF:
             PDG parton ID.
         x : float
             Momentum fraction.
-        Q : float
+        Q2 : float
             Squared energy (renormalization) scale.
 
         Returns
@@ -79,7 +78,7 @@ class toyPDF:
             return 0.0
         return self.xpdf[pid](x)
 
-    def xfxQ(self, pid, x, _Q):
+    def xfxQ(self, pid, x, Q):
         """Get the PDF xf(x) value at (x,q) for the given PID.
 
         Parameters
@@ -97,7 +96,7 @@ class toyPDF:
             The value of xf(x,q).
         """
 
-        return self.xfxQ2(pid, x, _Q * _Q)
+        return self.xfxQ2(pid, x, Q * Q)
 
     def alphasQ(self, q):
         "Return alpha_s at q"
