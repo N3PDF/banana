@@ -123,7 +123,7 @@ def dump_set(name, info, member_blocks, pdf_type_list=None):
     """
     dump_info(name, info)
     for mem, blocks in enumerate(member_blocks):
-        if pdf_type_list == None or not isinstance(pdf_type_list, list):
+        if not isinstance(pdf_type_list, list):
             dump_blocks(name, mem, blocks)
         elif len(pdf_type_list) == 0:
             dump_blocks(name, mem, blocks)
