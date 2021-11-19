@@ -2,7 +2,6 @@ import copy
 import pathlib
 import shutil
 
-import lhapdf
 import numpy as np
 from eko import basis_rotation as br
 
@@ -184,6 +183,8 @@ def install_pdf(name):
         name : str
             source pdf name
     """
+    import lhapdf  # pylint: disable=import-error, import-outside-toplevel
+
     print(f"install_pdf {name}")
     target = pathlib.Path(lhapdf.paths()[0])
     src = pathlib.Path(name)

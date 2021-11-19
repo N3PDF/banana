@@ -1,7 +1,6 @@
 import pathlib
 import re
 
-import lhapdf
 import numpy as np
 import yaml
 
@@ -27,6 +26,8 @@ def load_info_from_file(pdfset_name):
         dict :
             info dictionary
     """
+    import lhapdf  # pylint: disable=import-error, import-outside-toplevel
+
     src = pathlib.Path(lhapdf.paths()[0]) / pdfset_name
     with open(src / ("%s.info" % (pdfset_name)), "r") as o:
         info = yaml.safe_load(o)
@@ -52,6 +53,8 @@ def load_blocks_from_file(pdfset_name, member):
             pdf blocks of data
 
     """
+    import lhapdf  # pylint: disable=import-error, import-outside-toplevel
+
     pdf = lhapdf.mkPDF(pdfset_name, member)
     src = pathlib.Path(lhapdf.paths()[0]) / pdfset_name
     # read actual file

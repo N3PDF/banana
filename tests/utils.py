@@ -2,8 +2,6 @@ import os
 import pathlib
 from contextlib import contextmanager
 
-import lhapdf
-
 # TODO mark file skipped in coverage.py
 
 
