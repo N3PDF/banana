@@ -61,7 +61,7 @@ def get_pdf(pdf_name, full_set=False):
     return pdf
 
 
-def get_pdf_name(pdf):
+def pdf_name(pdf):
     """
     Get the PDF set name
 
@@ -100,7 +100,7 @@ class BenchmarkRunner:
     console = rich.console.Console()
 
     db_base_cls = None
-    """Base clase that describes db schema"""
+    """Base class that describes db schema"""
 
     @abc.abstractstaticmethod
     def load_ocards(session, ocard_updates):
@@ -225,7 +225,7 @@ class BenchmarkRunner:
         Returns
         -------
             ext : dict
-                exernal result if available
+                external result if available
         """
         ext = session.query(db.Cache).filter(
             db.Cache.t_hash == t["hash"],
@@ -266,7 +266,7 @@ class BenchmarkRunner:
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
-            "pdf": get_pdf_name(pdf),
+            "pdf": pdf_name(pdf),
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
             "result": pickle.dumps(ext),
@@ -349,7 +349,7 @@ class BenchmarkRunner:
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
-            "pdf": get_pdf_name(pdf),
+            "pdf": pdf_name(pdf),
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
             "log": pickle.dumps(log_document),
@@ -391,7 +391,7 @@ class BenchmarkRunner:
         # init input
         ts = theories.load(session, theory_updates)
         os = self.load_ocards(session, ocard_updates)
-        # print some load informations
+        # print some load information
         self.console.print(
             rich.panel.Panel.fit(
                 f"Theories: {len(ts)} OCards: {len(os)} PDFs: {len(pdfs)} ext: {self.external}",

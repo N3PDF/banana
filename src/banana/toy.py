@@ -2,7 +2,7 @@
 """
 This module contains the Toy PDF.
 
-It is defined at the intitial scale :math:`Q = sqrt(2) GeV`.
+It is defined at the initial scale :math:`Q = sqrt(2) GeV`.
 """
 
 
@@ -112,7 +112,7 @@ class toyPDF:
 
     def hasFlavor(self, pid):
         """Contains a pdf for pid?"""
-        return pid in [21, 22] + list(range(-6, 6 + 1))
+        return pid in ([21, 22] + list(range(-6, 6 + 1)))
 
 
 def mkPDF(_setname, _member):
