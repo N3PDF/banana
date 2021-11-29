@@ -202,7 +202,7 @@ def generate_block(xfxQ2, xgrid, Q2grid, pids):
         xfxQ2 : callable
             LHAPDF like callable
         Q2grid : list(float)
-            Q2 grid
+            Q grid
         pids : list(int)
             Flavors list
         xgrid : list(float)

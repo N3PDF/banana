@@ -1,7 +1,7 @@
 import io
 import pathlib
 import re
-
+import numpy as np
 import yaml
 
 
@@ -73,7 +73,7 @@ def dump_blocks(name, member, blocks, pdf_type=None):
         o.write("Format: lhagrid1\n---\n")
         for b in blocks:
             o.write(list_to_str(b["xgrid"]) + "\n")
-            o.write(list_to_str(b["Q2grid"]) + "\n")
+            o.write(list_to_str(list(np.sqrt(b["Q2grid"]))) + "\n")
             o.write(list_to_str(b["pids"], "%d") + "\n")
             o.write(array_to_str(b["data"]))
             o.write("---\n")
