@@ -3,6 +3,8 @@ import pathlib
 
 import yaml
 
+__version__ = "0.0.0"
+
 
 def load_config(pkg_path):
     banana_cfg = {}

@@ -33,5 +33,14 @@ pendulum = "^2.1.2"
 [tool.poetry.scripts]
 genpdf = "banana.data.genpdf.cli:cli"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+dirty = true
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["src/banana/__init__.py"]
+
 [tool.pytest.ini_options]
 addopts = '--cov=banana --cov-report=html --cov-report=xml --strict-markers'
