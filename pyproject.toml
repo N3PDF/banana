@@ -29,6 +29,15 @@ click = "^8.0.3"
 pendulum = "^2.1.2"
 
 [tool.poetry.dev-dependencies]
+black = "^21.12b0"
+isort = "^5.10.1"
+pylint = "^2.12.2"
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+pre-commit = "^2.16.0"
+Sphinx = "^4.3.2"
+sphinx-rtd-theme = "^1.0.0"
+sphinxcontrib-bibtex = "^2.4.1"
 
 [tool.poetry.scripts]
 genpdf = "banana.data.genpdf.cli:cli"
