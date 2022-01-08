@@ -46,6 +46,7 @@ isort = "^5.10.1"
 pylint = "^2.12.2"
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
+pytest-env = "^0.6.2"
 pre-commit = "^2.16.0"
 Sphinx = "^4.3.2"
 sphinx-rtd-theme = "^1.0.0"
@@ -77,4 +78,10 @@ docs-clean = { "shell" = "cd doc; make clean" }
 docs-cleanall = { "shell" = "cd doc; make cleanall" }
 
 [tool.pytest.ini_options]
-addopts = '--cov=banana --cov-report=html --cov-report=xml --strict-markers'
+addopts = [
+  '--cov=banana',
+  '--cov-report=html',
+  '--cov-report=xml',
+  '--strict-markers',
+]
+env = ["NUMBA_DISABLE_JIT=1"]
