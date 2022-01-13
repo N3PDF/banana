@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import pickle
+import numpy as np
 
 import pandas as pd
 import sqlalchemy.sql
@@ -23,7 +24,7 @@ def serialize(data):
     ndata : list
         improved data
     """
-    blobbed_types = [list, dict, dfdict.DFdict]
+    blobbed_types = [list, dict, dfdict.DFdict, np.ndarray]
     sorted_data = dict(sorted(data.items()))
     ndata = []
     for d in sorted_data.values():
@@ -52,7 +53,7 @@ def deserialize(data):
     for f, el in data.__dict__.items():
         if f[0] == "_":
             continue
-        elif isinstance(el, bytes):
+        if isinstance(el, bytes):
             obj[f] = pickle.loads(el)
             if isinstance(obj[f], dict) and "__msgs__" in obj[f]:
                 obj[f] = dfdict.DFdict.from_document(obj[f])

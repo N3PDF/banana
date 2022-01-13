@@ -1,9 +1,88 @@
 [build-system]
-requires = [
-    'setuptools >= 40.9.0',
-    'packutil',
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "banana-hep"
+version = "0.0.0"
+description = "Benchmark QCD physics"
+authors = [
+  "Andrea Barontini",
+  "Alessandro Candido <alessandro.candido@mi.infn.it>",
+  "Felix Hekhorn",
+  "Giacomo Magni",
 ]
-build-backend = 'setuptools.build_meta'
+repository = "https://github.com/N3PDF/banana"
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+include = [
+  "src/banana/data/genpdf/*.info",
+  "src/banana/data/theory_template.yaml",
+]
+packages = [{ include = "banana", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.7.1,<3.10"
+ipython = "^7.30.1"
+SQLAlchemy = "^1.4.29"
+numpy = "^1.20.0"
+pandas = "^1.3.5"
+matplotlib = "^3.5.1"
+rich = "^10.16.1"
+PyYAML = "^6.0"
+click = "^8.0.3"
+pendulum = "^2.1.2"
+eko = "^0.8.2"
+# TODO; remove with eko poetry release
+llvmlite = "^0.37.0"
+
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+isort = "^5.10.1"
+pylint = "^2.12.2"
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+pytest-env = "^0.6.2"
+pre-commit = "^2.16.0"
+Sphinx = "^4.3.2"
+sphinx-rtd-theme = "^1.0.0"
+sphinxcontrib-bibtex = "^2.4.1"
+pyfakefs = "^4.5.3"
+
+[tool.poetry.scripts]
+genpdf = "banana.data.genpdf.cli:cli"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+dirty = true
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["src/banana/__init__.py"]
+
+[tool.poe.tasks]
+test = "pytest tests"
+lint = "pylint src/*/*.py -E"
+lint-warnings = "pylint src/*/*.py --exit-zero"
+black = "black ."
+isort = "isort ."
+format = ["black", "isort"]
+docs = { "shell" = "cd doc; make html" }
+docs-view = { "shell" = "cd doc; make view" }
+docs-server = { "shell" = "cd doc; make server" }
+docs-clean = { "shell" = "cd doc; make clean" }
+docs-cleanall = { "shell" = "cd doc; make cleanall" }
 
 [tool.pytest.ini_options]
-addopts = '--cov=banana --cov-report=html --cov-report=xml --strict-markers'
+addopts = [
+  '--cov=banana',
+  '--cov-report=html',
+  '--cov-report=xml',
+  '--strict-markers',
+]
+env = ["NUMBA_DISABLE_JIT=1"]

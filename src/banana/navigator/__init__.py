@@ -46,7 +46,7 @@ def register_globals(mod, app):
     mod.update(new_objs)
 
 
-def launch_navigator(pkg, bench):
+def launch_navigator(pkg, bench=None):
     c = Config()
     banner = f"""
         Welcome to {pkg} benchmark skript!
@@ -54,7 +54,10 @@ def launch_navigator(pkg, bench):
     """
     c.TerminalInteractiveShell.banner2 = inspect.cleandoc(banner) + "\n" * 2
 
-    init_cmds = [f"""from {bench}.navigator import *""", f"""from {pkg} import *"""]
+    if bench is not None:
+        init_cmds = [f"""from {bench}.navigator import *""", f"""from {pkg} import *"""]
+    else:
+        init_cmds = ["""from navigator import *""", f"""from {pkg} import *"""]
     args = ["--pylab"]
     for cmd in init_cmds:
         args.append(f"--InteractiveShellApp.exec_lines={cmd}")

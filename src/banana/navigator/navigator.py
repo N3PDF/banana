@@ -6,8 +6,8 @@ import textwrap
 
 import numpy as np
 import pandas as pd
+import pendulum
 import sqlalchemy.orm
-from human_dates import human_dates
 
 from ..data import db, dfdict
 from . import table_manager as tm
@@ -153,7 +153,11 @@ class NavigatorApp(abc.ABC):
             obj = {"uid": el["uid"]}
             obj["hash"] = el["hash"][: self.hash_len]
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
-            obj["ctime"] = human_dates(el["ctime"])
+            obj["ctime"] = (
+                pendulum.duration(seconds=el["ctime"].total_seconds())
+                .in_words(separator="@")
+                .split("@")[0]
+            )
             data.append(obj)
         # output
         df = pd.DataFrame(data)
