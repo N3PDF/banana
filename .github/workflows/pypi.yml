@@ -1,9 +1,10 @@
 name: deploy
 
 on:
-  push:
-    tags:
-      - "*"
+  push
+  #push:
+  #  tags:
+  #    - "*"
 
 jobs:
   publish:
@@ -36,13 +37,15 @@ jobs:
           key: ${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
       - name: Install package
         run: |
-          pip install poetry-dynamic-versioning
           poetry install
           # run tests just before deployment
           pip install poethepoet
           poe test
       - name: Package the distribution
         run: |
+          # add version management tool, same poetry env
+          PIP="$(head -n1 $(which poetry) | cut -c 3-) -m pip"
+          ${PIP} install poetry-dynamic-versioning
           # package the pure python wheel
           poetry build
       - name: Publish distribution 📦 to PyPI
