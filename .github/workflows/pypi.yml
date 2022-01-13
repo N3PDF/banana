@@ -45,6 +45,9 @@ jobs:
         run: |
           pip install poetry-dynamic-versioning
           pip list | grep poetry
+          which poetry
+          cat $(which poetry)
+          pip install poetry
           # package the pure python wheel
           poetry build
       - name: Publish distribution 📦 to PyPI
