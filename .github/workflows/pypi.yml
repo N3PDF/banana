@@ -43,11 +43,9 @@ jobs:
           poe test
       - name: Package the distribution
         run: |
-          pip install poetry-dynamic-versioning
-          pip list | grep poetry
-          which poetry
-          cat $(which poetry)
-          pip install poetry
+          PIP="$(head -n1 $(which poetry) | cut -c 3-) -m pip"
+          ${PIP} install poetry-dynamic-versioning
+          ${PIP} list
           # package the pure python wheel
           poetry build
       - name: Publish distribution 📦 to PyPI
