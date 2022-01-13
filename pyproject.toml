@@ -6,6 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "banana-hep"
 version = "0.0.0"
 description = "Benchmark QCD physics"
+readme = "README.md"
 authors = [
   "Andrea Barontini",
   "Alessandro Candido <alessandro.candido@mi.infn.it>",
