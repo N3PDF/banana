@@ -13,8 +13,6 @@
 import os
 import pathlib
 
-import banana.version
-
 here = pathlib.Path(__file__).parent
 
 # -- Project information -----------------------------------------------------
@@ -22,14 +20,6 @@ here = pathlib.Path(__file__).parent
 project = "banana"
 copyright = "2020-2021, N3PDF team"  # pylint: disable=redefined-builtin
 author = "Felix Hekhorn, Alessandro Candido"
-
-# The short X.Y version
-version = banana.version.short_version
-if not banana.version.is_released:
-    version = "develop"
-
-# The full version, including alpha/beta/rc tags
-release = banana.version.full_version
 
 here = pathlib.Path(__file__).parent
 
@@ -83,6 +73,27 @@ extlinks = {
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
+
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+#
+html_theme_options = {
+    # "canonical_url": "",
+    # "analytics_id": "UA-XXXXXXX-1",  #  Provided by Google in your dashboard
+    # "logo_only": True,
+    "display_version": True,
+    # "prev_next_buttons_location": "bottom",
+    # "style_external_links": False,
+    # "vcs_pageview_mode": "",
+    # "style_nav_header_background": "white",
+    # # Toc options
+    # "collapse_navigation": True,
+    # "sticky_navigation": True,
+    # "navigation_depth": 4,
+    # "includehidden": True,
+    # "titles_only": False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
