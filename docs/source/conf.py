@@ -18,10 +18,8 @@ here = pathlib.Path(__file__).parent
 # -- Project information -----------------------------------------------------
 
 project = "banana"
-copyright = "2020-2021, N3PDF team"  # pylint: disable=redefined-builtin
-author = "Felix Hekhorn, Alessandro Candido"
-
-here = pathlib.Path(__file__).parent
+copyright = "2020-2022, banana team"  # pylint: disable=redefined-builtin
+author = "banana team"
 
 # -- General configuration ---------------------------------------------------
 
