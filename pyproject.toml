@@ -8,10 +8,10 @@ version = "0.0.0"
 description = "Benchmark QCD physics"
 readme = "README.md"
 authors = [
-  "Andrea Barontini",
+  "Andrea Barontini <andrea.barontini@mi.infn.it>",
   "Alessandro Candido <alessandro.candido@mi.infn.it>",
-  "Felix Hekhorn",
-  "Giacomo Magni",
+  "Felix Hekhorn <felix.hekhorn@mi.infn.it>",
+  "Giacomo Magni <gmagni@nikhef.nl>",
 ]
 repository = "https://github.com/N3PDF/banana"
 classifiers = [
@@ -40,6 +40,10 @@ pendulum = "^2.1.2"
 eko = "^0.8.2"
 # TODO; remove with eko poetry release
 llvmlite = "^0.37.0"
+# docs dependencies (for readthedocs)
+Sphinx = {version = "^4.3.2", optional = true}
+sphinx-rtd-theme = {version = "^1.0.0", optional = true}
+sphinxcontrib-bibtex = {version = "^2.4.1", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "^21.12b0"
@@ -53,6 +57,14 @@ Sphinx = "^4.3.2"
 sphinx-rtd-theme = "^1.0.0"
 sphinxcontrib-bibtex = "^2.4.1"
 pyfakefs = "^4.5.3"
+
+[tool.poetry.extras]
+pineappl = ["pineappl"]
+docs = [
+  "sphinx",
+  "sphinx-rtd-theme",
+  "sphinxcontrib-bibtex",
+]
 
 [tool.poetry.scripts]
 genpdf = "banana.data.genpdf.cli:cli"

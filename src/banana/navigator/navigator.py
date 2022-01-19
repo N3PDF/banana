@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
+import datetime as dt
 import importlib
 import sys
 import textwrap
@@ -154,7 +155,9 @@ class NavigatorApp(abc.ABC):
             obj["hash"] = el["hash"][: self.hash_len]
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
             obj["ctime"] = (
-                pendulum.duration(seconds=el["ctime"].total_seconds())
+                pendulum.duration(
+                    seconds=(dt.datetime.now() - el["ctime"]).total_seconds()
+                )
                 .in_words(separator="@")
                 .split("@")[0]
             )
