@@ -7,6 +7,6 @@ on:
 
 jobs:
   publish:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-main.yml@main
+    uses: N3PDF/workflows/.github/workflows/python-poetry-pypi.yml@main
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
