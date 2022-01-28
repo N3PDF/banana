@@ -6,7 +6,6 @@ import itertools
 import pathlib
 import pickle
 import subprocess
-from collections.abc import Iterable
 
 import rich
 import rich.box
@@ -34,14 +33,12 @@ def get_pdf(pdf_name, full_set=False):
 
     Returns
     -------
-        pdf : lhapdf_like
+        pdf : list(lhapdf_like)
             PDF object
     """
     # setup PDFset
     if pdf_name == "ToyLH":
-        pdf = toy.mkPDF("ToyLH", 0)
-        if full_set:
-            pdf = [pdf]
+        pdf = [toy.mkPDF("ToyLH", 0)]
     else:
         import lhapdf  # pylint:disable=import-outside-toplevel,import-error
 
@@ -57,7 +54,7 @@ def get_pdf(pdf_name, full_set=False):
         if full_set:
             pdf = lhapdf.mkPDFs(pdf_name)
         else:
-            pdf = lhapdf.mkPDF(pdf_name, 0)
+            pdf = [lhapdf.mkPDF(pdf_name, 0)]
     return pdf
 
 
@@ -75,9 +72,7 @@ def pdf_name(pdf):
         PDF set name
 
     """
-    if isinstance(pdf, Iterable):
-        return pdf[0].set().name
-    return pdf.set().name
+    return pdf[0].set().name
 
 
 default_cache = {"t_hash": b"", "o_hash": b"", "pdf": "", "external": "", "result": b""}
@@ -134,8 +129,8 @@ class BenchmarkRunner:
                 theory card
             ocard : dict
                 o card
-            pdf : lhapdf_like
-                PDF
+            pdf : list(lhapdf_like)
+                list of PDF objects
 
         Returns
         -------
@@ -144,7 +139,7 @@ class BenchmarkRunner:
         """
 
     @abc.abstractmethod
-    def run_external(self, theory, ocard, pdf):
+    def run_external(self, theory, ocard, pdf, n_rep=0):
         """
         Execute external program.
 
@@ -154,8 +149,10 @@ class BenchmarkRunner:
                 theory card
             ocard : dict
                 o card
-            pdf : lhapdf_like
-                PDF
+            pdf : list(lhapdf_like)
+                list of PDF objects
+            n_rep: int
+                replica id
 
         Returns
         -------
@@ -174,8 +171,8 @@ class BenchmarkRunner:
                 theory card
             ocard : dict
                 o card
-            pdf : lhapdf_like
-                PDF
+            pdf : list(lhapdf_like)
+                list of PDF objects
             me : dict
                 our result
             ext : dict
@@ -237,11 +234,11 @@ class BenchmarkRunner:
             db.Cache.external == self.external,
         )
         # if not found or multiple found, ext.one() will raise an Error
-        return pickle.loads(ext.one().result)
+        return pickle.loads(ext.one().ext_result)
 
-    def insert_external(self, session, t, o, pdf):
+    def insert_cache(self, session, t, o, pdf, me, ext):
         """
-        Obtain an external run.
+        Insert the cache.
 
         Parameters
         ----------
@@ -251,28 +248,21 @@ class BenchmarkRunner:
             theory card
         o : dict
             o-card
-        pdf : str
-            applied PDF
-
-        Returns
-        -------
-        ext : dict
-            result
+        pdf : list(lhapdf_like)
+            list of PDF objects
+        me: dict
+            our result
+        ext: dict
+            external result
         """
-        # obtain data
-        if isinstance(pdf, Iterable):
-            ext = {}
-            for n_rep, replica in enumerate(pdf):
-                ext[n_rep] = self.run_external(t, o, replica)
-        else:
-            ext = self.run_external(t, o, pdf)
         record = {
             "t_hash": t["hash"],
             "o_hash": o["hash"],
             "pdf": pdf_name(pdf),
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
-            "result": pickle.dumps(ext),
+            "ext_result": pickle.dumps(ext),
+            "int_result": pickle.dumps(me),
         }
         # create record
         new_cache = db.Cache(
@@ -281,7 +271,6 @@ class BenchmarkRunner:
         session.add(new_cache)
         # TODO: do we want to commit here or somewhere else?
         session.commit()
-        return ext
 
     def run_config(self, session, t, o, pdf_name, use_replicas):
         """
@@ -309,7 +298,12 @@ class BenchmarkRunner:
             self.console.print("Cache contains the external result")
         except sqlalchemy.orm.exc.NoResultFound:
             self.console.print("Compute external result")
-            ext = self.insert_external(session, t, o, pdf)
+            # run the external
+            ext = {}
+            for n_rep, replica in enumerate(pdf):
+                ext[n_rep] = self.run_external(t, o, replica, n_rep)
+
+            self.insert_cache(session, t, o, pdf, me, ext)
         # create log
         log_record = self.insert_log(session, t, o, pdf, me, ext)
         log_record.fancy()
@@ -326,8 +320,8 @@ class BenchmarkRunner:
             theory card
         o : dict
             o-card
-        pdf_name : str
-            applied PDF
+        pdf : list(lhapdf_like)
+            list of PDF objects
         me : dict
             our result
         ext : str

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-def load_apfel(theory, ocard, pdf, use_external_grid=True):
+def load_apfel(theory, ocard, pdf, use_external_grid=True, n_rep=0):
     """
     Set APFEL parameter from ``theory`` dictionary.
 
@@ -11,6 +11,8 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
         ocard parameters
     pdf : str
         pdf name
+    n_rep: int
+        replica id
 
     Returns
     -------
@@ -129,6 +131,7 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
 
     # set pdf
     apfel.SetPDFSet(pdf)
+    apfel.SetReplica(n_rep)
 
     # Not included in the map
     #
