@@ -8,7 +8,6 @@ import pickle
 import subprocess
 from collections.abc import Iterable
 
-
 import rich
 import rich.box
 import rich.markdown
@@ -17,7 +16,7 @@ import rich.progress
 import sqlalchemy.ext
 import sqlalchemy.orm
 
-from .. import toy
+from .. import cfg, toy
 from ..data import db, dfdict, theories
 
 
@@ -101,6 +100,9 @@ class BenchmarkRunner:
 
     db_base_cls = None
     """Base class that describes db schema"""
+
+    def __init__(self):
+        self.banana_cfg = cfg.cfg
 
     @abc.abstractstaticmethod
     def load_ocards(session, ocard_updates):
