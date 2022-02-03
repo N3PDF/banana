@@ -5,6 +5,16 @@ import yaml
 
 __version__ = "0.0.0"
 
+from . import cfg
+
+
+def register(path):
+    path = pathlib.Path(path)
+    if path.is_file():
+        path = path.parent
+
+    cfg.cfg = load_config(path)
+
 
 def load_config(pkg_path):
     banana_cfg = {}
