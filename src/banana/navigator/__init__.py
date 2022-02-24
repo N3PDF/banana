@@ -28,7 +28,7 @@ def register_globals(mod, app):
         "ext": app.change_external,
         "g": app.get,
         "ga": app.get_all,
-        "gbl": app.get_log_card,
+        "gbl": app.get_by_log,
         "ls": app.list_all,
         "logs": app.show_full_logs,
         "dfl": app.log_as_dfd,
