@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pathlib
 
 import numpy as np
@@ -76,7 +77,7 @@ def load_blocks_from_file(pdfset_name, member):
         for l in cnt[head_section + 4 : next_head_section]:
             elems = np.fromstring(l.strip(), sep=" ")
             data.append(elems)
-        Q2grid = [el*el for el in Qgrid]
+        Q2grid = [el * el for el in Qgrid]
         blocks.append(dict(xgrid=xgrid, Q2grid=Q2grid, pids=pids, data=np.array(data)))
         # iterate
         head_section = next_head_section
