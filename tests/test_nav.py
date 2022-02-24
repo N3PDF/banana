@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-import pathlib
-
 import numpy as np
 import pytest
 
 from banana import navigator
 
 
-class FakeApp(navigator.NavigatorApp):
+class FakeApp(navigator.navigator.NavigatorApp):
     def is_valid_physical_object(name):
         return True
 
@@ -32,6 +30,6 @@ def test_register(banana_cfg):
 
 def test_launch(monkeypatch, capsys):
     monkeypatch.setattr("IPython.start_ipython", lambda **kwargs: print(kwargs))
-    navigator.launch_navigator("test", "testmark")
+    navigator.launch_navigator(["test", "testmark"], skip_cfg=True)
     captured = capsys.readouterr()
     assert "--pylab" in captured.out

@@ -77,7 +77,7 @@ def launch_navigator(imports=None, cfg_path=None, skip_cfg=False, pylab=True):
     # update ipython configurations to add custom banner
     c = loader.Config()
     banner = f"""
-        Welcome to {pkg} benchmark skript!
+        Welcome to banana's benchmark navigator!
         call yelp() or h() for a brief overview.
         """
     c.TerminalInteractiveShell.banner2 = inspect.cleandoc(banner) + "\n" * 2

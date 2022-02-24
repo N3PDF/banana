@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-import datetime
 import json
-import pathlib
 
 import pytest
 
 from banana import navigator
 
 
-class FakeNavApp(navigator.NavigatorApp):
+class FakeNavApp(navigator.navigator.NavigatorApp):
     def fill_theories(self, theo, obj):
         obj["PTO"] = theo["PTO"]
 
