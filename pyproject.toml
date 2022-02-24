@@ -21,8 +21,8 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Physics",
 ]
 include = [
-  "src/banana/data/genpdf/*.info",
   "src/banana/data/theory_template.yaml",
+  "src/banana/tools/genpdf/*.info",
 ]
 packages = [{ include = "banana", from = "src" }]
 
@@ -62,7 +62,7 @@ pineappl = ["pineappl"]
 docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-bibtex"]
 
 [tool.poetry.scripts]
-genpdf = "banana.data.genpdf.cli:cli"
+genpdf = "banana.tools.genpdf.cli:cli"
 
 [tool.poetry-dynamic-versioning]
 enable = true
