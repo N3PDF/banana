@@ -30,7 +30,6 @@ def register_globals(mod, app):
         "ls": app.list_all,
         "logs": app.show_full_logs,
         "dfl": app.log_as_dfd,
-        "run": app.execute_runner,
         # "truncate_logs": app.logs.truncate,
         "diff": app.subtract_tables,
         "cmpt": lambda id1, id2: compare_dicts(
