@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from utils import test_pdf
 
-from banana.data import genpdf
+from banana.tools import genpdf
 from banana.utils import lhapdf_path
 
 # try:

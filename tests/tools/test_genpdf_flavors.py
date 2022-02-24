@@ -4,7 +4,7 @@ import pytest
 from eko import basis_rotation as br
 from utils import cd, test_pdf
 
-from banana.data import genpdf
+from banana.tools import genpdf
 from banana.utils import lhapdf_path
 
 lhapdf = pytest.importorskip("lhapdf")
