@@ -104,7 +104,8 @@ class BenchmarkRunner:
     def __init__(self):
         self.banana_cfg = cfg.cfg
 
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def load_ocards(session, ocard_updates):
         """
         Load o-cards from the DB.

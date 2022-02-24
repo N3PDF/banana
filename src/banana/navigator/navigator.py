@@ -103,16 +103,15 @@ class NavigatorApp(abc.ABC):
         # input table
         return self.input_tables[tn]
 
-    def get(self, table, doc_id=None):
-        """Getter wrapper.
+    def get(self, table, doc_id):
+        """Table getter wrapper.
 
         Parameters
         ----------
         table : str
             table identifier
-        doc_id : None, int or str
-            if given, retrieve single document, else the full the table; it can
-            be: a :class:`str` interpreted as partial hash
+        doc_id : int or str
+            it can be: a :class:`str` interpreted as partial hash
             (:func:`banana.data.sql.select_by_hash`), a non-negative
             :class:`int` interpreted as the record unique identifier
             (:func:`banana.data.sql.select_by_uid`), a negative :class:`int`
@@ -121,37 +120,47 @@ class NavigatorApp(abc.ABC):
 
         Returns
         -------
-        df : pandas.DataFrame
-            created frame
+        dict
+            the retrieved document
 
         """
-        # list all
-        tab_m = self.table_manager(table)
+        return self.table_manager(table).get(doc_id)
 
-        if doc_id is None:
-            return tab_m.all()
-
-        return tab_m.get(doc_id)
-
-    def list_all(self, table, input_data=None):
-        """
-        List all elements in a nice table
+    def get_all(self, table):
+        """Get full table.
 
         Parameters
         ----------
-            table : string
-                table identifier
-            input_data : list
-                data to list
+        table : str
+            table identifier
 
         Returns
         -------
-            df : pandas.DataFrame
-                list
+        list(dict)
+            the full list of documents in the table
+
+        """
+        return self.table_manager(table).all()
+
+    def list_all(self, table, input_data=None):
+        """List all elements in a nice table
+
+        Parameters
+        ----------
+        table : string
+            table identifier
+        input_data : list
+            data to list
+
+        Returns
+        -------
+        df : pandas.DataFrame
+            list
+
         """
         # collect
         if input_data is None:
-            input_data = self.get(table)
+            input_data = self.get_all(table)
         data = []
         for el in input_data:
             # obj = {"hash": el["hash"][:6]}
@@ -172,45 +181,53 @@ class NavigatorApp(abc.ABC):
         return df
 
     def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
-        """
-        Show additional, associated fields in the logs (JOIN).
+        """Show additional, associated fields in the logs (JOIN).
 
         Parameters
         ----------
-            t_fields : list
-                theory fields
-            o_fields : list
-                ocard fields
-            keep_hashes : boolean
-                display hashes?
+        t_fields : list
+            theory fields
+        o_fields : list
+            ocard fields
+        keep_hashes : boolean
+            display hashes?
 
         Returns
         -------
-            df : pandas.DataFrame
-                data frame
+        df : pandas.DataFrame
+            data frame
+
         """
         # apply some defaults
         if t_fields is None:
             t_fields = []
         if o_fields is None:
             o_fields = []
+
         # collect external data
-        theories = self.list_all(t)[t_fields]
-        theories["theory"] = self.list_all(t)["hash"]
-        ocards = self.list_all(o)[o_fields]
-        ocards["ocard"] = self.list_all(o)["hash"]
+        theories = pd.DataFrame(self.get_all(t))[["hash"] + t_fields]
+        theories.rename(columns={"hash": "theory"})
+        ocards = pd.DataFrame(self.get_all(o))[["hash"] + o_fields]
+        ocards.rename(columns={"hash": "ocard"})
+
         # get my data and merge
         logs = self.list_all(l)
         logs.reset_index(inplace=True)
         new_logs = logs.merge(theories, on="theory").merge(ocards, on="ocard")
         new_logs.set_index("uid", inplace=True)
-        # adjust columns
+
+        # move ctime at the end
         columns = new_logs.columns.tolist()
         columns.remove("ctime")
         new_logs = new_logs[columns + ["ctime"]]
+
+        # drop hashes, if not denied
         if not keep_hashes:
             new_logs = new_logs.drop(["theory", "ocard"], axis=1)
+
+        # sort on uid
         new_logs.sort_index(inplace=True)
+
         return new_logs
 
     def cache_as_dfd(self, doc_id):
@@ -318,7 +335,7 @@ class NavigatorApp(abc.ABC):
         ref_log = self.get(l, doc_id)
 
         related_logs = []
-        all_logs = self.get(l)
+        all_logs = self.get_all(l)
 
         for lg in all_logs:
             if lg["t_hash"] != ref_log["t_hash"]:
