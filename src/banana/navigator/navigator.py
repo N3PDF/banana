@@ -495,7 +495,3 @@ class NavigatorApp(abc.ABC):
             else:
                 cdfd[name] = dfd[name]
         return cdfd
-
-    def execute_runner(self, runner_name="sandbox"):
-        """Execute a benchmark script"""
-        raise NotImplementedError("This has never worked, and it's not working now.")
