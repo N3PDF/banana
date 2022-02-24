@@ -83,18 +83,18 @@ class NavigatorApp(abc.ABC):
         raise ValueError(f"Unknown table {table_abbrev}")
 
     def table_manager(self, table):
-        """
-        Get corresponding TableManager
+        """Get corresponding TableManager
 
         Parameters
         ----------
-            table : str
-                table identifier
+        table : str
+            table identifier
 
         Returns
         -------
-            tm : yadmark.table_manager.TableManager
-                corresponding TableManager
+        tm : yadmark.table_manager.TableManager
+            corresponding TableManager
+
         """
         # logs?
         tn = self.table_name(table)
@@ -104,20 +104,26 @@ class NavigatorApp(abc.ABC):
         return self.input_tables[tn]
 
     def get(self, table, doc_id=None):
-        """
-        Getter wrapper.
+        """Getter wrapper.
 
         Parameters
         ----------
-            table : str
-                table identifier
-            doc_id : None or int
-                if given, retrieve single document
+        table : str
+            table identifier
+        doc_id : None, int or str
+            if given, retrieve single document, else the full the table; it can
+            be: a :class:`str` interpreted as partial hash
+            (:func:`banana.data.sql.select_by_hash`), a non-negative
+            :class:`int` interpreted as the record unique identifier
+            (:func:`banana.data.sql.select_by_uid`), a negative :class:`int`
+            interpreted as record position
+            (:func:`banana.data.sql.select_by_position`)
 
         Returns
         -------
-            df : pandas.DataFrame
-                created frame
+        df : pandas.DataFrame
+            created frame
+
         """
         # list all
         tab_m = self.table_manager(table)
