@@ -80,11 +80,11 @@ lint-warnings = "pylint src/*/*.py --exit-zero"
 black = "black ."
 isort = "isort ."
 format = ["black", "isort"]
-docs = { "shell" = "cd doc; make html" }
-docs-view = { "shell" = "cd doc; make view" }
-docs-server = { "shell" = "cd doc; make server" }
-docs-clean = { "shell" = "cd doc; make clean" }
-docs-cleanall = { "shell" = "cd doc; make cleanall" }
+docs = { "shell" = "cd docs; make html" }
+docs-view = { "shell" = "cd docs; make view" }
+docs-server = { "shell" = "cd docs; make server" }
+docs-clean = { "shell" = "cd docs; make clean" }
+docs-cleanall = { "shell" = "cd docs; make cleanall" }
 
 [tool.pytest.ini_options]
 addopts = [
