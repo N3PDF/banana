@@ -189,7 +189,7 @@ class NavigatorApp(abc.ABC):
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
             obj["ctime"] = (
                 pendulum.duration(
-                    seconds=(dt.datetime.now() - el["ctime"]).total_seconds()
+                    seconds=(dt.datetime.utcnow() - el["ctime"]).total_seconds()
                 )
                 .in_words(separator="@")
                 .split("@")[0]
