@@ -126,6 +126,26 @@ class NavigatorApp(abc.ABC):
         """
         return self.table_manager(table).get(doc_id)
 
+    def get_by_log(self, table, log_id):
+        """Get card related to given log.
+
+        Parameters
+        ----------
+        table : str
+            table identifier (of the table from which to get the final card)
+        log_id : int or str
+            document identifier of the chosen log, see :meth:`get`
+
+        Returns
+        -------
+        dict
+            the retrieved document
+
+        """
+        log = self.table_manager(l).get(log_id)
+
+        return self.table_manager(table).get(log[f"{table[0]}_hash"])
+
     def get_all(self, table):
         """Get full table.
 
