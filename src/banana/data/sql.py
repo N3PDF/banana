@@ -169,7 +169,7 @@ class UIDError(RetrieveError):
     objects = "pids"
 
 
-def select_hash(session, table_object, hash_partial):
+def select_by_hash(session, table_object, hash_partial):
     """Find a record by its partial hash.
 
     The hash provided is considered to be the first ``len(hash_partial)``
@@ -207,7 +207,7 @@ def select_hash(session, table_object, hash_partial):
     return deserialize(available[0])
 
 
-def select_uid(session, table_object, uid):
+def select_by_uid(session, table_object, uid):
     """Find a record by its uid (unique identifier).
 
     Parameters
@@ -235,7 +235,7 @@ def select_uid(session, table_object, uid):
     return deserialize(available[0])
 
 
-def select_pos(session, table_object, pos):
+def select_by_position(session, table_object, pos):
     """Find a record by its position.
 
     Negative values are supported, and used as positions from the end (exact
