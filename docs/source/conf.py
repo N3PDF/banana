@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -109,8 +110,10 @@ autosectionlabel_prefix_document = True
 # Thanks https://github.com/bskinn/sphobjinv
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "sqlalchemy": ("https://docs.sqlalchemy.org/en/14/", None),
 }
 
 # -- Options for todo extension ----------------------------------------------
