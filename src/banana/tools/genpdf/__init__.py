@@ -6,7 +6,7 @@ import shutil
 import numpy as np
 from eko import basis_rotation as br
 
-from ... import toy
+from .. import toy
 from . import export, flavors, load
 
 

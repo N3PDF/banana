@@ -4,8 +4,7 @@ import pytest
 from eko import basis_rotation as br
 from utils import cd, test_pdf
 
-from banana import toy
-from banana.tools import genpdf
+from banana.tools import genpdf, toy
 from banana.utils import lhapdf_path
 
 # try:

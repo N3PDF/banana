@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from banana import toy
+from banana.tools import toy
 
 pdf = toy.mkPDF("", 0)
 

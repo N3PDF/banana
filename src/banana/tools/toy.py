@@ -30,10 +30,10 @@ class toyPDF:
         bdb = 6e0
         fs = 0.2e0
 
-        xuv = lambda x: N_uv * x ** auv * (1e0 - x) ** buv
-        xdv = lambda x: N_dv * x ** adv * (1e0 - x) ** bdv
-        xg = lambda x: N_g * x ** ag * (1e0 - x) ** bg
-        xdbar = lambda x: N_db * x ** adb * (1e0 - x) ** bdb
+        xuv = lambda x: N_uv * x**auv * (1e0 - x) ** buv
+        xdv = lambda x: N_dv * x**adv * (1e0 - x) ** bdv
+        xg = lambda x: N_g * x**ag * (1e0 - x) ** bg
+        xdbar = lambda x: N_db * x**adb * (1e0 - x) ** bdb
         xubar = lambda x: xdbar(x) * (1e0 - x)
         xs = lambda x: fs * (xdbar(x) + xubar(x))
         xsbar = xs
@@ -100,7 +100,7 @@ class toyPDF:
 
     def alphasQ(self, q):
         "Return alpha_s at q"
-        return self.alphasQ2(q ** 2)
+        return self.alphasQ2(q**2)
 
     def alphasQ2(self, _q2):
         "Return alpha_s at q2"
