@@ -370,9 +370,13 @@ class NavigatorApp(abc.ABC):
                 raise ValueError("Cannot compare tables with different (x, Q2)")
 
             # subtract and propagate
-            known_col_set = set(
-                ["x", "Q2", self.myname, f"{self.myname}_error", "percent_error"]
-            )
+            known_col_set = {
+                "x",
+                "Q2",
+                self.myname,
+                f"{self.myname}_error",
+                "percent_error",
+            }
             t1_ext = list(set(table1.keys()) - known_col_set)[0]
             t2_ext = list(set(table2.keys()) - known_col_set)[0]
             if t1_ext == t2_ext:
@@ -495,8 +499,5 @@ class NavigatorApp(abc.ABC):
         return cdfd
 
     def execute_runner(self, runner_name="sandbox"):
-        sys.path.insert(0, str(self.cfg["dir"] / "runners"))
-        runner = importlib.import_module(runner_name)
-        sys.path.pop(0)
-
-        runner.main()
+        """Execute a benchmark script"""
+        raise NotImplementedError("This has never worked, and it's not working now.")
