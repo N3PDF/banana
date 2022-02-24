@@ -100,7 +100,7 @@ def load(path):
 
     """
     cfg = {}
-    with open(path, "r") as o:
+    with open(path, "r", encoding="utf-8") as o:
         cfg = yaml.safe_load(o)
 
     try:
@@ -110,8 +110,9 @@ def load(path):
     except KeyError:
         root = pathlib.Path(path).parent
 
-    for name, path in cfg["paths"]:
-        path = pathlib.Path(path)
-        cfg["paths"][name] = path if path.is_absolute() else root / path
+    # convert loaded paths to pathlib.Path instances
+    for name, lpath in cfg["paths"]:
+        lpath = pathlib.Path(lpath)
+        cfg["paths"][name] = lpath if lpath.is_absolute() else root / lpath
 
     return cfg

@@ -76,7 +76,7 @@ def launch_navigator(imports=None, cfg_path=None, skip_cfg=False, pylab=True):
 
     # update ipython configurations to add custom banner
     c = loader.Config()
-    banner = f"""
+    banner = """
         Welcome to banana's benchmark navigator!
         call yelp() or h() for a brief overview.
         """
