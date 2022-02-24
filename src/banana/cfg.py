@@ -6,13 +6,15 @@ Moreover, the actual loaded configurations are stored in the module variable
 :data:`cfg`, that is used as the source of truth for them.
 
 """
-import appdirs
 import pathlib
 
+import appdirs
 import yaml
 
 cfg = None
 "Global store for configurations"
+
+default = {}
 
 name = "banana.yaml"
 "Configurations file conventional name"
@@ -72,6 +74,20 @@ def detect(path=None):
 def load(path):
     """Load configurations.
 
+    Load everything as a dictionary.
+    Determines `root` from the loaded dictionary:
+
+    - if the key `root` is found in the configuration file, it is treated as an
+      absolute path, or a relative one (relative to the configuration file
+      parent folder)
+    - otherwise `root` is assigned to the configuration file parent folder
+      itself
+
+    For the section `"path"`, all paths are converted to :class:`pathlib.Path`
+    type, and (if not absolute) they are considered to be relative to `root`.
+
+    No other conversion is performed.
+
     Parameters
     ----------
     path: str or os.PathLike
@@ -83,7 +99,19 @@ def load(path):
         loaded configurations
 
     """
-    with open(path) as fd:
-        configs = yaml.safe_load(fd)
+    cfg = {}
+    with open(path, "r") as o:
+        cfg = yaml.safe_load(o)
 
-    return configs
+    try:
+        root = pathlib.Path(cfg["root"])
+        if not root.is_absolute():
+            root = pathlib.Path(path).parent / root
+    except KeyError:
+        root = pathlib.Path(path).parent
+
+    for name, path in cfg["paths"]:
+        path = pathlib.Path(path)
+        cfg["paths"][name] = path if path.is_absolute() else root / path
+
+    return cfg
