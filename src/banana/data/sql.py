@@ -201,7 +201,7 @@ def select_by_hash(session, table_object, hash_partial):
     # too much?
     if len(available) > 1:
         raise HashError("hash is not unique", [a.hash for a in available])
-    elif len(available) < 1:
+    if len(available) < 1:
         raise HashError("hash not found")
     # deserialize the thing
     return deserialize(available[0])
@@ -229,7 +229,7 @@ def select_by_uid(session, table_object, uid):
     # too much?
     if len(available) > 1:
         raise UIDError("uid is not unique", [a.hash for a in available])
-    elif len(available) < 1:
+    if len(available) < 1:
         raise UIDError("uid not found")
     # deserialize the thing
     return deserialize(available[0])
