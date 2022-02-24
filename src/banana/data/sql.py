@@ -2,8 +2,8 @@
 import copy
 import hashlib
 import pickle
-import numpy as np
 
+import numpy as np
 import pandas as pd
 import sqlalchemy.sql
 
@@ -11,8 +11,7 @@ from banana.data import dfdict
 
 
 def serialize(data):
-    """
-    Eventually turn some elements into their binary representation.
+    """Eventually turn some elements into their binary representation.
 
     Parameters
     ----------
@@ -23,6 +22,7 @@ def serialize(data):
     -------
     ndata : list
         improved data
+
     """
     blobbed_types = [list, dict, dfdict.DFdict, np.ndarray]
     sorted_data = dict(sorted(data.items()))
@@ -36,18 +36,18 @@ def serialize(data):
 
 
 def deserialize(data):
-    """
-    Undo the binary representation.
+    """Undo the binary representation.
 
     Parameters
     ----------
-        data : list
-            raw data
+    data : list
+        raw data
 
     Returns
     -------
-        obj : dict
-            composed object
+    obj : dict
+        composed object
+
     """
     obj = {}
     for f, el in data.__dict__.items():
@@ -63,8 +63,7 @@ def deserialize(data):
 
 
 def add_hash(record):
-    """
-    Add a hash value as last element to the record.
+    """Add a hash value as last element to the record.
 
     Parameters
     ----------
@@ -75,28 +74,29 @@ def add_hash(record):
     -------
     hashed_record : tuple
         data + hash
+
     """
     h = hashlib.sha256(pickle.dumps(record))
     return (*record, h.digest().hex())
 
 
 def prepare_records(base, updates):
-    """
-    Generate all records from the base.
+    """Generate all records from the base.
 
     Parameters
     ----------
-        base : dict
-            base record
-        updates : dict
-            update directives
+    base : dict
+        base record
+    updates : dict
+        update directives
 
     Returns
     -------
-        documents : list(dict)
-            list of all dictionaries
-        rf : RecordsFrame
-            all records ready for insertion
+    documents : list(dict)
+        list of all dictionaries
+    df : pandas.DataFrame
+        all records ready for insertion
+
     """
     records = []
     documents = []
@@ -113,17 +113,17 @@ def prepare_records(base, updates):
 
 
 def insertmany(session, table, df):
-    """
-    Insert all records into the DB.
+    """Insert all records into the DB.
 
     Parameters
     ----------
-    session : sqlalchemy.session.Session
+    session : sqlalchemy.orm.session.Session
         database
-    table : sqlalchemy.types.Type
+    table : sqlalchemy.schema.Table
         target table
     df : pandas.DataFrame
         dataframe all records
+
     """
     session.bulk_insert_mappings(table, df.to_dict(orient="records"))
     # TODO: do we want to commit here or somewhere else?
@@ -131,18 +131,18 @@ def insertmany(session, table, df):
 
 
 def insertnew(session, table, df):
-    """
-    Insert all records that do not exist yet (determined by hash).
+    """Insert all records that do not exist yet (determined by hash).
 
 
     Parameters
     ----------
-    session : sqlalchemy.session.Session
+    session : sqlalchemy.orm.session.Session
         database
-    table : sqlalchemy.types.Type
+    table : sqlalchemy.schema.Table
         target table
     df : pandas.DataFrame
         dataframe all records
+
     """
     # TODO: why the hash field is a 1-tuple?
     hashes = [h[0] for h in session.query(table.hash).all()]
@@ -150,24 +150,36 @@ def insertnew(session, table, df):
     insertmany(session, table, new_records)
 
 
-class HashError(KeyError):
-    def __init__(self, descr, hashes=None):
-        if hashes is not None:
-            msg = "the following hashes have been found:"
-            msg += "\n- " + "\n- ".join(hashes) + "\n"
+class RetrieveError(KeyError):
+    objects = None
+
+    def __init__(self, descr, objs=None):
+        if objs is not None:
+            msg = "the following {self.objects} have been found:"
+            msg += "\n- " + "\n- ".join(objs) + "\n"
             print(msg)
         super().__init__(descr)
 
 
+class HashError(RetrieveError):
+    objects = "hashes"
+
+
+class UIDError(RetrieveError):
+    objects = "pids"
+
+
 def select_hash(session, table_object, hash_partial):
-    """
-    Find a record by its hash.
+    """Find a record by its partial hash.
+
+    The hash provided is considered to be the first ``len(hash_partial)``
+    carachters of a full hash in the table.
 
     Parameters
     ----------
     session : sqlalchemy.orm.session.Session
         DB ORM session
-    table_object : sqlalchemy.ext.declarative.api.DeclarativeMeta
+    table_object : sqlalchemy.schema.Table
         table object
     hash_partial : str
         hash identifier
@@ -176,6 +188,7 @@ def select_hash(session, table_object, hash_partial):
     -------
     dict
         record
+
     """
     available = (
         session.query(table_object)
@@ -194,21 +207,78 @@ def select_hash(session, table_object, hash_partial):
     return deserialize(available[0])
 
 
-def select_all(session, table_object):
-    """
-    Collect all records.
+def select_uid(session, table_object, uid):
+    """Find a record by its uid (unique identifier).
 
     Parameters
     ----------
     session : sqlalchemy.orm.session.Session
         DB ORM session
-    table_object : sqlalchemy.ext.declarative.api.DeclarativeMeta
+    table_object : sqlalchemy.schema.Table
+        table object
+    hash_partial : str
+        hash identifier
+
+    Returns
+    -------
+    dict
+        record
+
+    """
+    available = session.query(table_object).filter(table_object.uid == uid).all()
+    # too much?
+    if len(available) > 1:
+        raise UIDError("uid is not unique", [a.hash for a in available])
+    elif len(available) < 1:
+        raise UIDError("uid not found")
+    # deserialize the thing
+    return deserialize(available[0])
+
+
+def select_pos(session, table_object, pos):
+    """Find a record by its position.
+
+    Negative values are supported, and used as positions from the end (exact
+    same logic of python :class:`list`).
+
+    Note
+    ----
+    This is more expensive than using :func:`select_uid`, since the whole table
+    is retrieved, and only after a single member is selected.
+
+    Parameters
+    ----------
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.schema.Table
+        table object
+    hash_partial : str
+        hash identifier
+
+    Returns
+    -------
+    dict
+        record
+
+    """
+    return deserialize(session.query(table_object).all()[pos])
+
+
+def select_all(session, table_object):
+    """Collect all records.
+
+    Parameters
+    ----------
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.schema.Table
         table object
 
     Returns
     -------
     list(dict)
         list of records
+
     """
     available = session.query(table_object).all()
     return [deserialize(a) for a in available]
