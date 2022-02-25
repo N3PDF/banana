@@ -1,29 +1,15 @@
 # -*- coding: utf-8 -*-
-import numpy as np
-import pytest
-
 from banana import navigator
 
 
 class FakeApp(navigator.navigator.NavigatorApp):
-    def is_valid_physical_object(name):
+    def is_valid_physical_object(_name):
         return True
 
 
-@pytest.fixture
-def banana_cfg(fs):
-    fs.create_file("/tmp/input.json")
-    fs.create_file("/tmp/output.json")
-    cfg = {
-        "database_path": f"/tmp/benchmark-{int(np.random.rand() * 1e6)}.db",
-        "input_tables": ["theories", "cache"],
-    }
-    return cfg
-
-
-def test_register(banana_cfg):
+def test_register(banana_yaml):
     mod = {}
-    navigator.register_globals(mod, FakeApp(banana_cfg, "test"))
+    navigator.register_globals(mod, FakeApp(banana_yaml, "test"))
     for n in ["t", "ls", "g"]:
         assert n in mod
 
