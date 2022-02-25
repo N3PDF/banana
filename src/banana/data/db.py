@@ -25,6 +25,7 @@ class MyBase:
     # https://stackoverflow.com/a/33532154/8653979
     ctime = Column(DateTime(), default=lambda: datetime.now(timezone.utc))
     mtime = Column(DateTime(), onupdate=lambda: datetime.now(timezone.utc))
+    atime = Column(DateTime(), onupdate=lambda: datetime.now(timezone.utc))
 
 
 Base = declarative_base(cls=MyBase)
