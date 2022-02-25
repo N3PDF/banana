@@ -29,9 +29,32 @@ class TableManager:
             print("Doing nothing.")
             return
 
+    def update_atime(self, records):
+        """Update access time for given records.
+
+        Parameters
+        ----------
+        records: list(dict)
+            records to update
+
+        """
+        sql.update_atime(
+            self.session, self.table_object, [rec["uid"] for rec in records]
+        )
+
     def all(self):
-        """Retrieve all entries"""
-        return sql.select_all(self.session, self.table_object)
+        """Retrieve all entries
+
+        Returns
+        -------
+        list(dict)
+            the retrieved entries
+
+        """
+        records = sql.select_all(self.session, self.table_object)
+        self.update_atime(records)
+
+        return records
 
     def get(self, hash_or_uid):
         """Retrieve an entry
@@ -44,14 +67,27 @@ class TableManager:
 
             - if positive: the `uid` of the record to retrieve
             - if negative: position from last
+
+        Returns
+        -------
+        dict
+            the retrieved entry
+
+        Raises
+        ------
+        sql.RetrieveError
+            if not a single entry corresponds to the give identifier (so both
+            for no entries and multiple entries)
+
         """
         if isinstance(hash_or_uid, str):
-            return sql.select_by_hash(self.session, self.table_object, hash_or_uid)
+            record = sql.select_by_hash(self.session, self.table_object, hash_or_uid)
+            return record
         elif isinstance(hash_or_uid, int):
             if hash_or_uid >= 0:
-                return sql.select_by_uid(self.session, self.table_object, hash_or_uid)
+                record = sql.select_by_uid(self.session, self.table_object, hash_or_uid)
             else:
-                return sql.select_by_position(
+                record = sql.select_by_position(
                     self.session, self.table_object, hash_or_uid
                 )
         else:
@@ -59,3 +95,6 @@ class TableManager:
                 "The key passed do not correspond nor to partial hash,"
                 " neither to an uid."
             )
+
+        self.update_atime([record])
+        return record
