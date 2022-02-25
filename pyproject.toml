@@ -75,7 +75,9 @@ dirty = true
 files = ["src/banana/__init__.py"]
 
 [tool.poe.tasks]
+coverage = "$BROWSER htmlcov/index.html"
 test = "pytest tests"
+test-cov = ["test", "coverage"]
 lint = "pylint src/*/*.py -E"
 lint-warnings = "pylint src/*/*.py --exit-zero"
 black = "black ."
