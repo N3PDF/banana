@@ -24,4 +24,4 @@ def banana_yaml(db):
     }
     conf.write_text(yaml.dump(content), encoding="utf-8")
     yield conf
-    conf.unlink()
+    conf.unlink(missing_ok=True)
