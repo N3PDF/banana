@@ -17,24 +17,36 @@ to implement the remaining logic.
 
 The benchmarking procedure can be separated into several steps:
 
-1. :doc:`Preparation of the setup <setup>`
-2. :doc:`Running our own implementation and the external benchmark program <running>`
-3. :doc:`post-process`
+1. :doc:`Preparation of the setup <benchmarks/setup>`
+2. :doc:`Running our own implementation and the external benchmark program <benchmarks/running>`
+3. :doc:`navigator`
 
 
-In addition we provide a list of :doc:`tools`.
+In addition we provide a list of :doc:`tools/overview`.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Benchmarks:
    :hidden:
 
-   Database <db>
-   Setup <setup>
-   Running <running>
-   Post-process <post-process>
+   benchmarks/db
+   benchmarks/setup
+   benchmarks/running
 
-   Tools <tools>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tools:
+   :hidden:
+
+   tools/overview
+   tools/toy
+   tools/genpdf
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Internals:
+   :hidden:
 
    API <modules/banana/banana>
    TODOs <development/code_todos>

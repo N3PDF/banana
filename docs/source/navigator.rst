@@ -1,5 +1,5 @@
-Post-process and Analysis
-=========================
+Navigator
+=========
 
 
 - a **navigator**, able to display the content of both the *input database*,
