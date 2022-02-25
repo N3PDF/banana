@@ -62,18 +62,17 @@ def get_pdf(pdf_name, full_set=False):
 
 
 def pdf_name(pdf):
-    """
-    Get the PDF set name
+    """Get the PDF set name
 
-    Paramters
-    ---------
-        pdf: list(lhapdf_type), lhapdf_type
-            pdf object or list
+    Parameters
+    ----------
+    pdf: list(lhapdf_type), lhapdf_type
+        pdf object or list
 
     Returns
     -------
-        pdf_name: str
-            PDF set name
+    pdf_name: str
+        PDF set name
 
     """
     if isinstance(pdf, Iterable):
