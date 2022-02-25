@@ -29,6 +29,7 @@ In addition we provide a list of :doc:`tools/overview`.
    :caption: Benchmarks:
    :hidden:
 
+   benchmarks/overview
    benchmarks/db
    benchmarks/setup
    benchmarks/running

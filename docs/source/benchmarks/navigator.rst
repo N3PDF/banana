@@ -52,6 +52,13 @@ the following properties:
 - its position from the end of the table (so the last element inserted
   corresponds to ``-1``, and the previous one to ``-2``)
 
+Configurations
+~~~~~~~~~~~~~~
+
+In order to locate the database, and to provide useful information (e.g. on the
+tables) the same :ref:`configuration file<configs>` used for benchmarks is also
+read by the navigator.
+
 Frequently used tools
 ---------------------
 
@@ -61,7 +68,7 @@ In order to retrieve element from a given table use::
 
 ``table`` is a table identifier, that is any long enough string to describe the
 name of the tale (more or less like ``hash``, but usually is only needed a
-unique letter), and `id` is a :ref:`row identifier <row-id>`.
+unique letter), and ``id`` is a :ref:`row identifier <row-id>`.
 
 To retrieve the list of elements in a table run::
 
