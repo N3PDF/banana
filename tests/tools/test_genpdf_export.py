@@ -8,10 +8,6 @@ from utils import cd, test_pdf
 from banana.tools import genpdf
 from banana.utils import lhapdf_path
 
-# try:
-#     import lhapdf
-# except ImportError:
-#     pytest.skip("No LHAPDF interface around", allow_module_level=True)
 # TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
 

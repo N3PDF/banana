@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import pytest
 from click.testing import CliRunner
 from utils import test_pdf
@@ -7,10 +6,6 @@ from utils import test_pdf
 from banana.tools.genpdf.cli import cli
 from banana.utils import lhapdf_path
 
-# try:
-#     import lhapdf
-# except ImportError:
-#     pytest.skip("No LHAPDF interface around", allow_module_level=True)
 # TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
 

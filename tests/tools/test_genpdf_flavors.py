@@ -7,6 +7,7 @@ from utils import cd, test_pdf
 from banana.tools import genpdf
 from banana.utils import lhapdf_path
 
+# TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
 
 
