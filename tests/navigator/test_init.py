@@ -10,7 +10,7 @@ class FakeApp(navigator.navigator.NavigatorApp):
 def test_register(banana_yaml):
     mod = {}
     navigator.register_globals(mod, FakeApp(banana_yaml, "test"))
-    for n in ["t", "ls", "g"]:
+    for n in ["t", "ls", "g", "logs", "dfl", "diff", "simlogs"]:
         assert n in mod
 
 
