@@ -2,12 +2,13 @@
 import copy
 import hashlib
 import pickle
+from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
 import sqlalchemy.sql
 
-from banana.data import dfdict
+from . import dfdict
 
 
 def serialize(data):
@@ -282,3 +283,22 @@ def select_all(session, table_object):
     """
     available = session.query(table_object).all()
     return [deserialize(a) for a in available]
+
+
+def update_atime(session, table_object, uids):
+    """Update rows time to now.
+
+    Parameters
+    ----------
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.schema.Table
+        table object
+    uids : list(int)
+        unique identifiers of rows to update
+
+
+    """
+    for row in session.query(table_object).filter(table_object.uid in uids):
+        row.atime = datetime.now(timezone.utc)
+    session.commit()
