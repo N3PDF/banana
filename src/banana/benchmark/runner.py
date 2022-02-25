@@ -17,7 +17,7 @@ import sqlalchemy.ext
 import sqlalchemy.orm
 
 from .. import cfg
-from ..data import db, dfdict, theories
+from ..data import db, dfdict, sql, theories
 from ..tools import toy
 
 
@@ -368,7 +368,9 @@ class BenchmarkRunner:
             print(f"\nLog added, hash={log_hash}\n")
         except sqlalchemy.exc.IntegrityError:
             session.rollback()
-            # TODO update atime
+            sql.update_atime(
+                session, db.Log, [sql.select_by_hash(session, db.Log, log_hash)["uid"]]
+            )
             print(f"\nLog already present, hash={log_hash}\n")
         return log_record
 
