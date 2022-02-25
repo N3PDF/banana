@@ -19,7 +19,7 @@ The benchmarking procedure can be separated into several steps:
 
 1. :doc:`Preparation of the setup <benchmarks/setup>`
 2. :doc:`Running our own implementation and the external benchmark program <benchmarks/running>`
-3. :doc:`navigator`
+3. :doc:`benchmarks/navigator`
 
 
 In addition we provide a list of :doc:`tools/overview`.
@@ -32,6 +32,7 @@ In addition we provide a list of :doc:`tools/overview`.
    benchmarks/db
    benchmarks/setup
    benchmarks/running
+   benchmarks/navigator
 
 
 .. toctree::

@@ -1,10 +1,5 @@
-Tools
-=====
-
-Extra tools shipped as |CLI| with banana.
-
 genpdf
-------
+======
 
 We provide also a console script called ``genpdf`` that is able
 to generate and install a custom |PDF| set in the `lhapdf` format.
@@ -48,7 +43,7 @@ such as generating a |PDF| with a custom function for every |pid|
 flavors - see :mod:`here <banana.data.genpdf>` for details.
 
 Examples
-""""""""
+--------
 
 .. code-block:: bash
 
