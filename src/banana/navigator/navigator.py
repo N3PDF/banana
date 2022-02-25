@@ -8,6 +8,7 @@ import pandas as pd
 import pendulum
 import sqlalchemy.orm
 
+from .. import cfg
 from ..data import db, dfdict
 from . import table_manager as tm
 
@@ -36,14 +37,14 @@ class NavigatorApp(abc.ABC):
     table_objects = table_objects
     hash_len = 6
 
-    def __init__(self, banana_cfg, external=None):
-        self.cfg = banana_cfg
+    def __init__(self, cfgpath, external=None):
+        self.cfg = cfg.load(cfgpath)
         self.external = external
-        db_path = self.cfg["database_path"]
+        db_path = self.cfg["paths"]["database"]
         self.session = sqlalchemy.orm.sessionmaker(db.engine(db_path))()
         # read input
         self.input_tables = {}
-        for table in self.cfg["input_tables"]:
+        for table in self.cfg["input"]["tables"]:
             self.input_tables[table] = tm.TableManager(
                 self.session, self.table_objects[table[0]]
             )

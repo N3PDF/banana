@@ -111,7 +111,7 @@ def load(path):
         root = pathlib.Path(path).parent
 
     # convert loaded paths to pathlib.Path instances
-    for name, lpath in cfg["paths"]:
+    for name, lpath in cfg["paths"].items():
         lpath = pathlib.Path(lpath)
         cfg["paths"][name] = lpath if lpath.is_absolute() else root / lpath
 
