@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..data import db, sql
+from ..data import sql
 
 
 class TableManager:
@@ -21,13 +21,45 @@ class TableManager:
 
     def truncate(self):
         """Truncate all elements."""
-        # deny rest
-        if self.table_object != db.Log:
-            raise RuntimeError("only logs are allowed to be emptied by this interface!")
         # ask for confirmation
-        if input("Purge all logs? [y/n]") != "y":
+        if input("Purge all elements? [y/N]").lower() != "y":
             print("Doing nothing.")
-            return
+        else:
+            sql.truncate(self.session, self.table_object)
+
+    def remove(self, records):
+        """Remove given elements.
+
+        Parameters
+        ----------
+        records: list(str or int or dict)
+            records to remove, specified as:
+
+            - :class:`str`: partial hash
+            - :class:`int`, ``>=0``: uid
+            - :class:`int`, ``<0``: position from the end of the table
+            - :class:`dict`: the record itself
+
+        """
+        uids = []
+        for rec in records:
+            if isinstance(rec, str):
+                record = sql.select_by_hash(self.session, self.table_object, rec)
+                uid = record["uid"]
+            elif isinstance(rec, int) and rec >= 0:
+                uid = rec
+            elif isinstance(rec, int) and rec < 0:
+                record = sql.select_by_position(self.session, self.table_object, rec)
+                uid = record["uid"]
+            elif isinstance(rec, dict):
+                uid = rec["uid"]
+            else:
+                raise ValueError(
+                    f"The element {rec} can not be used to identify a record"
+                )
+            uids.append(uid)
+
+        sql.remove(self.session, self.table_object, uids)
 
     def update_atime(self, records):
         """Update access time for given records.
@@ -82,7 +114,6 @@ class TableManager:
         """
         if isinstance(hash_or_uid, str):
             record = sql.select_by_hash(self.session, self.table_object, hash_or_uid)
-            return record
         elif isinstance(hash_or_uid, int):
             if hash_or_uid >= 0:
                 record = sql.select_by_uid(self.session, self.table_object, hash_or_uid)
