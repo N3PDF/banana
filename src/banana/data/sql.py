@@ -286,7 +286,7 @@ def select_all(session, table_object):
 
 
 def update_atime(session, table_object, uids):
-    """Update rows time to now.
+    """Update rows access time to now.
 
     Parameters
     ----------
@@ -297,8 +297,39 @@ def update_atime(session, table_object, uids):
     uids : list(int)
         unique identifiers of rows to update
 
-
     """
     for row in session.query(table_object).filter(table_object.uid in uids):
         row.atime = datetime.now(timezone.utc)
+    session.commit()
+
+
+def truncate(session, table_object):
+    """Empty table.
+
+    Parameters
+    ----------
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.schema.Table
+        table object
+
+    """
+    session.query(table_object).all().delete()
+    session.commit()
+
+
+def remove(session, table_object, uids):
+    """Remove given rows from chosen table.
+
+    Parameters
+    ----------
+    session : sqlalchemy.orm.session.Session
+        DB ORM session
+    table_object : sqlalchemy.schema.Table
+        table object
+    uids : list(int)
+        unique identifiers of rows to delete
+
+    """
+    session.query(table_object).filter(table_object.uid in uids).delete()
     session.commit()
