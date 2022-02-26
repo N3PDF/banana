@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from contextlib import contextmanager
 
 
@@ -5,7 +6,7 @@ from contextlib import contextmanager
 def lhapdf_path(newdir):
     import lhapdf  # pylint: disable=import-error, import-outside-toplevel
 
-    paths = lhapdf.paths()
+    paths = lhapdf.paths().copy()
     lhapdf.pathsPrepend(str(newdir))
     try:
         yield
