@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 import sqlalchemy.sql
+from sqlalchemy.exc import SQLAlchemyError
 
 from . import dfdict
 
@@ -126,9 +127,12 @@ def insertmany(session, table, df):
         dataframe all records
 
     """
-    session.bulk_insert_mappings(table, df.to_dict(orient="records"))
-    # TODO: do we want to commit here or somewhere else?
-    session.commit()
+    try:
+        session.bulk_insert_mappings(table, df.to_dict(orient="records"))
+        # TODO: do we want to commit here or somewhere else?
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
 
 
 def insertnew(session, table, df):
@@ -298,9 +302,12 @@ def update_atime(session, table_object, uids):
         unique identifiers of rows to update
 
     """
-    for row in session.query(table_object).filter(table_object.uid in uids):
-        row.atime = datetime.now(timezone.utc)
-    session.commit()
+    try:
+        for row in session.query(table_object).filter(table_object.uid in uids):
+            row.atime = datetime.now(timezone.utc)
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
 
 
 def truncate(session, table_object):
@@ -314,8 +321,11 @@ def truncate(session, table_object):
         table object
 
     """
-    session.query(table_object).all().delete()
-    session.commit()
+    try:
+        session.query(table_object).all().delete()
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
 
 
 def remove(session, table_object, uids):
@@ -331,5 +341,8 @@ def remove(session, table_object, uids):
         unique identifiers of rows to delete
 
     """
-    session.query(table_object).filter(table_object.uid in uids).delete()
-    session.commit()
+    try:
+        session.query(table_object).filter(table_object.uid in uids).delete()
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
