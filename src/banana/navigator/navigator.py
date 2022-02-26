@@ -547,3 +547,32 @@ class NavigatorApp(abc.ABC):
                 cdfd[name] = dfd[name]
 
         return cdfd
+
+    def truncate(self, table):
+        """Empty chosen table
+
+        Parameters
+        ----------
+        table: str
+            table identifier
+
+        """
+        self.table_manager(table).truncate()
+
+    def remove(self, table, records):
+        """Remove chosen elements from given table
+
+        Parameters
+        ----------
+        table: str
+            table identifier
+        records: list(str or int or dict)
+            records to remove, specified as:
+
+            - :class:`str`: partial hash
+            - :class:`int`, ``>=0``: uid
+            - :class:`int`, ``<0``: position from the end of the table
+            - :class:`dict`: the record itself
+
+        """
+        self.table_manager(table).remove(records)
