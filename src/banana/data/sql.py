@@ -342,7 +342,7 @@ def remove(session, table_object, uids):
 
     """
     try:
-        session.query(table_object).filter(table_object.uid in uids).delete()
+        session.query(table_object).filter(table_object.uid.in_(uids)).delete()
         session.commit()
     except SQLAlchemyError:
         session.rollback()
