@@ -1,18 +1,40 @@
 # -*- coding: utf-8 -*-
-import pytest
-import sqlalchemy.orm
+import pathlib
 
-from banana.data import db
+import pytest
+import sqlalchemy
+import sqlalchemy.orm
+import yaml
+from sqlalchemy.ext.declarative import declarative_base
+
+
+class MyBase:
+    uid = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, unique=True)
+
+
+Base = declarative_base(cls=MyBase)
+
+
+class Ciao(Base):
+    __tablename__ = "ciao"
+    name = sqlalchemy.Column(sqlalchemy.String)
+
+
+@pytest.fixture
+def tab_ciao():
+    yield Ciao
 
 
 @pytest.fixture
 def dbsession(banana_yaml):
     "Setup banana database"
-    db_path = banana_yaml["paths"]["database"]
-    engine = db.engine(db_path)
-    db.create_db(db.Base, engine)
-    db.Base.metadata.bind = engine
-    session = sqlalchemy.orm.sessionmaker(bind=engine)()
-    yield session
-    session.close()
-    db_path.unlink()
+    db_path = yaml.safe_load(banana_yaml.read_text())["paths"]["database"]
+
+    engine = sqlalchemy.create_engine(f"sqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+    Base.metadata.bind = engine
+
+    with sqlalchemy.orm.Session(bind=engine) as session:
+        yield session
+
+    pathlib.Path(db_path).unlink()

@@ -9,25 +9,29 @@ import yaml
 
 
 @pytest.fixture
-def dbpath():
+def datapath():
     path = (
         pathlib.Path.cwd() / f"data{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
     )
     path.mkdir(parents=True)
+
     yield path
+
     shutil.rmtree(path)
 
 
 @pytest.fixture
-def banana_yaml(dbpath):
+def banana_yaml(datapath):
     conf = pathlib.Path.cwd() / "banana.yaml"
     content = {
-        "paths": {"database": str(dbpath.absolute())},
+        "paths": {"database": str(datapath.absolute()) + "/benchmark.db"},
         "input": {"tables": ["theories"]},
         "output": {"tables": ["cache"]},
     }
     conf.write_text(yaml.dump(content), encoding="utf-8")
+
     yield conf
+
     conf.unlink(missing_ok=True)
 
 
