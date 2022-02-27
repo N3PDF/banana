@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import pathlib
 import shutil
 import sys
@@ -8,18 +9,20 @@ import yaml
 
 
 @pytest.fixture
-def db():
-    path = pathlib.Path.cwd() / "data"
+def dbpath():
+    path = (
+        pathlib.Path.cwd() / f"data{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+    )
     path.mkdir(parents=True)
     yield path
     shutil.rmtree(path)
 
 
 @pytest.fixture
-def banana_yaml(db):
+def banana_yaml(dbpath):
     conf = pathlib.Path.cwd() / "banana.yaml"
     content = {
-        "paths": {"database": str(db.absolute())},
+        "paths": {"database": str(dbpath.absolute())},
         "input": {"tables": ["theories"]},
         "output": {"tables": ["cache"]},
     }
