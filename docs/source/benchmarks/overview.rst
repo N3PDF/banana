@@ -33,7 +33,7 @@ An example of a valid ``banana.yaml`` file is the following:
      root: benchmarks/
      # all relevant paths are in this section
      paths:
-        database: data/
+        database: data/benchmarks.db
 
      # input related configurations
      input:
