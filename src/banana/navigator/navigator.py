@@ -198,7 +198,9 @@ class NavigatorApp(abc.ABC):
             data.append(obj)
         # output
         df = pd.DataFrame(data)
-        df.set_index("uid", inplace=True)
+        # if empty, no column is present as well
+        if len(df) > 0:
+            df.set_index("uid", inplace=True)
         return df
 
     def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
