@@ -9,7 +9,7 @@ import yaml
 from sqlalchemy.ext.declarative import declarative_base
 
 from banana import navigator
-from banana.data import db
+from banana.data import db, dfdict
 from banana.navigator import table_manager as tm
 
 
@@ -119,6 +119,21 @@ class TestNavigatorApp:
         app.truncate("ciao")
         df = app.list_all("ciao")
         assert len(df) == 0
+
+    def test_load_dfd(self, dbsession, banana_yaml):
+        app = FakeNavApp(dbsession, banana_yaml, "test")
+
+        ciao, come = app.load_dfd("ciao", lambda _dfd: "come va")
+        assert ciao == "ciao"
+        assert come == "come va"
+
+        dfd = dfdict.DFdict()
+        id_, retdfd = app.load_dfd(dfd, lambda _dfd: "come va")
+        assert id_ == "not-an-id"
+        assert retdfd is dfd
+
+        with pytest.raises(ValueError, match="not found"):
+            _ = app.load_dfd("ciao", lambda _dfd: None)
 
 
 Base = declarative_base(cls=db.MyBase)
@@ -238,7 +253,6 @@ class TestNavigatorAppSchemeDependent:
         assert th["PTO"] == 31
 
     def test_as_dfd(self, banana_yaml, benchsession, benchnav):
-
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
@@ -272,3 +286,29 @@ class TestNavigatorAppSchemeDependent:
         assert "position=0" in log.text
         for field in ["theory", "obs", "PDF"]:
             assert field in log.text
+
+    def test_simlogs(self, banana_yaml, benchsession, benchnav):
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=31, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+
+            def newl(uid, th="abc", oh="def", pdf="NNPDF"):
+                return Log(
+                    uid=uid,
+                    t_hash=th,
+                    o_hash=oh,
+                    pdf=pdf,
+                    hash=str(uid),
+                    log=pickle.dumps(MyLog()),
+                )
+
+            benchsession.add_all([newl(5), newl(50), newl(55)])
+            benchsession.add(newl(4, th="alskdjflk"))
+            benchsession.add(newl(3, oh="lasdjflk"))
+            benchsession.add(newl(2, pdf="NNDPF"))
+
+        simlogs = benchnav.list_all_similar_logs(5)
+        assert len(simlogs) == 3
+        assert sorted(simlogs["hash"].values) == ["5", "50", "55"]
