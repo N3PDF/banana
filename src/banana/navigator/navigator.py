@@ -231,13 +231,13 @@ class NavigatorApp(abc.ABC):
         theories_df = pd.DataFrame(self.get_all(t))
         if len(theories_df) > 0:
             theories = theories_df[["hash"] + t_fields]
-            theories.rename(columns={"hash": "theory"})
+            theories = theories.rename(columns={"hash": "theory"})
         else:
             theories = theories_df
         ocards_df = pd.DataFrame(self.get_all(o))
         if len(theories_df) > 0:
             ocards = ocards_df[["hash"] + o_fields]
-            ocards.rename(columns={"hash": "ocard"})
+            ocards = ocards.rename(columns={"hash": "ocard"})
         else:
             ocards = ocards_df
 
