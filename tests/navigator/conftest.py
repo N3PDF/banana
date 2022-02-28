@@ -18,6 +18,7 @@ Base = declarative_base(cls=MyBase)
 class Ciao(Base):
     __tablename__ = "ciao"
     name = sqlalchemy.Column(sqlalchemy.String)
+    hash = sqlalchemy.Column(sqlalchemy.String)
 
 
 @pytest.fixture
