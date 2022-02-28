@@ -80,3 +80,34 @@ class TestNavigatorApp:
         app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
 
         assert app.table_manager("l") == app.logs
+
+    def test_delete(self, banana_yaml, dbsession, tab_ciao, monkeypatch):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
+
+        df = app.list_all("ciao")
+        assert len(df) == 0
+
+        with dbsession.begin():
+            newrecs = [
+                tab_ciao(uid=i, name="leorio", hash="abcdef123456789")
+                for i in range(10)
+            ]
+            dbsession.add_all(newrecs)
+
+        df = app.list_all("ciao")
+        assert len(df) == 10
+
+        app.remove("ciao", [0, 1])
+        df = app.list_all("ciao")
+        assert len(df) == 8
+
+        monkeypatch.setattr("builtins.input", lambda _: "n")
+        app.truncate("ciao")
+        df = app.list_all("ciao")
+        assert len(df) == 8
+
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+        app.truncate("ciao")
+        df = app.list_all("ciao")
+        assert len(df) == 0
