@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pathlib
+import pickle
 
 import pytest
 import sqlalchemy
@@ -138,6 +139,7 @@ class Cache(Base):
     t_hash = sqlalchemy.Column(sqlalchemy.String(64))
     o_hash = sqlalchemy.Column(sqlalchemy.String(64))
     pdf = sqlalchemy.Column(sqlalchemy.Text)
+    external = sqlalchemy.Column(sqlalchemy.Text)
     result = sqlalchemy.Column(sqlalchemy.Text)
 
 
@@ -188,6 +190,13 @@ def benchnav(banana_yaml):
     yield app
 
 
+class MyLog:
+    text = ""
+
+    def print(self, text, position=-1):
+        self.text += text + f"position={position}"
+
+
 class TestNavigatorAppSchemeDependent:
     def test_show_full_logs(self, banana_yaml, benchsession, benchnav):
         logs = benchnav.show_full_logs()
@@ -227,3 +236,39 @@ class TestNavigatorAppSchemeDependent:
 
         th = benchnav.get_by_log("t", "1234")
         assert th["PTO"] == 31
+
+    def test_as_dfd(self, banana_yaml, benchsession, benchnav):
+
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=31, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+            newc = Cache(
+                uid=17,
+                t_hash="abc",
+                o_hash="def",
+                pdf="NNPDF",
+                hash="123456789",
+                result=pickle.dumps({"table": [{"column": "value"}]}),
+                external="blub",
+            )
+            benchsession.add(newc)
+            newl = Log(
+                uid=17,
+                t_hash="abc",
+                o_hash="def",
+                pdf="NNDPF",
+                hash="9876654321",
+                log=pickle.dumps(MyLog()),
+            )
+            benchsession.add(newl)
+
+        cache = benchnav.cache_as_dfd("1234")
+        assert cache.external == "blub"
+        assert cache["table"]["column"][0] == "value"
+
+        log = benchnav.log_as_dfd("9876")
+        assert "position=0" in log.text
+        for field in ["theory", "obs", "PDF"]:
+            assert field in log.text
