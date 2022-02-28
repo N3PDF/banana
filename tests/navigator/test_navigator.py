@@ -31,19 +31,26 @@ class TestNavigatorApp:
         app.change_external("comeva")
         assert app.external == "comeva"
 
-    def test_get_all(self, banana_yaml, dbsession, tab_ciao):
+    def test_get(self, banana_yaml, dbsession, tab_ciao):
         tabman = tm.TableManager(dbsession, tab_ciao)
         app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
 
         recs = app.get_all("ciao")
         assert len(recs) == 0
 
+        newrec = tab_ciao(uid=42, name="leorio", hash="abcdef123456789")
         with dbsession.begin():
-            newrec = tab_ciao(uid=42, name="leorio", hash="abcdef123456789")
             dbsession.add(newrec)
         recs = app.get_all("ciao")
         assert len(recs) == 1
         assert isinstance(recs[0], dict)
+
+        rec = app.get("ciao", "a")
+        for key, value in rec.items():
+            if key != "atime":
+                assert value == getattr(newrec, key)
+            else:
+                assert value != getattr(newrec, key)
 
     def test_list_all(self, banana_yaml, dbsession, tab_ciao):
         tabman = tm.TableManager(dbsession, tab_ciao)
@@ -67,3 +74,9 @@ class TestNavigatorApp:
 
         with pytest.raises(ValueError):
             app.list_all("b")
+
+    def test_table_manager(self, banana_yaml, dbsession, tab_ciao):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
+
+        assert app.table_manager("l") == app.logs
