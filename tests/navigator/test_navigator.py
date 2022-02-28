@@ -213,3 +213,17 @@ class TestNavigatorAppSchemeDependent:
         assert logs["PTO"][17] == 7
         assert logs["process"][17] == 0
         assert logs["pdf"][17] == "NNPDF"
+
+    def test_get_by_log(self, banana_yaml, benchsession, benchnav):
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=31, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+            newl = Log(
+                uid=17, t_hash="abc", o_hash="def", pdf="NNPDF", hash="123456789"
+            )
+            benchsession.add(newl)
+
+        th = benchnav.get_by_log("t", "1234")
+        assert th["PTO"] == 31
