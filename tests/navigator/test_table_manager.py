@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
+import builtins
+import datetime
+
 import pytest
 
 from banana.navigator import table_manager as tm
 
 
-def make_len_asserter(session, tab):
-    def assert_len(length):
+def make_asserter(session, tab, fn):
+    def asserter(value, eq=True):
         with session.begin():
             available = session.query(tab).all()
-            assert len(available) == length
+            if eq:
+                assert fn(available) == value
+            else:
+                assert fn(available) != value
 
-    return assert_len
+    return asserter
 
 
 class TestTableManager:
@@ -23,7 +29,7 @@ class TestTableManager:
 
     def test_remove(self, dbsession, tab_ciao):
         tabman = tm.TableManager(dbsession, tab_ciao)
-        assert_len = make_len_asserter(dbsession, tab_ciao)
+        assert_len = make_asserter(dbsession, tab_ciao, builtins.len)
 
         assert_len(0)
 
@@ -41,7 +47,7 @@ class TestTableManager:
 
     def test_truncate(self, dbsession, tab_ciao, monkeypatch):
         tabman = tm.TableManager(dbsession, tab_ciao)
-        assert_len = make_len_asserter(dbsession, tab_ciao)
+        assert_len = make_asserter(dbsession, tab_ciao, builtins.len)
 
         assert_len(0)
 
@@ -60,3 +66,19 @@ class TestTableManager:
         monkeypatch.setattr("builtins.input", lambda _: "y")
         tabman.truncate()
         assert_len(0)
+
+    def test_update_atime(self, dbsession, tab_ciao):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        assert_atime = make_asserter(dbsession, tab_ciao, lambda a: a[0].atime)
+
+        millennium = datetime.datetime(2000, 1, 1, 00, 00, 00)
+        with dbsession.begin():
+            newrec = tab_ciao(
+                uid=42, name="leorio", hash="abcdef123456789", atime=millennium
+            )
+            dbsession.add(newrec)
+
+        assert_atime(millennium)
+
+        tabman.update_atime([dict(uid=42)])
+        assert_atime(millennium, eq=False)

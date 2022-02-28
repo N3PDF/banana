@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import pathlib
 
 import pytest
@@ -19,6 +20,9 @@ class Ciao(Base):
     __tablename__ = "ciao"
     name = sqlalchemy.Column(sqlalchemy.String)
     hash = sqlalchemy.Column(sqlalchemy.String)
+    atime = sqlalchemy.Column(
+        sqlalchemy.DateTime(), default=lambda: datetime.datetime.now()
+    )
 
 
 @pytest.fixture
