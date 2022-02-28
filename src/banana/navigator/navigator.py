@@ -554,7 +554,7 @@ class NavigatorApp(abc.ABC):
             raise ValueError("log didn't crash!")
 
         cdfd = {}
-        for name, df in dfd:
+        for name, df in dfd.items():
             if self.is_valid_physical_object(name):
                 cdfd[name] = f"{len(df)} points"
             else:

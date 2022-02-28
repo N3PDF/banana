@@ -26,6 +26,7 @@ class FakeNavApp(navigator.navigator.NavigatorApp):
     def fill_ciao(self, theo, obj):
         obj["name"] = theo["name"]
 
+    @staticmethod
     def is_valid_physical_object(_name):
         return True
 
@@ -178,8 +179,9 @@ class NavApp(navigator.navigator.NavigatorApp):
         obj["ocard"] = lg["o_hash"]
         obj["pdf"] = lg["pdf"]
 
-    def is_valid_physical_object(_name):
-        return True
+    @staticmethod
+    def is_valid_physical_object(name):
+        return name != "False"
 
 
 @pytest.fixture
@@ -205,7 +207,7 @@ def benchnav(banana_yaml):
     yield app
 
 
-class MyLog:
+class MyLog(dict):
     text = ""
 
     def print(self, text, position=-1):
@@ -312,3 +314,39 @@ class TestNavigatorAppSchemeDependent:
         simlogs = benchnav.list_all_similar_logs(5)
         assert len(simlogs) == 3
         assert sorted(simlogs["hash"].values) == ["5", "50", "55"]
+
+    def test_crashed(self, banana_yaml, benchsession, benchnav):
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=31, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+            working_log = MyLog()
+            newl = Log(
+                uid=16,
+                t_hash="abc",
+                o_hash="def",
+                pdf="NNPDF",
+                hash="16",
+                log=pickle.dumps(working_log),
+            )
+            benchsession.add(newl)
+            log = MyLog()
+            log["_crash"] = [1, 2, 3]
+            log["False"] = "This is going through"
+            newl = Log(
+                uid=17,
+                t_hash="abc",
+                o_hash="def",
+                pdf="NNPDF",
+                hash="17",
+                log=pickle.dumps(log),
+            )
+            benchsession.add(newl)
+
+        crash = benchnav.crashed_log(17)
+        assert crash["_crash"] == "3 points"  # len([1, 2, 3])
+        assert crash["False"] == "This is going through"
+
+        with pytest.raises(ValueError, match="didn't crash"):
+            benchnav.crashed_log(16)
