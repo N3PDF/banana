@@ -23,6 +23,28 @@ class FakeNavApp(navigator.navigator.NavigatorApp):
 
 
 class TestNavigatorApp:
+    def test_change_external(self, banana_yaml, dbsession):
+        app = FakeNavApp(dbsession, banana_yaml, "test")
+
+        assert app.external == "test"
+
+        app.change_external("comeva")
+        assert app.external == "comeva"
+
+    def test_get_all(self, banana_yaml, dbsession, tab_ciao):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
+
+        recs = app.get_all("ciao")
+        assert len(recs) == 0
+
+        with dbsession.begin():
+            newrec = tab_ciao(uid=42, name="leorio", hash="abcdef123456789")
+            dbsession.add(newrec)
+        recs = app.get_all("ciao")
+        assert len(recs) == 1
+        assert isinstance(recs[0], dict)
+
     def test_list_all(self, banana_yaml, dbsession, tab_ciao):
         tabman = tm.TableManager(dbsession, tab_ciao)
         app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
@@ -45,11 +67,3 @@ class TestNavigatorApp:
 
         with pytest.raises(ValueError):
             app.list_all("b")
-
-    #  def test_cm(self, banana_cfg):
-    #  app = FakeNavApp(banana_cfg, "test")
-    #  # identity
-    #  app.change_mode("test")
-    #  # non-exsistent mode
-    #  with pytest.raises(KeyError):
-    #  app.change_mode("bla")
