@@ -106,3 +106,30 @@ class TestTableManager:
         assert len(recs) == 10
         for i in range(10):
             assert recs[i] != millennium
+
+    def test_get(self, dbsession, tab_ciao):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        assert_len = make_asserter(dbsession, tab_ciao, builtins.len)
+        assert_atime = make_asserter(dbsession, tab_ciao, lambda a: a[0].atime)
+
+        assert_len(0)
+
+        millennium = datetime.datetime(2000, 1, 1, 00, 00, 00)
+        with dbsession.begin():
+            newrec = tab_ciao(
+                uid=42, name="leorio", hash="abcdef123456789", atime=millennium
+            )
+            dbsession.add(newrec)
+        assert_len(1)
+
+        for doc_id in (42, "abc", -1):
+            assert_len(1)
+
+            rec = tabman.get(doc_id)
+            assert rec["name"] == "leorio"
+            assert_atime(millennium, eq=False)
+
+        with pytest.raises(
+            ValueError, match="key passed .* not correspond .* partial hash.* uid"
+        ):
+            tabman.get([])
