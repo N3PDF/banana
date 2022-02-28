@@ -156,6 +156,11 @@ class NavApp(navigator.navigator.NavigatorApp):
             self.input_tables[tab.__tablename__] = tm.TableManager(self.session, tab)
         self.logs = tm.TableManager(self.session, Log)
 
+    def fill_logs(self, lg, obj):
+        obj["theory"] = lg["t_hash"]
+        obj["ocard"] = lg["o_hash"]
+        obj["pdf"] = lg["pdf"]
+
     def is_valid_physical_object(_name):
         return True
 
@@ -185,4 +190,26 @@ def benchnav(banana_yaml):
 
 class TestNavigatorAppSchemeDependent:
     def test_show_full_logs(self, banana_yaml, benchsession, benchnav):
-        benchnav.show_full_logs()
+        logs = benchnav.show_full_logs()
+
+        assert len(logs) == 0
+
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=7, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+            newl = Log(
+                uid=17, t_hash="abc", o_hash="def", pdf="NNPDF", hash="123456789"
+            )
+            benchsession.add(newl)
+
+        assert len(benchnav.get_all("theories")) == 1
+        assert len(benchnav.get_all("ocards")) == 1
+        assert len(benchnav.get_all("logs")) == 1
+
+        logs = benchnav.show_full_logs(["PTO"], ["process"])
+        assert len(logs) == 1
+        assert logs["PTO"][17] == 7
+        assert logs["process"][17] == 0
+        assert logs["pdf"][17] == "NNPDF"
