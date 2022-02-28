@@ -82,3 +82,27 @@ class TestTableManager:
 
         tabman.update_atime([dict(uid=42)])
         assert_atime(millennium, eq=False)
+
+    def test_all(self, dbsession, tab_ciao):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        assert_len = make_asserter(dbsession, tab_ciao, builtins.len)
+        assert_atime = make_asserter(dbsession, tab_ciao, lambda a: a[0].atime)
+
+        assert_len(0)
+
+        millennium = datetime.datetime(2000, 1, 1, 00, 00, 00)
+        with dbsession.begin():
+            newrecs = [
+                tab_ciao(
+                    uid=uid, name="leorio", hash="abcdef123456789", atime=millennium
+                )
+                for uid in range(10)
+            ]
+            dbsession.add_all(newrecs)
+        assert_len(10)
+        assert_atime(millennium)
+
+        recs = tabman.all()
+        assert len(recs) == 10
+        for i in range(10):
+            assert recs[i] != millennium
