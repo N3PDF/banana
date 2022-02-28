@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import pytest
+
 from banana import navigator
 from banana.navigator import table_manager as tm
 
@@ -21,24 +23,7 @@ class FakeNavApp(navigator.navigator.NavigatorApp):
 
 
 class TestNavigatorApp:
-    pass
-    #  def test_t(self, banana_cfg):
-    #  app = FakeNavApp(banana_cfg, "test")
-    #  df = app.list_all("t")
-    #  assert len(df) == 0
-    #  dt = datetime.datetime.now().isoformat()
-    #  write_input(banana_cfg, {"theories": {1: {"PTO": 0, "_created": dt}}})
-    #  df = app.list_all("t")
-    #  assert len(df) == 1
-    #  r = df.to_dict(orient="records")
-    #  assert r[0]["PTO"] == 0
-    #  assert r[0]["created"] == "just now"
-    #  r0 = app.get("t", 1)
-    #  assert r0.doc_id == 1
-    #  assert r0["PTO"] == 0
-    #  assert r0["_created"] == dt
-
-    def test_l(self, banana_yaml, dbsession, tab_ciao):
+    def test_list_all(self, banana_yaml, dbsession, tab_ciao):
         tabman = tm.TableManager(dbsession, tab_ciao)
         app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
 
@@ -51,10 +36,15 @@ class TestNavigatorApp:
         df = app.list_all("ciao")
         assert len(df) == 1
 
-    #  def test_tn(self, banana_cfg):
-    #  app = FakeNavApp(banana_cfg, "test")
-    #  with pytest.raises(ValueError):
-    #  app.list_all("b")
+    def test_table_name(self, banana_yaml, dbsession, tab_ciao):
+        tabman = tm.TableManager(dbsession, tab_ciao)
+        app = FakeNavApp(dbsession, banana_yaml, "test", extra_tables=dict(ciao=tabman))
+
+        assert app.table_name("l") == "logs"
+        assert app.table_name("c") == "ciao"
+
+        with pytest.raises(ValueError):
+            app.list_all("b")
 
     #  def test_cm(self, banana_cfg):
     #  app = FakeNavApp(banana_cfg, "test")
