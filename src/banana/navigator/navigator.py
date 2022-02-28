@@ -228,30 +228,42 @@ class NavigatorApp(abc.ABC):
             o_fields = []
 
         # collect external data
-        theories = pd.DataFrame(self.get_all(t))[["hash"] + t_fields]
-        theories.rename(columns={"hash": "theory"})
-        ocards = pd.DataFrame(self.get_all(o))[["hash"] + o_fields]
-        ocards.rename(columns={"hash": "ocard"})
+        theories_df = pd.DataFrame(self.get_all(t))
+        if len(theories_df) > 0:
+            theories = theories_df[["hash"] + t_fields]
+            theories.rename(columns={"hash": "theory"})
+        else:
+            theories = theories_df
+        ocards_df = pd.DataFrame(self.get_all(o))
+        if len(theories_df) > 0:
+            ocards = ocards_df[["hash"] + o_fields]
+            ocards.rename(columns={"hash": "ocard"})
+        else:
+            ocards = ocards_df
 
         # get my data and merge
         logs = self.list_all(l)
-        logs.reset_index(inplace=True)
-        new_logs = logs.merge(theories, on="theory").merge(ocards, on="ocard")
-        new_logs.set_index("uid", inplace=True)
+        if len(logs) > 0:
+            logs.reset_index(inplace=True)
+            if len(theories) > 0:
+                logs = logs.merge(theories, on="theory")
+            if len(ocards) > 0:
+                logs = logs.merge(ocards, on="ocard")
+            logs.set_index("uid", inplace=True)
 
-        # move ctime at the end
-        columns = new_logs.columns.tolist()
-        columns.remove("ctime")
-        new_logs = new_logs[columns + ["ctime"]]
+            # move ctime at the end
+            columns = logs.columns.tolist()
+            columns.remove("ctime")
+            logs = logs[columns + ["ctime"]]
 
-        # drop hashes, if not denied
-        if not keep_hashes:
-            new_logs = new_logs.drop(["theory", "ocard"], axis=1)
+            # drop hashes, if not denied
+            if not keep_hashes:
+                logs = logs.drop(["theory", "ocard"], axis=1)
 
-        # sort on uid
-        new_logs.sort_index(inplace=True)
+            # sort on uid
+            logs.sort_index(inplace=True)
 
-        return new_logs
+        return logs
 
     def cache_as_dfd(self, doc_id):
         """Load all structure functions in log as DataFrame
