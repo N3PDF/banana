@@ -322,7 +322,7 @@ def truncate(session, table_object):
 
     """
     try:
-        session.query(table_object).all().delete()
+        session.query(table_object).delete()
         session.commit()
     except SQLAlchemyError:
         session.rollback()
