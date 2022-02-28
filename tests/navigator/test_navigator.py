@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
+import pathlib
+
 import pytest
+import sqlalchemy
+import sqlalchemy.orm
+import yaml
+from sqlalchemy.ext.declarative import declarative_base
 
 from banana import navigator
+from banana.data import db
 from banana.navigator import table_manager as tm
 
 
@@ -111,3 +118,71 @@ class TestNavigatorApp:
         app.truncate("ciao")
         df = app.list_all("ciao")
         assert len(df) == 0
+
+
+Base = declarative_base(cls=db.MyBase)
+
+
+class Theory(Base):
+    __tablename__ = "theories"
+    PTO = sqlalchemy.Column(sqlalchemy.Integer)
+
+
+class OCard(Base):
+    __tablename__ = "ocards"
+    process = sqlalchemy.Column(sqlalchemy.Integer)
+
+
+class Cache(Base):
+    __tablename__ = "cache"
+    t_hash = sqlalchemy.Column(sqlalchemy.String(64))
+    o_hash = sqlalchemy.Column(sqlalchemy.String(64))
+    pdf = sqlalchemy.Column(sqlalchemy.Text)
+    result = sqlalchemy.Column(sqlalchemy.Text)
+
+
+class Log(Base):
+    __tablename__ = "logs"
+    t_hash = sqlalchemy.Column(sqlalchemy.String(64))
+    o_hash = sqlalchemy.Column(sqlalchemy.String(64))
+    pdf = sqlalchemy.Column(sqlalchemy.Text)
+    log = sqlalchemy.Column(sqlalchemy.Text)
+
+
+class NavApp(navigator.navigator.NavigatorApp):
+    def __init__(self, cfgpath, external=None):
+        super().__init__(cfgpath, external)
+        for tab in [Theory, OCard, Cache]:
+            self.input_tables[tab.__tablename__] = tm.TableManager(self.session, tab)
+        self.logs = tm.TableManager(self.session, Log)
+
+    def is_valid_physical_object(_name):
+        return True
+
+
+@pytest.fixture
+def benchsession(banana_yaml):
+    "Setup banana database (with benchmark scheme)"
+    db_path = yaml.safe_load(banana_yaml.read_text())["paths"]["database"]
+
+    engine = sqlalchemy.create_engine(f"sqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+    Base.metadata.bind = engine
+
+    with sqlalchemy.orm.Session(bind=engine) as session:
+        yield session
+
+    pathlib.Path(db_path).unlink()
+
+
+@pytest.fixture
+def benchnav(banana_yaml):
+    "Setup banana database (with benchmark scheme)"
+    app = NavApp(banana_yaml, "test")
+
+    yield app
+
+
+class TestNavigatorAppSchemeDependent:
+    def test_show_full_logs(self, banana_yaml, benchsession, benchnav):
+        benchnav.show_full_logs()
