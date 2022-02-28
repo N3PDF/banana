@@ -303,7 +303,7 @@ def update_atime(session, table_object, uids):
 
     """
     try:
-        for row in session.query(table_object).filter(table_object.uid in uids):
+        for row in session.query(table_object).filter(table_object.uid.in_(uids)):
             row.atime = datetime.now(timezone.utc)
         session.commit()
     except SQLAlchemyError:
