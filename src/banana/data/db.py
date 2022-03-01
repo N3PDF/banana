@@ -21,10 +21,9 @@ from sqlalchemy.ext.declarative import declarative_base
 class MyBase:
     uid = Column(Integer, primary_key=True, unique=True)
     hash = Column(String(64), unique=True)
-    # TODO: should we use `func.utcnow`?
-    # https://stackoverflow.com/a/33532154/8653979
     ctime = Column(DateTime(), default=lambda: datetime.now(timezone.utc))
     mtime = Column(DateTime(), onupdate=lambda: datetime.now(timezone.utc))
+    atime = Column(DateTime(), onupdate=lambda: datetime.now(timezone.utc))
 
 
 Base = declarative_base(cls=MyBase)

@@ -16,8 +16,9 @@ import rich.progress
 import sqlalchemy.ext
 import sqlalchemy.orm
 
-from .. import cfg, toy
-from ..data import db, dfdict, theories
+from .. import cfg
+from ..data import db, dfdict, sql, theories
+from ..tools import toy
 
 
 def get_pdf(pdf_name, full_set=False):
@@ -42,7 +43,7 @@ def get_pdf(pdf_name, full_set=False):
         if full_set:
             pdf = [pdf]
     else:
-        import lhapdf  # pylint:disable=import-outside-toplevel
+        import lhapdf  # pylint:disable=import-outside-toplevel,import-error
 
         # is the set installed? if not do it now
         if pdf_name not in lhapdf.availablePDFSets():
@@ -61,18 +62,17 @@ def get_pdf(pdf_name, full_set=False):
 
 
 def pdf_name(pdf):
-    """
-    Get the PDF set name
+    """Get the PDF set name
 
-    Paramters
-    ---------
-        pdf: list(lhapdf_type), lhapdf_type
-            pdf object or list
+    Parameters
+    ----------
+    pdf: list(lhapdf_type), lhapdf_type
+        pdf object or list
 
     Returns
     -------
-        pdf_name: str
-            PDF set name
+    pdf_name: str
+        PDF set name
 
     """
     if isinstance(pdf, Iterable):
@@ -104,7 +104,8 @@ class BenchmarkRunner:
     def __init__(self):
         self.banana_cfg = cfg.cfg
 
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def load_ocards(session, ocard_updates):
         """
         Load o-cards from the DB.
@@ -367,7 +368,9 @@ class BenchmarkRunner:
             print(f"\nLog added, hash={log_hash}\n")
         except sqlalchemy.exc.IntegrityError:
             session.rollback()
-            # TODO update atime
+            sql.update_atime(
+                session, db.Log, [sql.select_by_hash(session, db.Log, log_hash)["uid"]]
+            )
             print(f"\nLog already present, hash={log_hash}\n")
         return log_record
 

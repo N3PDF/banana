@@ -2,22 +2,27 @@
 def compare_dicts(
     d1, d2, exclude_underscored=False, key_width=20, value_width=30, exclude_keys=None
 ):
-    """
-    Check which entries of the two dictionaries are different, and output
-    the values.
+    """Compare similar dictionaries.
+
+    Check which entries of the two dictionaries are different, and output the
+    values.
 
     Parameters
     ----------
-        d1 : dict
-            first dict
-        d2 : dict
-            second dict
-        exclude_underscored : bool
-            skip keys prefixed with _?
-        key_width : int
-            print width of key
-        value_width : int
-            print width of values
+    d1 : dict
+        first dict
+    d2 : dict
+        second dict
+    exclude_underscored : bool
+        skip keys prefixed with _ (default: ``False``)
+    key_width : int
+        print width of key (default: ``20``)
+    value_width : int
+        print width of values (default: ``30``)
+    exclude_keys : None or list
+        if not ``None``, keys contained in this list do not take part in the
+        comparison
+
     """
     print("┌", "─" * (key_width + 2), "┬", "─" * (value_width * 2 + 1 + 2), "┐", sep="")
     for k in d1.keys() | d2.keys():

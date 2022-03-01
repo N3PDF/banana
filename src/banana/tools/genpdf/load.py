@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pathlib
 
 import numpy as np
@@ -5,9 +6,9 @@ import yaml
 
 here = pathlib.Path(__file__).parent
 # Expose the default template
-with open(here / "templatePDF.info", "r") as o:
+with open(here / "templatePDF.info", "r", encoding="utf-8") as o:
     template_info = yaml.safe_load(o)
-with open(here / "Toy.info", "r") as t:
+with open(here / "Toy.info", "r", encoding="utf-8") as t:
     Toy_info = yaml.safe_load(t)
 
 
@@ -28,7 +29,7 @@ def load_info_from_file(pdfset_name):
     import lhapdf  # pylint: disable=import-error, import-outside-toplevel
 
     src = pathlib.Path(lhapdf.paths()[0]) / pdfset_name
-    with open(src / ("%s.info" % (pdfset_name)), "r") as o:
+    with open(src / ("%s.info" % (pdfset_name)), "r", encoding="utf-8") as o:
         info = yaml.safe_load(o)
     return info
 
@@ -58,7 +59,9 @@ def load_blocks_from_file(pdfset_name, member):
     src = pathlib.Path(lhapdf.paths()[0]) / pdfset_name
     # read actual file
     cnt = []
-    with open(src / ("%s_%04d.dat" % (pdfset_name, pdf.memberID)), "r") as o:
+    with open(
+        src / ("%s_%04d.dat" % (pdfset_name, pdf.memberID)), "r", encoding="utf-8"
+    ) as o:
         cnt = o.readlines()
     # file head
     head = cnt[0]
@@ -76,7 +79,7 @@ def load_blocks_from_file(pdfset_name, member):
         for l in cnt[head_section + 4 : next_head_section]:
             elems = np.fromstring(l.strip(), sep=" ")
             data.append(elems)
-        Q2grid = [el*el for el in Qgrid]
+        Q2grid = [el * el for el in Qgrid]
         blocks.append(dict(xgrid=xgrid, Q2grid=Q2grid, pids=pids, data=np.array(data)))
         # iterate
         head_section = next_head_section

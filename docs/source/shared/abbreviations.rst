@@ -33,3 +33,8 @@
 
 .. |eko| replace::
    :eko:`\ `
+
+..  https://arxiv.org/abs/hep-ph/0508110
+.. |LHAPDF| raw:: html
+
+   <a href="https://lhapdf.hepforge.org/"><abbr title="Les Houches Accord PDFs">LHAPDF</abbr></a>

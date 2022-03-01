@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import io
 import pathlib
 import re
+
 import numpy as np
 import yaml
 
@@ -62,7 +64,7 @@ def dump_blocks(name, member, blocks, pdf_type=None):
 
     target = pathlib.Path(name) / ("%s_%04d.dat" % (name, member))
     target.parent.mkdir(exist_ok=True)
-    with open(target, "w") as o:
+    with open(target, "w", encoding="utf-8") as o:
         if pdf_type is None:
             if member == 0:
                 o.write("PdfType: central\n")
@@ -102,7 +104,7 @@ def dump_info(name, info):
     cnt = stream.getvalue()
     # now insert some newlines for each key
     new_cnt = re.sub(r", ([A-Za-z_]+):", r"\n\1:", cnt.strip()[1:-1])
-    with open(target, "w") as o:
+    with open(target, "w", encoding="utf-8") as o:
         o.write(new_cnt)
 
 

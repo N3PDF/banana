@@ -5,7 +5,6 @@ import rich
 import rich.box
 import rich.markdown
 import rich.panel
-from rich import style
 
 
 class DFdict(dict):
@@ -97,7 +96,7 @@ class DFdict(dict):
             if isinstance(msg, str):
                 if msg == "\n":
                     continue
-                elif msg in self:
+                if msg in self:
                     rich.print(file=file)
                     rich.print(
                         rich.panel.Panel.fit(

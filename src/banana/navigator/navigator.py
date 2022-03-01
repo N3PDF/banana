@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
 import datetime as dt
-import importlib
-import sys
 import textwrap
 
 import numpy as np
@@ -10,6 +8,7 @@ import pandas as pd
 import pendulum
 import sqlalchemy.orm
 
+from .. import cfg
 from ..data import db, dfdict
 from . import table_manager as tm
 
@@ -28,8 +27,8 @@ class NavigatorApp(abc.ABC):
 
     Parameters
     ----------
-        cfg : dict
-            banana configuration
+        cfgpath : dict
+            path to banana configuration
         external : string
             mode identifier
     """
@@ -38,14 +37,14 @@ class NavigatorApp(abc.ABC):
     table_objects = table_objects
     hash_len = 6
 
-    def __init__(self, banana_cfg, external=None):
-        self.cfg = banana_cfg
+    def __init__(self, cfgpath, external=None):
+        self.cfg = cfg.load(cfgpath)
         self.external = external
-        db_path = self.cfg["database_path"]
+        db_path = self.cfg["paths"]["database"]
         self.session = sqlalchemy.orm.sessionmaker(db.engine(db_path))()
         # read input
         self.input_tables = {}
-        for table in self.cfg["input_tables"]:
+        for table in self.cfg["input"]["tables"]:
             self.input_tables[table] = tm.TableManager(
                 self.session, self.table_objects[table[0]]
             )
@@ -85,18 +84,18 @@ class NavigatorApp(abc.ABC):
         raise ValueError(f"Unknown table {table_abbrev}")
 
     def table_manager(self, table):
-        """
-        Get corresponding TableManager
+        """Get corresponding TableManager
 
         Parameters
         ----------
-            table : str
-                table identifier
+        table : str
+            table identifier
 
         Returns
         -------
-            tm : yadmark.table_manager.TableManager
-                corresponding TableManager
+        tm : yadmark.table_manager.TableManager
+            corresponding TableManager
+
         """
         # logs?
         tn = self.table_name(table)
@@ -105,49 +104,84 @@ class NavigatorApp(abc.ABC):
         # input table
         return self.input_tables[tn]
 
-    def get(self, table, doc_id=None):
-        """
-        Getter wrapper.
+    def get(self, table, doc_id):
+        """Table getter wrapper.
 
         Parameters
         ----------
-            table : str
-                table identifier
-            doc_id : None or int
-                if given, retrieve single document
+        table : str
+            table identifier
+        doc_id : int or str
+            it can be: a :class:`str` interpreted as partial hash
+            (:func:`banana.data.sql.select_by_hash`), a non-negative
+            :class:`int` interpreted as the record unique identifier
+            (:func:`banana.data.sql.select_by_uid`), a negative :class:`int`
+            interpreted as record position
+            (:func:`banana.data.sql.select_by_position`)
 
         Returns
         -------
-            df : pandas.DataFrame
-                created frame
+        dict
+            the retrieved document
+
         """
-        # list all
-        tab_m = self.table_manager(table)
+        return self.table_manager(table).get(doc_id)
 
-        if doc_id is None:
-            return tab_m.all()
+    def get_by_log(self, table, log_id):
+        """Get card related to given log.
 
-        return tab_m.get(doc_id)
+        Parameters
+        ----------
+        table : str
+            table identifier (of the table from which to get the final card)
+        log_id : int or str
+            document identifier of the chosen log, see :meth:`get`
+
+        Returns
+        -------
+        dict
+            the retrieved document
+
+        """
+        log = self.table_manager(l).get(log_id)
+
+        return self.table_manager(table).get(log[f"{table[0]}_hash"])
+
+    def get_all(self, table):
+        """Get full table.
+
+        Parameters
+        ----------
+        table : str
+            table identifier
+
+        Returns
+        -------
+        list(dict)
+            the full list of documents in the table
+
+        """
+        return self.table_manager(table).all()
 
     def list_all(self, table, input_data=None):
-        """
-        List all elements in a nice table
+        """List all elements in a nice table
 
         Parameters
         ----------
-            table : string
-                table identifier
-            input_data : list
-                data to list
+        table : string
+            table identifier
+        input_data : list
+            data to list
 
         Returns
         -------
-            df : pandas.DataFrame
-                list
+        df : pandas.DataFrame
+            list
+
         """
         # collect
         if input_data is None:
-            input_data = self.get(table)
+            input_data = self.get_all(table)
         data = []
         for el in input_data:
             # obj = {"hash": el["hash"][:6]}
@@ -156,7 +190,7 @@ class NavigatorApp(abc.ABC):
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
             obj["ctime"] = (
                 pendulum.duration(
-                    seconds=(dt.datetime.now() - el["ctime"]).total_seconds()
+                    seconds=(dt.datetime.utcnow() - el["ctime"]).total_seconds()
                 )
                 .in_words(separator="@")
                 .split("@")[0]
@@ -164,66 +198,88 @@ class NavigatorApp(abc.ABC):
             data.append(obj)
         # output
         df = pd.DataFrame(data)
-        df.set_index("uid", inplace=True)
+        # if empty, no column is present as well
+        if len(df) > 0:
+            df.set_index("uid", inplace=True)
         return df
 
     def show_full_logs(self, t_fields=None, o_fields=None, keep_hashes=False):
-        """
-        Show additional, associated fields in the logs (JOIN).
+        """Show additional, associated fields in the logs (JOIN).
 
         Parameters
         ----------
-            t_fields : list
-                theory fields
-            o_fields : list
-                ocard fields
-            keep_hashes : boolean
-                display hashes?
+        t_fields : list
+            theory fields
+        o_fields : list
+            ocard fields
+        keep_hashes : boolean
+            display hashes?
 
         Returns
         -------
-            df : pandas.DataFrame
-                data frame
+        df : pandas.DataFrame
+            data frame
+
         """
         # apply some defaults
         if t_fields is None:
             t_fields = []
         if o_fields is None:
             o_fields = []
+
         # collect external data
-        theories = self.list_all(t)[t_fields]
-        theories["theory"] = self.list_all(t)["hash"]
-        ocards = self.list_all(o)[o_fields]
-        ocards["ocard"] = self.list_all(o)["hash"]
+        theories_df = pd.DataFrame(self.get_all(t))
+        if len(theories_df) > 0:
+            theories = theories_df[["hash"] + t_fields]
+            theories = theories.rename(columns={"hash": "theory"})
+        else:
+            theories = theories_df
+        ocards_df = pd.DataFrame(self.get_all(o))
+        if len(theories_df) > 0:
+            ocards = ocards_df[["hash"] + o_fields]
+            ocards = ocards.rename(columns={"hash": "ocard"})
+        else:
+            ocards = ocards_df
+
         # get my data and merge
         logs = self.list_all(l)
-        logs.reset_index(inplace=True)
-        new_logs = logs.merge(theories, on="theory").merge(ocards, on="ocard")
-        new_logs.set_index("uid", inplace=True)
-        # adjust columns
-        columns = new_logs.columns.tolist()
-        columns.remove("ctime")
-        new_logs = new_logs[columns + ["ctime"]]
-        if not keep_hashes:
-            new_logs = new_logs.drop(["theory", "ocard"], axis=1)
-        new_logs.sort_index(inplace=True)
-        return new_logs
+        if len(logs) > 0:
+            logs.reset_index(inplace=True)
+            if len(theories) > 0:
+                logs = logs.merge(theories, on="theory")
+            if len(ocards) > 0:
+                logs = logs.merge(ocards, on="ocard")
+            logs.set_index("uid", inplace=True)
 
-    def cache_as_dfd(self, doc_hash):
-        """
-        Load all structure functions in log as DataFrame
+            # move ctime at the end
+            columns = logs.columns.tolist()
+            columns.remove("ctime")
+            logs = logs[columns + ["ctime"]]
+
+            # drop hashes, if not denied
+            if not keep_hashes:
+                logs = logs.drop(["theory", "ocard"], axis=1)
+
+            # sort on uid
+            logs.sort_index(inplace=True)
+
+        return logs
+
+    def cache_as_dfd(self, doc_id):
+        """Load all structure functions in log as DataFrame
 
         Parameters
         ----------
-            doc_hash : hash
-                document hash
+        doc_id : str or int
+            document identifier, see :meth:`get`
 
         Returns
         -------
-            log : DFdict
-                DataFrames
+        log : DFdict
+            DataFrames
+
         """
-        cache = self.get(c, doc_hash)
+        cache = self.get(c, doc_id)
 
         res = cache["result"]
 
@@ -244,21 +300,21 @@ class NavigatorApp(abc.ABC):
 
         return dfd
 
-    def log_as_dfd(self, doc_hash):
-        """
-        Load all structure functions in log as DataFrame
+    def log_as_dfd(self, doc_id):
+        """Load all structure functions in log as DataFrame
 
         Parameters
         ----------
-            doc_hash : hash
-                document hash
+        doc_id : str or int
+            document identifier, see :meth:`get`
 
         Returns
         -------
-            log : DFdict
-                DataFrames
+        log : DFdict
+            DataFrames
+
         """
-        log = self.get(l, doc_hash)
+        log = self.get(l, doc_id)
 
         dfd = log["log"]
         dfd.print(
@@ -287,32 +343,34 @@ class NavigatorApp(abc.ABC):
 
         return id_, log
 
-    def list_all_similar_logs(self, ref_hash):
-        """
+    def list_all_similar_logs(self, doc_id):
+        """List logs with similar input.
+
         Search logs which are similar to the one given, i.e., same theory and,
         same observable, and same pdfset.
 
         Parameters
         ----------
-            ref_hash : hash
-                partial hash of the reference log
+        doc_id : str or int
+            document identifier, see :meth:`get`
 
         Returns
         -------
-            df : pandas.DataFrame
-                created frame
+        df : pandas.DataFrame
+            created frame
 
         Note
         ----
         The external it's not used to discriminate logs: even different
         externals should return the same numbers, so it's relevant to keep all
         of them.
+
         """
         # obtain reference log
-        ref_log = self.get(l, ref_hash)
+        ref_log = self.get(l, doc_id)
 
         related_logs = []
-        all_logs = self.get(l)
+        all_logs = self.get_all(l)
 
         for lg in all_logs:
             if lg["t_hash"] != ref_log["t_hash"]:
@@ -326,22 +384,24 @@ class NavigatorApp(abc.ABC):
         return self.list_all(l, related_logs)
 
     def subtract_tables(self, dfd1, dfd2):
-        """
+        """Subtract comparison tables.
+
         Subtract results in the second table from the first one,
         properly propagate the integration error and recompute the relative
         error on the subtracted results.
 
         Parameters
         ----------
-            dfd1 : dict or hash
-                if hash the doc_hash of the log to be loaded
-            dfd2 : dict or hash
-                if hash the doc_hash of the log to be loaded
+        dfd1 : dict or hash
+            if hash the doc_hash of the log to be loaded
+        dfd2 : dict or hash
+            if hash the doc_hash of the log to be loaded
 
         Returns
         -------
-            diffout : DFdict
-                created frames
+        diffout : DFdict
+            created frames
+
         """
         # load json documents
         id1, log1 = self.load_dfd(dfd1, self.log_as_dfd)
@@ -370,9 +430,13 @@ class NavigatorApp(abc.ABC):
                 raise ValueError("Cannot compare tables with different (x, Q2)")
 
             # subtract and propagate
-            known_col_set = set(
-                ["x", "Q2", self.myname, f"{self.myname}_error", "percent_error"]
-            )
+            known_col_set = {
+                "x",
+                "Q2",
+                self.myname,
+                f"{self.myname}_error",
+                "percent_error",
+            }
             t1_ext = list(set(table1.keys()) - known_col_set)[0]
             t2_ext = list(set(table2.keys()) - known_col_set)[0]
             if t1_ext == t2_ext:
@@ -403,8 +467,7 @@ class NavigatorApp(abc.ABC):
         return diffout
 
     def compare_external(self, dfd1, dfd2):
-        """
-        Compare two results in the cache.
+        """Compare two results in the cache.
 
         It's taking two results from external benchmarks and compare them in a
         single table.
@@ -415,6 +478,7 @@ class NavigatorApp(abc.ABC):
             if hash the doc_hash of the cache to be loaded
         dfd2 : dict or hash
             if hash the doc_hash of the cache to be loaded
+
         """
         # load json documents
         id1, cache1 = self.load_dfd(dfd1, self.cache_as_dfd)
@@ -465,38 +529,79 @@ class NavigatorApp(abc.ABC):
 
         return cache_diff
 
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def is_valid_physical_object(name):
-        pass
+        """Identifies physical objects.
 
-    def crashed_log(self, doc_hash):
-        """
-        Check if the log passed the default assertions
+        Used to test names, in order to distinguish physical quantities from
+        metadata.
 
         Parameters
         ----------
-            doc_hash : hash
-                log hash
+        name: str
+            name to test
 
         Returns
         -------
-            cdfd : dict
-                log without kinematics
+        bool
+            test response
+
         """
-        dfd = self.log_as_dfd(doc_hash)
+
+    def crashed_log(self, doc_id):
+        """Check if the log passed the default assertions.
+
+        Parameters
+        ----------
+        doc_id : str or int
+            document identifier, see :meth:`get`
+
+        Returns
+        -------
+        cdfd : dict
+            log without kinematics
+
+        """
+        dfd = self.log_as_dfd(doc_id)
+
         if "_crash" not in dfd:
             raise ValueError("log didn't crash!")
+
         cdfd = {}
-        for name, df in dfd:
+        for name, df in dfd.items():
             if self.is_valid_physical_object(name):
                 cdfd[name] = f"{len(df)} points"
             else:
                 cdfd[name] = dfd[name]
+
         return cdfd
 
-    def execute_runner(self, runner_name="sandbox"):
-        sys.path.insert(0, str(self.cfg["dir"] / "runners"))
-        runner = importlib.import_module(runner_name)
-        sys.path.pop(0)
+    def truncate(self, table):
+        """Empty chosen table
 
-        runner.main()
+        Parameters
+        ----------
+        table: str
+            table identifier
+
+        """
+        self.table_manager(table).truncate()
+
+    def remove(self, table, records):
+        """Remove chosen elements from given table
+
+        Parameters
+        ----------
+        table: str
+            table identifier
+        records: list(str or int or dict)
+            records to remove, specified as:
+
+            - :class:`str`: partial hash
+            - :class:`int`, ``>=0``: uid
+            - :class:`int`, ``<0``: position from the end of the table
+            - :class:`dict`: the record itself
+
+        """
+        self.table_manager(table).remove(records)

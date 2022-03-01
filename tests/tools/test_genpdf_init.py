@@ -4,14 +4,9 @@ import pytest
 from eko import basis_rotation as br
 from utils import cd, test_pdf
 
-from banana import toy
-from banana.data import genpdf
+from banana.tools import genpdf, toy
 from banana.utils import lhapdf_path
 
-# try:
-#     import lhapdf
-# except ImportError:
-#     pytest.skip("No LHAPDF interface around", allow_module_level=True)
 # TODO mark file skipped in coverage.py
 lhapdf = pytest.importorskip("lhapdf")
 
