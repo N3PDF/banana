@@ -103,7 +103,7 @@ def dump_info(name, info):
     yaml.safe_dump(info, stream, default_flow_style=True, width=100000, line_break="\n")
     cnt = stream.getvalue()
     # now insert some newlines for each key
-    new_cnt = re.sub(r", ([A-Za-z_]+):", r"\n\1:", cnt.strip()[1:-1])
+    new_cnt = re.sub(r", ([A-Za-z_]+\d?):", r"\n\1:", cnt.strip()[1:-1])
     with open(target, "w", encoding="utf-8") as o:
         o.write(new_cnt)
 
