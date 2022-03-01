@@ -45,4 +45,4 @@ MP: 0.938
 Comments: "LO baseline for small-x res"
 global_nx: 0
 EScaleVar: 1
-SV_scheme: null
+ModSV: null
