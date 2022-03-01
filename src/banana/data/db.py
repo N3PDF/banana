@@ -88,8 +88,7 @@ class CalcResult:
 
 class Cache(CalcResult, Base):
     __tablename__ = "cache"
-    ext_result = Column(Text)
-    int_result = Column(Text)
+    result = Column(Text)
 
 
 class Log(CalcResult, Base):

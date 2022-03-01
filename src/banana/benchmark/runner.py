@@ -21,20 +21,20 @@ from ..tools import toy
 
 
 def get_pdf(pdf_name, full_set=False):
-    """
-    Load PDF object from either LHAPDF or :mod:`toyLH`
+    """Load PDF object from either LHAPDF or :mod:`toyLH`
 
     Parameters
     ----------
-        pdf_name : str
-            pdf name
-        full_set: bool
-            if True, return the full PDFs set with all the replicas
+    pdf_name : str
+        pdf name
+    full_set : bool
+        if True, return the full PDFs set with all the replicas
 
     Returns
     -------
-        pdf : list(lhapdf_like)
-            PDF object
+    pdf : list(lhapdf_like)
+        PDF object
+
     """
     # setup PDFset
     if pdf_name == "ToyLH":
@@ -63,7 +63,7 @@ def pdf_name(pdf):
 
     Parameters
     ----------
-    pdf: list(lhapdf_type), lhapdf_type
+    pdf: list(lhapdf_like)
         pdf object or list
 
     Returns
@@ -84,7 +84,6 @@ default_log = dict(sorted(default_log.items()))
 
 
 class BenchmarkRunner:
-
     banana_cfg = {}
     """Global configuration"""
 
@@ -234,11 +233,10 @@ class BenchmarkRunner:
             db.Cache.external == self.external,
         )
         # if not found or multiple found, ext.one() will raise an Error
-        return pickle.loads(ext.one().ext_result)
+        return pickle.loads(ext.one().result)
 
-    def insert_cache(self, session, t, o, pdf, me, ext):
-        """
-        Insert the cache.
+    def insert_external(self, session, t, o, pdf, ext):
+        """Insert the cache for external.
 
         Parameters
         ----------
@@ -250,10 +248,9 @@ class BenchmarkRunner:
             o-card
         pdf : list(lhapdf_like)
             list of PDF objects
-        me: dict
-            our result
-        ext: dict
-            external result
+        ext : dict
+            result
+
         """
         record = {
             "t_hash": t["hash"],
@@ -261,8 +258,7 @@ class BenchmarkRunner:
             "pdf": pdf_name(pdf),
             "external": self.external,
             # TODO: pay attention, the hash will be computed on the binarized
-            "ext_result": pickle.dumps(ext),
-            "int_result": pickle.dumps(me),
+            "result": pickle.dumps(ext),
         }
         # create record
         new_cache = db.Cache(
@@ -303,7 +299,7 @@ class BenchmarkRunner:
             for n_rep, replica in enumerate(pdf):
                 ext[n_rep] = self.run_external(t, o, replica, n_rep)
 
-            self.insert_cache(session, t, o, pdf, me, ext)
+            self.insert_external(session, t, o, pdf, ext)
         # create log
         log_record = self.insert_log(session, t, o, pdf, me, ext)
         log_record.fancy()
