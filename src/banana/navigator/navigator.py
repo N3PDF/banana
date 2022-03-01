@@ -532,7 +532,22 @@ class NavigatorApp(abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def is_valid_physical_object(name):
-        pass
+        """Identifies physical objects.
+
+        Used to test names, in order to distinguish physical quantities from
+        metadata.
+
+        Parameters
+        ----------
+        name: str
+            name to test
+
+        Returns
+        -------
+        bool
+            test response
+
+        """
 
     def crashed_log(self, doc_id):
         """Check if the log passed the default assertions.
