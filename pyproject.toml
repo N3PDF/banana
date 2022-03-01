@@ -46,8 +46,6 @@ appdirs = "^1.4.4"
 
 [tool.poetry.dev-dependencies]
 pdbpp = "^0.10.3"
-black = "^21.12b0"
-isort = "^5.10.1"
 pylint = "^2.12.2"
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
@@ -78,8 +76,8 @@ files = ["src/banana/__init__.py"]
 coverage = "$BROWSER htmlcov/index.html"
 test = "pytest tests"
 test-cov = ["test", "coverage"]
-lint = "pylint src/*/*.py -E"
-lint-warnings = "pylint src/*/*.py --exit-zero"
+lint = "pylint src/**/*.py -E"
+lint-warnings = "pylint src/**/*.py --exit-zero"
 black = "black ."
 isort = "isort ."
 format = ["black", "isort"]

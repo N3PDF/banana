@@ -57,7 +57,7 @@ exclude_patterns = ["shared/*"]
 
 # A string to be included at the beginning of all files
 shared = pathlib.Path(__file__).absolute().parent / "shared"
-rst_prolog = "\n".join([open(x).read() for x in os.scandir(shared)])
+rst_prolog = "\n".join([open(x, encoding="utf-8").read() for x in os.scandir(shared)])
 
 extlinks = {
     "yadism": ("https://n3pdf.github.io/yadism/%s", "yadism"),
@@ -123,9 +123,9 @@ todo_include_todos = True
 
 # https://github.com/readthedocs/readthedocs.org/issues/1139#issuecomment-312626491
 def run_apidoc(_):
-    import sys
+    import sys  # pylint: disable=import-outside-toplevel
 
-    from sphinx.ext.apidoc import main
+    from sphinx.ext.apidoc import main  # pylint: disable=import-outside-toplevel
 
     sys.path.append(str(here.parent))
     # 'banana'

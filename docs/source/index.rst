@@ -22,7 +22,7 @@ The benchmarking procedure can be separated into several steps:
 3. :doc:`benchmarks/navigator`
 
 
-In addition we provide a list of :doc:`tools/overview`.
+In addition we provide a list of tools: see :doc:`tools/overview`.
 
 .. toctree::
    :maxdepth: 2

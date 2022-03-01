@@ -27,8 +27,8 @@ class NavigatorApp(abc.ABC):
 
     Parameters
     ----------
-        cfg : dict
-            banana configuration
+        cfgpath : dict
+            path to banana configuration
         external : string
             mode identifier
     """
