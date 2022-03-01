@@ -2,6 +2,7 @@
 import pathlib
 import pickle
 
+import pandas as pd
 import pytest
 import sqlalchemy
 import sqlalchemy.orm
@@ -350,3 +351,62 @@ class TestNavigatorAppSchemeDependent:
 
         with pytest.raises(ValueError, match="didn't crash"):
             benchnav.crashed_log(16)
+
+    def test_subtract(self, banana_yaml, benchsession, benchnav):
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=31, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+
+            def newl(uid, log, th="abc", oh="def", pdf="NNPDF"):
+                return Log(
+                    uid=uid,
+                    t_hash=th,
+                    o_hash=oh,
+                    pdf=pdf,
+                    hash=str(uid),
+                    log=pickle.dumps(log),
+                )
+
+            dfd1 = dfdict.DFdict()
+            dfd1["table1"] = pd.DataFrame(
+                [
+                    dict(x=0.1, Q2=10, my=100, my_error=1, percent_error=1, ext=99),
+                    dict(x=0.2, Q2=10, my=100, my_error=1, percent_error=1, ext=100),
+                    dict(x=0.3, Q2=10, my=100, my_error=1, percent_error=1, ext=100),
+                ],
+            )
+            dfd1["table2"] = pd.DataFrame(
+                [dict(x=0.1, Q2=10, my=100, my_error=1, percent_error=1, ext=99)]
+            )
+            dfd1["_ciao"] = pd.DataFrame(["Not in comparison"])
+            dfd1["come"] = pd.DataFrame(["Not matching dfd2"])
+            benchsession.add(newl(1, dfd1.to_document()))
+            dfd2 = dfdict.DFdict()
+            dfd2["table1"] = pd.DataFrame(
+                [
+                    dict(x=0.1, Q2=10, my=101, my_error=1, percent_error=1, ext=98),
+                    dict(x=0.2, Q2=10, my=101, my_error=1, percent_error=1, ext=100),
+                    dict(x=0.3, Q2=10, my=100, my_error=1, percent_error=1, ext=100),
+                ],
+            )
+            dfd2["table2"] = pd.DataFrame(
+                [dict(x=0.1, Q2=10, my=100, my_error=1, percent_error=1, ext1=99)]
+            )
+            benchsession.add(newl(2, dfd2.to_document()))
+            dfd3 = dfdict.DFdict()
+            dfd3["table2"] = pd.DataFrame(
+                [dict(x=0.2, Q2=1e6, my=101, my_error=1, percent_error=1, ext=98)]
+            )
+            benchsession.add(newl(3, dfd3.to_document()))
+
+        benchnav.myname = "my"
+        diff = benchnav.subtract_tables(1, 2)
+        assert "Subtracting" in diff.msgs[0]
+        assert diff["table1"]["my"][0] == -1
+        assert diff["table1"]["my_error"][0] == 2
+        assert diff["table1"]["ext"][0] == 1
+
+        with pytest.raises(ValueError, match="Cannot compare"):
+            diff = benchnav.subtract_tables(1, 3)
