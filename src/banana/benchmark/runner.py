@@ -43,7 +43,7 @@ def get_pdf(pdf_name, full_set=False):
         if full_set:
             pdf = [pdf]
     else:
-        import lhapdf  # pylint:disable=import-outside-toplevel
+        import lhapdf  # pylint:disable=import-outside-toplevel,import-error
 
         # is the set installed? if not do it now
         if pdf_name not in lhapdf.availablePDFSets():
