@@ -20,12 +20,8 @@ class Ciao(Base):
     __tablename__ = "ciao"
     name = sqlalchemy.Column(sqlalchemy.String)
     hash = sqlalchemy.Column(sqlalchemy.String)
-    ctime = sqlalchemy.Column(
-        sqlalchemy.DateTime(), default=lambda: datetime.datetime.utcnow()
-    )
-    atime = sqlalchemy.Column(
-        sqlalchemy.DateTime(), default=lambda: datetime.datetime.utcnow()
-    )
+    ctime = sqlalchemy.Column(sqlalchemy.DateTime(), default=datetime.datetime.utcnow)
+    atime = sqlalchemy.Column(sqlalchemy.DateTime(), default=datetime.datetime.utcnow)
 
 
 @pytest.fixture

@@ -216,7 +216,7 @@ class MyLog(dict):
 
 
 class TestNavigatorAppSchemeDependent:
-    def test_show_full_logs(self, banana_yaml, benchsession, benchnav):
+    def test_show_full_logs(self, benchsession, benchnav):
         logs = benchnav.show_full_logs()
 
         assert len(logs) == 0
@@ -241,7 +241,7 @@ class TestNavigatorAppSchemeDependent:
         assert logs["process"][17] == 0
         assert logs["pdf"][17] == "NNPDF"
 
-    def test_get_by_log(self, banana_yaml, benchsession, benchnav):
+    def test_get_by_log(self, benchsession, benchnav):
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
@@ -255,7 +255,7 @@ class TestNavigatorAppSchemeDependent:
         th = benchnav.get_by_log("t", "1234")
         assert th["PTO"] == 31
 
-    def test_as_dfd(self, banana_yaml, benchsession, benchnav):
+    def test_as_dfd(self, benchsession, benchnav):
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
@@ -290,7 +290,7 @@ class TestNavigatorAppSchemeDependent:
         for field in ["theory", "obs", "PDF"]:
             assert field in log.text
 
-    def test_simlogs(self, banana_yaml, benchsession, benchnav):
+    def test_simlogs(self, benchsession, benchnav):
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
@@ -316,7 +316,7 @@ class TestNavigatorAppSchemeDependent:
         assert len(simlogs) == 3
         assert sorted(simlogs["hash"].values) == ["5", "50", "55"]
 
-    def test_crashed(self, banana_yaml, benchsession, benchnav):
+    def test_crashed(self, benchsession, benchnav):
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
@@ -352,7 +352,7 @@ class TestNavigatorAppSchemeDependent:
         with pytest.raises(ValueError, match="didn't crash"):
             benchnav.crashed_log(16)
 
-    def test_subtract(self, banana_yaml, benchsession, benchnav):
+    def test_subtract(self, benchsession, benchnav):
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
@@ -411,7 +411,7 @@ class TestNavigatorAppSchemeDependent:
         with pytest.raises(ValueError, match="Cannot compare"):
             diff = benchnav.subtract_tables(1, 3)
 
-    def test_compare_external(self, banana_yaml, benchsession, benchnav):
+    def test_compare_external(self, benchsession, benchnav):
         with benchsession.begin():
             newt = Theory(uid=42, PTO=31, hash="abc")
             benchsession.add(newt)
