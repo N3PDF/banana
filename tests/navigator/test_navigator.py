@@ -410,3 +410,58 @@ class TestNavigatorAppSchemeDependent:
 
         with pytest.raises(ValueError, match="Cannot compare"):
             diff = benchnav.subtract_tables(1, 3)
+
+    def test_compare_external(self, banana_yaml, benchsession, benchnav):
+        with benchsession.begin():
+            newt = Theory(uid=42, PTO=31, hash="abc")
+            benchsession.add(newt)
+            newo = OCard(uid=21, process=0, hash="def")
+            benchsession.add(newo)
+
+            def newc(uid, res, ext, th="abc", oh="def", pdf="NNPDF"):
+                return Cache(
+                    uid=uid,
+                    t_hash=th,
+                    o_hash=oh,
+                    pdf=pdf,
+                    hash=str(uid),
+                    result=pickle.dumps(res),
+                    #  result=pickle.dumps({"table": [{"column": "value"}]}),
+                    external=ext,
+                )
+
+            cache1 = dict(
+                table=[
+                    dict(x=0.1, Q2=10, result=99),
+                    dict(x=0.2, Q2=10, result=100),
+                    dict(x=0.3, Q2=10, result=0),
+                ],
+                ciao=["Not matching cache2"],
+            )
+            benchsession.add(newc(1, cache1, "blub"))
+            cache2 = dict(
+                table=[
+                    dict(x=0.1, Q2=10, result=99),
+                    dict(x=0.2, Q2=10, result=0),
+                    dict(x=0.3, Q2=10, result=0),
+                ],
+                table2=[dict(x=0.1, Q2=10, result=99)],
+            )
+            benchsession.add(newc(2, cache2, "blab"))
+            cache3 = cache2.copy()
+            cache3["table2"] = [dict(x=1e-6, Q2=1e6, result=99)]
+            benchsession.add(newc(3, cache3, "blub"))
+
+        benchnav.myname = "my"
+        diff = benchnav.compare_external(1, 2)
+        assert "Comparing" in diff.msgs[0]
+        assert diff["table"]["blub"][0] == 99
+        assert diff["table"]["blab"][0] == 99
+        assert diff["table"]["percent_error"][0] == 0.0
+
+        diff = benchnav.compare_external(1, 3)
+        assert "blub1" in diff["table"]
+        assert "blub2" in diff["table"]
+
+        with pytest.raises(ValueError, match="Cannot compare"):
+            diff = benchnav.compare_external(2, 3)
