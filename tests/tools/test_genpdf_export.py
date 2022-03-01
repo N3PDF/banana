@@ -54,7 +54,10 @@ def test_dump_blocks(tmp_path):
             _pdf = lhapdf.mkPDF("new_pdf", 0)
         for x in new_blocks[0]["xgrid"][1:-1]:
             for q2 in new_blocks[0]["Q2grid"]:
-                data_from_block = new_blocks[0]["data"][new_blocks[0]["Q2grid"].index(q2)+len(new_blocks[0]["Q2grid"])*list(new_blocks[0]["xgrid"]).index(x)][6]
-                data_from_pdf = _pdf.xfxQ2(21,x,q2)
-                np.testing.assert_allclose(data_from_block,data_from_pdf, rtol = 1e-10)
-
+                data_from_block = new_blocks[0]["data"][
+                    new_blocks[0]["Q2grid"].index(q2)
+                    + len(new_blocks[0]["Q2grid"])
+                    * list(new_blocks[0]["xgrid"]).index(x)
+                ][6]
+                data_from_pdf = _pdf.xfxQ2(21, x, q2)
+                np.testing.assert_allclose(data_from_block, data_from_pdf)
