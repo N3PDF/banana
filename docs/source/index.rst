@@ -38,12 +38,11 @@ In addition we provide a list of tools: see :doc:`tools/overview`.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Tools:
+   :caption: Extra:
    :hidden:
 
-   tools/overview
-   tools/toy
-   tools/genpdf
+   extras/overview
+   extras/toy
 
 .. toctree::
    :maxdepth: 2
