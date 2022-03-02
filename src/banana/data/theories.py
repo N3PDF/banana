@@ -15,6 +15,22 @@ default_card = dict(sorted(default_card.items()))
 
 # db interface
 def load(session, updates):
+    """Load theories.
+
+    Parameters
+    ----------
+    session : sqlalchemy.orm.session.Session
+        database
+    updates : list(dict)
+        update directives
+
+    Returns
+    -------
+    list(dict)
+        list of all dictionaries
+
+    """
+
     # add hash
     raw_records, df = sql.prepare_records(default_card, updates)
     # insert new ones

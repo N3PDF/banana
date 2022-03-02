@@ -22,15 +22,15 @@ table_objects = dict(t=db.Theory, c=db.Cache, l=db.Log)
 
 
 class NavigatorApp(abc.ABC):
-    """
-    Navigator base class holding all elementry operations.
+    """Navigator base class holding all elementry operations.
 
     Parameters
     ----------
-        cfgpath : dict
-            path to banana configuration
-        external : string
-            mode identifier
+    cfgpath : str or os.PathLike
+        path to banana configuration
+    external : str
+        mode identifier
+
     """
 
     myname = "banana"
