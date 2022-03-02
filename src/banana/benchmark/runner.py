@@ -16,9 +16,8 @@ import rich.progress
 import sqlalchemy.ext
 import sqlalchemy.orm
 
-from .. import cfg
+from .. import cfg, toy
 from ..data import db, dfdict, sql, theories
-from ..tools import toy
 
 
 def get_pdf(pdf_name, full_set=False):

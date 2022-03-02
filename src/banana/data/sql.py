@@ -89,7 +89,7 @@ def prepare_records(base, updates):
     ----------
     base : dict
         base record
-    updates : dict
+    updates : list(dict)
         update directives
 
     Returns
