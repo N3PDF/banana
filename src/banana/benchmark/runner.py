@@ -390,7 +390,7 @@ class BenchmarkRunner:
 
         """
         # open db
-        db_path = self.banana_cfg["database_path"]
+        db_path = self.banana_cfg["paths"]["database"]
         session = self.db(db_path)
         # init input
         ts = theories.load(session, theory_updates)
