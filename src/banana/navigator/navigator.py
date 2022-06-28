@@ -221,6 +221,7 @@ class NavigatorApp(abc.ABC):
             data frame
 
         """
+
         # apply some defaults
         if t_fields is None:
             t_fields = []
@@ -232,12 +233,14 @@ class NavigatorApp(abc.ABC):
         if len(theories_df) > 0:
             theories = theories_df[["hash"] + t_fields]
             theories = theories.rename(columns={"hash": "theory"})
+            theories["theory"] = theories["theory"].apply(lambda h: h[: self.hash_len])
         else:
             theories = theories_df
         ocards_df = pd.DataFrame(self.get_all(o))
         if len(theories_df) > 0:
             ocards = ocards_df[["hash"] + o_fields]
             ocards = ocards.rename(columns={"hash": "ocard"})
+            ocards["ocard"] = ocards["ocard"].apply(lambda h: h[: self.hash_len])
         else:
             ocards = ocards_df
 

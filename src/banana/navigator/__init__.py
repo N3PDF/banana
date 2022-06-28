@@ -72,7 +72,7 @@ def launch_navigator(imports=None, cfg_path=None, skip_cfg=False, pylab=True):
 
     """
     if not skip_cfg:
-        # configurations are loaded, to support inbokation from the CLI
+        # configurations are loaded, to support invokation from the CLI
         cfg.cfg = cfg.load(cfg.detect(cfg_path))
 
     # update ipython configurations to add custom banner
