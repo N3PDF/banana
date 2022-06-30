@@ -163,8 +163,8 @@ class NavigatorApp(abc.ABC):
         """
         return self.table_manager(table).all()
 
-    def list_all(self, table, input_data=None):
-        """List all elements in a nice table
+    def list_all(self, table, input_data=None, cut_hash=True):
+        """List all elements in a nice table.
 
         Parameters
         ----------
@@ -172,6 +172,8 @@ class NavigatorApp(abc.ABC):
             table identifier
         input_data : list
             data to list
+        cut_hash : bool
+            shorten hash if TRUE
 
         Returns
         -------
@@ -184,9 +186,11 @@ class NavigatorApp(abc.ABC):
             input_data = self.get_all(table)
         data = []
         for el in input_data:
-            # obj = {"hash": el["hash"][:6]}
             obj = {"uid": el["uid"]}
-            obj["hash"] = el["hash"][: self.hash_len]
+            obj["hash"] = el["hash"]
+            if cut_hash:
+                obj["hash"] = el["hash"][: self.hash_len]
+            # TODO propagate down? e.g. `theory` is read down there
             self.__getattribute__(f"fill_{self.table_name(table)}")(el, obj)
             obj["ctime"] = (
                 pendulum.duration(
