@@ -35,10 +35,14 @@ def register_globals(mod, app):
         # "truncate_logs": app.logs.truncate,
         "diff": app.subtract_tables,
         "cmpt": lambda id1, id2: compare_dicts(
-            app.get(t, id1), app.get(t, id2), exclude_keys=["uid", "hash", "ctime"]
+            app.get(t, id1),
+            app.get(t, id2),
+            exclude_keys=["uid", "hash", "ctime", "atime", "mtime"],
         ),
         "cmpo": lambda id1, id2: compare_dicts(
-            app.get(o, id1), app.get(o, id2), exclude_keys=["uid", "hash", "ctime"]
+            app.get(o, id1),
+            app.get(o, id2),
+            exclude_keys=["uid", "hash", "ctime", "atime", "mtime"],
         ),
         "compare_dicts": compare_dicts,
         "simlogs": app.list_all_similar_logs,
