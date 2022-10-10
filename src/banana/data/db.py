@@ -75,6 +75,7 @@ class Theory(Base):
     mb = Column(Float)
     mc = Column(Float)
     mt = Column(Float)
+    alphaem_running = Column(Integer)
 
 
 # mixin
