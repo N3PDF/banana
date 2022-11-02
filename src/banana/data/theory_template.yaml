@@ -46,3 +46,4 @@ Comments: "LO baseline for small-x res"
 global_nx: 0
 EScaleVar: 1
 ModSV: null
+n3lo_ad_variation: [0,0,0,0]
