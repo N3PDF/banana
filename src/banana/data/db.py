@@ -12,7 +12,7 @@ import pathlib
 from datetime import datetime, timezone
 
 import sqlalchemy
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text, Boolean
 
 # from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
@@ -75,7 +75,7 @@ class Theory(Base):
     mb = Column(Float)
     mc = Column(Float)
     mt = Column(Float)
-    alphaem_running = Column(Integer)
+    alphaem_running = Column(Boolean)
 
 
 # mixin
