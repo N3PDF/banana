@@ -45,7 +45,7 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
     # Coupling
     apfel.SetAlphaQCDRef(theory.get("alphas"), theory.get("Qref"))
     if theory.get("QED"):
-        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("Qedref"))
+        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("Qref"))
 
     # EW
     apfel.SetWMass(theory.get("MW"))
