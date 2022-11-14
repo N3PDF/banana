@@ -46,3 +46,4 @@ global_nx: 0
 EScaleVar: 1
 ModSV: null
 alphaem_running: false
+n3lo_ad_variation: [0,0,0,0]
