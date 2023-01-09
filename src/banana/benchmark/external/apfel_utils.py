@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from math import isnan
+
 def load_apfel(theory, ocard, pdf, use_external_grid=True):
     """
     Set APFEL parameter from ``theory`` dictionary.
@@ -45,7 +47,9 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
     # Coupling
     apfel.SetAlphaQCDRef(theory.get("alphas"), theory.get("Qref"))
     if theory.get("QED"):
-        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("Qref"))
+        if isnan(theory.get("Qref")) or not theory.get("Qref"):
+            raise ValueError("Fixed alphaqed is not implemented in APFEL!")
+        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("Qedref"))
 
     # EW
     apfel.SetWMass(theory.get("MW"))
