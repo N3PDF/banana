@@ -45,11 +45,11 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
         raise RuntimeError("ERROR: Unrecognised MODEV:", theory.get("ModEv"))
 
     # Coupling
-    apfel.SetAlphaQCDRef(theory.get("alphas"), theory.get("QrefQED"))
+    apfel.SetAlphaQCDRef(theory.get("alphas"), theory.get("Qref"))
     if theory.get("QED"):
         if isnan(theory.get("QrefQED")) or not theory.get("QrefQED"):
             raise ValueError("Fixed alphaqed is not implemented in APFEL!")
-        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("Qedref"))
+        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("QrefQED"))
 
     # EW
     apfel.SetWMass(theory.get("MW"))
