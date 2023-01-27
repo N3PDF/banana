@@ -15,6 +15,7 @@ MaxNfPdf: 6
 Q0: 1.0
 alphas: 0.11800000000000001
 Qref: 91.2
+QrefQED: 91.2
 nfref: null
 nf0: null
 QED: 0
@@ -45,5 +46,4 @@ Comments: "LO baseline for small-x res"
 global_nx: 0
 EScaleVar: 1
 ModSV: null
-alphaem_running: false
 n3lo_ad_variation: [0,0,0,0]
