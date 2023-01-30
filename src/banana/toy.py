@@ -15,9 +15,8 @@ class toyPDFSet:
 class MockPDF():
     """Imitates a lhapdf.PDF"""
 
-    def __init__(self):
-        self.name = None
-        self.xpdf = {}
+    name = None
+    xpdf = {}
 
     def xfxQ2(self, pid, x, _Q2):
         """Get the PDF xf(x) value at (x,q2) for the given PID.
