@@ -37,8 +37,8 @@ def get_pdf(pdf_name, full_set=False):
             PDF object
     """
     # setup PDFset
-    if pdf_name == "ToyLH":
-        pdf = toy.mkPDF("ToyLH", 0)
+    if pdf_name in ["ToyLH_polarized", "ToyLH"]:
+        pdf = toy.mkPDF(pdf_name, 0)
         if full_set:
             pdf = [pdf]
     else:
