@@ -23,12 +23,11 @@ classifiers = [
 ]
 include = [
   "src/banana/data/theory_template.yaml",
-  "src/banana/tools/genpdf/*.info",
 ]
 packages = [{ include = "banana", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.8.0,<3.11"
+python = "^3.8.0,<3.12"
 ipython = "^8.1.0"
 SQLAlchemy = "^1.4.29"
 numpy = "^1.21.0"

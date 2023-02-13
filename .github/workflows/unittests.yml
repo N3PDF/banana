@@ -6,11 +6,6 @@ on:
       - "*docs*"
 
 jobs:
-  py37:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
-    with:
-      python-version: "3.7"
-
   py38:
     uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
     with:
@@ -25,3 +20,8 @@ jobs:
     uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
     with:
       python-version: "3.10"
+
+  py311:
+    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
+    with:
+      python-version: "3.11"
