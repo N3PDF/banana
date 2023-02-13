@@ -7,21 +7,21 @@ on:
 
 jobs:
   py38:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
+    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.8"
 
   py39:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
+    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.9"
 
   py310:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
+    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.10"
 
   py311:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@main
+    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.11"
