@@ -2237,4 +2237,4 @@ docs = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-bibtex"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.0,<3.12"
-content-hash = "2b657224cd5b8e1773e5dd2c38790db10f57a65e8734b9637ab11137798e5fd0"
+content-hash = "ec4598dac29c0cc376e1eaa70147a00be227ac80348586047a6b7e3478b8910c"
