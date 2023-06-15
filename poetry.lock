@@ -1589,20 +1589,6 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtualenv"]
 
 [[package]]
-name = "pytest-env"
-version = "0.6.2"
-description = "py.test plugin that allows you to add environment variables."
-category = "dev"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pytest-env-0.6.2.tar.gz", hash = "sha256:7e94956aef7f2764f3c147d216ce066bf6c42948bb9e293169b1b1c880a580c2"},
-]
-
-[package.dependencies]
-pytest = ">=2.6.0"
-
-[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -2234,4 +2220,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.0,<3.12"
-content-hash = "8f269a951ce061a06f1132c1e45a812dab7252919d7be5ffa631f2a108213e04"
+content-hash = "8a81065cef5c48d1572f973e164cbed66a1faf04735e7e7cd5d30893d9894d95"
