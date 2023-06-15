@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module contains the Toy PDF.
 
@@ -8,11 +7,12 @@ It is defined at the initial scale :math:`Q = sqrt(2) GeV`.
 
 class toyPDFSet:
     """Fake PDF set"""
+
     def __init__(self, name):
         self.name = name
 
 
-class MockPDF():
+class MockPDF:
     """Imitates a lhapdf.PDF"""
 
     name = None
@@ -83,6 +83,7 @@ class MockPDF():
     def hasFlavor(self, pid):
         """Contains a pdf for pid?"""
         return pid in ([21, 22] + list(range(-6, 6 + 1)))
+
 
 class toyPDF_unpolarized(MockPDF):
     """ToyLH unpolarized implementation."""

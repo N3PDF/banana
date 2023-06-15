@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pathlib
 
 import yaml
@@ -12,6 +11,7 @@ default_card = {}
 with open(_here / "theory_template.yaml", encoding="utf-8") as f:
     default_card = yaml.safe_load(f)
 default_card = dict(sorted(default_card.items()))
+
 
 # db interface
 def load(session, updates):

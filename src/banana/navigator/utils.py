@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 def compare_dicts(
     d1, d2, exclude_underscored=False, key_width=20, value_width=30, exclude_keys=None
 ):

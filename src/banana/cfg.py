@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Configurations related objects.
 
 This module contains the functions used to manage configurations.
@@ -100,7 +99,7 @@ def load(path):
 
     """
     cfg = {}
-    with open(path, "r", encoding="utf-8") as o:
+    with open(path, encoding="utf-8") as o:
         cfg = yaml.safe_load(o)
 
     try:

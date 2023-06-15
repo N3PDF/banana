@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 from math import isnan
+
 
 def load_apfel(theory, ocard, pdf, use_external_grid=True):
     """
