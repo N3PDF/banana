@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import abc
 import hashlib
 import itertools
@@ -88,7 +86,6 @@ default_log = dict(sorted(default_log.items()))
 
 
 class BenchmarkRunner:
-
     banana_cfg = {}
     """Global configuration"""
 

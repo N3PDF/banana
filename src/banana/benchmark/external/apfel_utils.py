@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
+
 def load_apfel(theory, ocard, pdf, use_external_grid=True):
     """
     Set APFEL parameter from ``theory`` dictionary.

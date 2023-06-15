@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import abc
 import datetime as dt
 import textwrap

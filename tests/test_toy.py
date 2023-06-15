@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from banana import toy
 
 pdf = toy.mkPDF("", 0)

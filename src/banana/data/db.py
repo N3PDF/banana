@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Actually using ``String`` it's pointless, since SQLite has only one text type
 and it is ``TEXT``, and the maximum length is coherently ignored by SQLite.
