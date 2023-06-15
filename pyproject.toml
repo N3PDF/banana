@@ -55,7 +55,6 @@ sphinxcontrib-bibtex = "^2.4.1"
 pyfakefs = "^4.5.3"
 
 [tool.poetry.extras]
-pineappl = ["pineappl"]
 docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-bibtex"]
 
 [tool.poetry-dynamic-versioning]

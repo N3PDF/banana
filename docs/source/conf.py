@@ -61,7 +61,6 @@ rst_prolog = "\n".join([open(x, encoding="utf-8").read() for x in os.scandir(sha
 extlinks = {
     "yadism": ("https://n3pdf.github.io/yadism/%s", "yadism"),
     "eko": ("https://n3pdf.github.io/eko/%s", "eko"),
-    "pineappl": ("https://n3pdf.github.io/pineappl/%s", "pineappl"),
     "pineko": ("https://github.com/N3PDF/pineko/%s", "pineko"),
 }
 

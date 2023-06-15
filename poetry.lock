@@ -2274,9 +2274,8 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 
 [extras]
 docs = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-bibtex"]
-pineappl = []
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.0,<3.12"
-content-hash = "8b1e80e03f7c8ceceb32e580996cf46cb40bea0b29d541445ba1d991c5d27067"
+content-hash = "c3435f62c4eebeeee697268a401f4c52c184edf3521451d59af080d5fd5b4a9c"
