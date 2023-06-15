@@ -55,7 +55,7 @@ class Theory(Base):
     Qmc = Column(Float)
     Qmt = Column(Float)
     Qref = Column(Float)
-    QrefQED = Column(Float)
+    Qedref = Column(Float)
     SIN2TW = Column(Float)
     SxOrd = Column(Text)
     SxRes = Column(Integer)

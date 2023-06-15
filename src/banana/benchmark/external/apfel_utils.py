@@ -1,4 +1,4 @@
-from math import isnan
+import numpy as np
 
 
 def load_apfel(theory, ocard, pdf, use_external_grid=True):
@@ -47,9 +47,9 @@ def load_apfel(theory, ocard, pdf, use_external_grid=True):
     # Coupling
     apfel.SetAlphaQCDRef(theory.get("alphas"), theory.get("Qref"))
     if theory.get("QED"):
-        if isnan(theory.get("QrefQED")) or not theory.get("QrefQED"):
+        if not np.isclose(theory.get("Qedref"), theory.get("Qref")):
             raise ValueError("Fixed alphaqed is not implemented in APFEL!")
-        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("QrefQED"))
+        apfel.SetAlphaQEDRef(theory.get("alphaqed"), theory.get("Qedref"))
 
     # EW
     apfel.SetWMass(theory.get("MW"))
