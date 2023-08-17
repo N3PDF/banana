@@ -16,8 +16,8 @@ Q0: 1.0
 alphas: 0.11800000000000001
 Qref: 91.2
 Qedref: 91.2
-nfref: null
-nf0: null
+nfref: 5
+nf0: 4
 QED: 0
 alphaqed: 0.007496251999999999
 SxRes: 0
