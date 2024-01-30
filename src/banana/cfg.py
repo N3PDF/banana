@@ -5,6 +5,7 @@ Moreover, the actual loaded configurations are stored in the module variable
 :data:`cfg`, that is used as the source of truth for them.
 
 """
+
 import pathlib
 
 import appdirs

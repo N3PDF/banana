@@ -7,6 +7,7 @@ so we can keep declaring a size for fields where it matters.
 Same considerations apply to datetime, with the further gain that SQLite it's
 storing as he wish but able to use some dedicated functions.
 """
+
 import pathlib
 from datetime import datetime, timezone
 
