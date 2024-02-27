@@ -21,9 +21,7 @@ classifiers = [
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Physics",
 ]
-include = [
-  "src/banana/data/theory_template.yaml",
-]
+include = ["src/banana/data/theory_template.yaml"]
 packages = [{ include = "banana", from = "src" }]
 
 [tool.poetry.dependencies]
