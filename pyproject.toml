@@ -27,7 +27,7 @@ include = [
 packages = [{ include = "banana", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.8.0"
+python = "^3.8.0,<3.13"
 ipython = "^8.1.0"
 SQLAlchemy = "^1.4.29,<=2.0"
 numpy = "^1.21.0"
