@@ -59,9 +59,9 @@ shared = pathlib.Path(__file__).absolute().parent / "shared"
 rst_prolog = "\n".join([open(x, encoding="utf-8").read() for x in os.scandir(shared)])
 
 extlinks = {
-    "yadism": ("https://n3pdf.github.io/yadism/%s", "yadism"),
-    "eko": ("https://n3pdf.github.io/eko/%s", "eko"),
-    "pineko": ("https://github.com/N3PDF/pineko/%s", "pineko"),
+    "yadism": ("https://n3pdf.github.io/yadism/%s", "yadism/%s"),
+    "eko": ("https://n3pdf.github.io/eko/%s", "eko/%s"),
+    "pineko": ("https://github.com/N3PDF/pineko/%s", "pineko/%s"),
 }
 
 # -- Options for HTML output -------------------------------------------------
