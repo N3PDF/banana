@@ -21,9 +21,6 @@ The benchmarking procedure can be separated into several steps:
 2. :doc:`Running our own implementation and the external benchmark program <benchmarks/running>`
 3. :doc:`benchmarks/navigator`
 
-
-In addition we provide a list of tools: see :doc:`tools/overview`.
-
 .. toctree::
    :maxdepth: 2
    :caption: Benchmarks:
