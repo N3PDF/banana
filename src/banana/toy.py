@@ -49,7 +49,7 @@ class MockPDF:
         return self.xpdf[pid](x)
 
     def xfxQ(self, pid, x, Q):
-        """Get the PDF xf(x) value at (x,q) for the given PID.
+        """Get the PDF/FF xf(x) value at (x,q) for the given PID.
 
         Parameters
         ----------
@@ -180,27 +180,29 @@ class toyFF_unpolarized(MockPDF):
         self.xpdf[2] = D_u
         self.xpdf[3] = D_ub
         self.xpdf[21] = self.xpdf[0]
-        self.name = "ToyFF_unpol" 
+        self.name = "ToyFF_unpolarized" 
 
 
 def mkPDF(setname, _member):
     """
-    Factory functions for making single PDF members.
+    Factory functions for making single PDF/FF members.
 
-    Create a new PDF with the given PDF set name and member ID.
+    Create a new PDF/FF with the given PDF/FF set name and member ID.
 
     Parameters
     ----------
     setname : type
-        PDF set name.
+        PDF/FF set name.
     member : type
         Member ID.
 
     Returns
     -------
-    toyPDF
-        PDF object.
+    toyPDF/FF
+        PDF/FF object.
     """
     if setname == "ToyLH_polarized":
         return toyPDF_polarized()
+    if setname == "ToyFF_unpolarized":
+        return toyFF_unpolarized()
     return toyPDF_unpolarized()
