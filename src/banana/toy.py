@@ -19,7 +19,7 @@ class MockPDF:
     xpdf = {}
 
     def xfxQ2(self, pid, x, _Q2):
-        """Get the PDF xf(x) value at (x,q2) for the given PID.
+        """Get the PDF/FF xf(x) value at (x,q2) for the given PID.
 
         Parameters
         ----------
@@ -157,6 +157,30 @@ class toyPDF_polarized(MockPDF):
         self.xpdf[-2] = xubar
         self.xpdf[-3] = xsbar
         self.name = "ToyLH_polarized"
+
+
+class toyFF_unpolarized(MockPDF):
+    """ToyFF from 1501.00494, Eqn. 3.3 and 3.4"""
+
+    def __init__(self):
+        N_v = 0.401
+        N_s = 0.094
+        N_g = 0.238
+
+        D_u = lambda x: N_v * x**(-0.963) * (1 - x)**1.370
+        D_ub = lambda x: N_s * x**0.718 * (1 - x)**6.266
+        D_g = lambda x: N_g * x**1.943 * (1 - x)**8
+        
+        self.xpdf = {}
+        self.xpdf[-3] = D_ub
+        self.xpdf[-2] = D_ub
+        self.xpdf[-1] = D_u
+        self.xpdf[0] = D_g
+        self.xpdf[1] = D_ub
+        self.xpdf[2] = D_u
+        self.xpdf[3] = D_ub
+        self.xpdf[21] = self.xpdf[0]
+        self.name = "ToyFF_unpol" 
 
 
 def mkPDF(setname, _member):
