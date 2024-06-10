@@ -167,10 +167,10 @@ class toyFF_unpolarized(MockPDF):
         N_s = 0.094
         N_g = 0.238
 
-        D_u = lambda x: N_v * x**(-0.963) * (1 - x)**1.370
-        D_ub = lambda x: N_s * x**0.718 * (1 - x)**6.266
-        D_g = lambda x: N_g * x**1.943 * (1 - x)**8
-        
+        D_u = lambda x: N_v * x ** (-0.963) * (1 - x) ** 1.370
+        D_ub = lambda x: N_s * x**0.718 * (1 - x) ** 6.266
+        D_g = lambda x: N_g * x**1.943 * (1 - x) ** 8
+
         self.xpdf = {}
         self.xpdf[-3] = D_ub
         self.xpdf[-2] = D_ub
@@ -180,7 +180,7 @@ class toyFF_unpolarized(MockPDF):
         self.xpdf[2] = D_u
         self.xpdf[3] = D_ub
         self.xpdf[21] = self.xpdf[0]
-        self.name = "ToyFF_unpolarized" 
+        self.name = "ToyFF_unpolarized"
 
 
 def mkPDF(setname, _member):
