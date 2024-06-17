@@ -1,32 +1,24 @@
 name: unit tests
 
-on:
-  push:
-    branches-ignore:
-      - "*docs*"
+on: push
 
 jobs:
-  py38:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
-    with:
-      python-version: "3.8"
-
   py39:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
+    uses: NNPDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.9"
 
   py310:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
+    uses: NNPDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.10"
 
   py311:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
+    uses: NNPDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.11"
 
   py312:
-    uses: N3PDF/workflows/.github/workflows/python-poetry-tests.yml@v2
+    uses: NNPDF/workflows/.github/workflows/python-poetry-tests.yml@v2
     with:
       python-version: "3.12"
