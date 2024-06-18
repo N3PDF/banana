@@ -1,6 +1,8 @@
 from banana import toy
+from scipy.integrate import quad
 
 pdf = toy.mkPDF("", 0)
+ff = toy.mkPDF("ToyFF_unpolarized", 0)
 
 
 def test_alpha():
@@ -24,3 +26,15 @@ def test_xf():
             for x in [0.1, 0.2]:
                 assert pdf.xfxQ2(pid, x, Q2) == pdf.xfxQ(pid, x, Q2)
             assert pdf.xfxQ2(pid, 2, Q2) == 0
+
+
+def test_toyFF():
+    """Test the ToyFF_unpolarized with Eqn. 3.4 from 1501.00494."""
+
+    val_u = round(quad(lambda x: ff.xfxQ2(2, x, 1), 0, 1)[0], 3)
+    val_d = round(quad(lambda x: ff.xfxQ2(1, x, 1), 0, 1)[0], 3)
+    val_g = round(quad(lambda x: ff.xfxQ2(21, x, 1), 0, 1)[0], 3)
+
+    assert val_u == 0.401
+    assert val_d == 0.094
+    assert val_g == 0.238
