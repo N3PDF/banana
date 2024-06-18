@@ -1,5 +1,6 @@
-from banana import toy
 from scipy.integrate import quad
+
+from banana import toy
 
 pdf = toy.mkPDF("", 0)
 ff = toy.mkPDF("ToyFF_unpolarized", 0)

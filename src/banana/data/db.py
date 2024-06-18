@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 
 import sqlalchemy
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text
-
 # from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
