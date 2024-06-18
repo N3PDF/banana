@@ -124,8 +124,7 @@ todo_include_todos = True
 def run_apidoc(_):
     import sys  # pylint: disable=import-outside-toplevel
 
-    from sphinx.ext.apidoc import \
-        main  # pylint: disable=import-outside-toplevel
+    from sphinx.ext.apidoc import main  # pylint: disable=import-outside-toplevel
 
     sys.path.append(str(here.parent))
     # 'banana'
