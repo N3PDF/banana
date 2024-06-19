@@ -163,22 +163,22 @@ class toyFF_unpolarized(MockPDF):
     """ToyFF from 1501.00494, Eqn. 3.3 and 3.4"""
 
     def __init__(self):
-        N_v = 0.401
-        N_s = 0.094
-        N_g = 0.238
+        N_v = 1.00881
+        N_s = 17.6255
+        N_g = 438.189
 
-        D_u = lambda x: N_v * x ** (-0.963) * (1 - x) ** 1.370
-        D_ub = lambda x: N_s * x**0.718 * (1 - x) ** 6.266
-        D_g = lambda x: N_g * x**1.943 * (1 - x) ** 8
+        xD_u = lambda x: x * N_v * x ** (-0.963) * (1 - x) ** 1.370
+        xD_ub = lambda x: x * N_s * x**0.718 * (1 - x) ** 6.266
+        xD_g = lambda x: x * N_g * x**1.943 * (1 - x) ** 8
 
         self.xpdf = {}
-        self.xpdf[-3] = D_ub
-        self.xpdf[-2] = D_ub
-        self.xpdf[-1] = D_u
-        self.xpdf[0] = D_g
-        self.xpdf[1] = D_ub
-        self.xpdf[2] = D_u
-        self.xpdf[3] = D_ub
+        self.xpdf[-3] = xD_ub
+        self.xpdf[-2] = xD_ub
+        self.xpdf[-1] = xD_u
+        self.xpdf[0] = xD_g
+        self.xpdf[1] = xD_ub
+        self.xpdf[2] = xD_u
+        self.xpdf[3] = xD_ub
         self.xpdf[21] = self.xpdf[0]
         self.name = "ToyFF_unpolarized"
 
